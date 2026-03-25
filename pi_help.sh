@@ -6,7 +6,6 @@ HELP_MSG="🛠️ $HOSTNAME Bot Commands:
 🏥 health
    Get Printer Toner & Status
 
-✈️  flight [ID]
    Ex: 'flight WN102'
 
 📊 flight /status

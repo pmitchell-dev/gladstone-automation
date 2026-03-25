@@ -1,26 +1,17 @@
-# --- Master Aliases (Synced via GitHub) ---
-
-# The Magic Sync
-alias sync='bash $HOME/scripts/sync_repo.sh'
-
-# Navigation Helpers
-alias sc='cd ~/scripts'
-alias home='cd ~'
-
-# Quick Logs
-alias nlog='tail -f ~/ntfy.log'
-alias slog='tail -f ~/services_manager.log'
-
-# System
-alias lsa='ls -lah'
-alias update='sudo apt update && sudo apt upgrade -y'
+# --- Gladstone Pi 5 Official Aliases ---
+alias db='/home/pi/scripts/pi-dashboard.sh'
+alias dashboard='/home/pi/scripts/pi-dashboard.sh'
+alias sync='bash /home/pi/scripts/pi_sync.sh'
+alias rebuild='bash /home/pi/scripts/pi_rebuild.sh'
+alias reinstall='bash /home/pi/scripts/pi_rebuild.sh'
+alias sniff='bash /home/pi/scripts/sniffspot_check.sh'
+alias 3dp='bash /home/pi/scripts/3dprint_status.sh'
 
 # Listener Cycle Function
 cycle() {
     echo "🔄 Cycling ntfy listener..."
     pkill -f ntfy_listener.sh
-    nohup bash /home/pi/scripts/ntfy_listener.sh > /home/pi/ntfy.log 2>&1 &
     sleep 1
-    NEW_PID=$(pgrep -f ntfy_listener.sh)
-    echo "✅ Listener restarted. (PID: $NEW_PID)"
+    nohup /bin/bash /home/pi/scripts/ntfy_listener.sh > /home/pi/ntfy.log 2>&1 &
+    echo "✅ Listener restarted. (PID: $(pgrep -f ntfy_listener.sh))"
 }
