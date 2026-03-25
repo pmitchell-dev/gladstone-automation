@@ -1,32 +1,27 @@
 #!/bin/bash
-# RPi5 Disaster Recovery - Master Rebuild Script
+# Agnostic Rebuild - Strictly contained in ~/scripts
+SCRIPT_DIR="$HOME/scripts"
 
-echo "🚀 Starting Pi 5 Rebuild..."
+echo "🚀 Starting Pi 5 Rebuild for $HOSTNAME..."
 
-# 1. Recreate scripts from current state
-cat << 'INNER' > /home/pi/ntfy_listener.sh
-$(cat /home/pi/ntfy_listener.sh)
-INNER
+# 1. CLEANUP: Delete the "escaped" files from the Home folder
+rm -f ~/*.sh ~/*-help.txt
 
-cat << 'INNER' > /home/pi/pi-dashboard.sh
-$(cat /home/pi/pi-dashboard.sh)
-INNER
+# 2. DASHBOARD: Point .bashrc to the correct folder
+sed -i '/pi-dashboard.sh/d' ~/.bashrc
+echo "[[ -f $SCRIPT_DIR/pi-dashboard.sh ]] && bash $SCRIPT_DIR/pi-dashboard.sh" >> ~/.bashrc
 
-cat << 'INNER' > /home/pi/track_flight.sh
-$(cat /home/pi/track_flight.sh)
-INNER
+# 3. CRONTAB: Build the Agnostic Crontab pointing to SCRIPT_DIR
+cat << CRON > $SCRIPT_DIR/temp_cron
+0 0,8,12,16,20 * * * $SCRIPT_DIR/get_printer_status.sh
+1 0,8,12,16,20 * * * $SCRIPT_DIR/printer_alert.sh
+*/5 * * * * $SCRIPT_DIR/pi_services_manager.sh
+0 12 * * * curl -d "System Heartbeat: \$HOSTNAME is Online 💓" ntfy.sh/patrick_mitch_pi5_x9k2v_alerts
+@reboot $SCRIPT_DIR/ntfy_listener.sh > \$HOME/ntfy.log 2>&1 &
+CRON
 
-cat << 'INNER' > /home/pi/pi_services_manager.sh
-$(cat /home/pi/pi_services_manager.sh)
-INNER
+# 4. APPLY
+crontab $SCRIPT_DIR/temp_cron
+rm $SCRIPT_DIR/temp_cron
 
-chmod +x /home/pi/*.sh
-
-# 2. Rebuild the Crontab
-(
-  echo "@reboot /home/pi/ntfy_listener.sh > /home/pi/ntfy.log 2>&1 &"
-  echo "*/5 * * * * /home/pi/pi_services_manager.sh"
-  echo "0 12 * * * curl -d 'Pi 5 Daily Heartbeat: System Online 💓' ntfy.sh/patrick_mitch_pi5_x9k2v_alerts"
-) | crontab -
-
-echo "✅ Rebuild script updated."
+echo "✅ Rebuild complete. Home directory is now clean."
