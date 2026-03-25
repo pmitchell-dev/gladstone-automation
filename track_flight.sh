@@ -1,42 +1,46 @@
 #!/bin/bash
-API_KEY="a76fc6fbed55a5d632bf7854fb4db2b9"
-FLIGHT_ID=$(echo "$1" | tr '[:lower:]' '[:upper:]' | xargs)
-TOPIC="patrick_mitch_pi5_x9k2v_alerts"
+# Dual-Source Flight Tracker: Airlabs -> Aviationstack Fallback
 
-if [ -z "$FLIGHT_ID" ]; then exit 1; fi
+# --- CONFIGURATION ---
+FLIGHT_IATA="${1:-DL1660}" # Change to your flight number
+AIRLABS_KEY="4dc4b2db-5edb-432d-b858-50b9aa4e3afd"
+AVSTACK_KEY="a76fc6fbed55a5d632bf7854fb4db2b9"
+NTFY_TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
-check_flight() {
-    # Query API for the flight
-    RESPONSE=$(curl -s "http://api.aviationstack.com/v1/flights?access_key=$API_KEY&flight_iata=$FLIGHT_ID")
+echo "✈️ Checking flight $FLIGHT_IATA..."
+
+# --- 1. TRY AIRLABS (PRIMARY) ---
+echo "📡 Attempting Airlabs..."
+AIR_RES=$(curl -s "https://airlabs.co/api/v9/flight?flight_iata=$FLIGHT_IATA&api_key=$AIRLABS_KEY")
+STATUS=$(echo $AIR_RES | jq -r '.response.status // empty')
+
+if [[ -n "$STATUS" && "$STATUS" != "null" ]]; then
+    LAT=$(echo $AIR_RES | jq -r '.response.lat')
+    LNG=$(echo $AIR_RES | jq -r '.response.lng')
+    ALT=$(echo $AIR_RES | jq -r '.response.alt')
+    SOURCE="Airlabs"
+else
+    # --- 2. FALLBACK TO AVIATIONSTACK ---
+    echo "⚠️ Airlabs failed. Attempting Aviationstack fallback..."
+    AV_RES=$(curl -s "http://api.aviationstack.com/v1/flights?access_key=$AVSTACK_KEY&flight_iata=$FLIGHT_IATA")
+    STATUS=$(echo $AV_RES | jq -r '.data[0].flight_status // empty')
     
-    # Extract data using jq
-    STATUS=$(echo "$RESPONSE" | jq -r '.data[0].flight_status // "unknown"')
-    DEP=$(echo "$RESPONSE" | jq -r '.data[0].departure.iata // "???"')
-    ARR=$(echo "$RESPONSE" | jq -r '.data[0].arrival.iata // "???"')
-    
-    # Get best available arrival time (Actual > Estimated > Scheduled)
-    ETA=$(echo "$RESPONSE" | jq -r '.data[0].arrival.actual // .data[0].arrival.estimated // .data[0].arrival.scheduled // "N/A"' | grep -oE '[0-9]{2}:[0-9]{2}' | head -1)
-
-    MSG="✈️ $FLIGHT_ID Update
-Status: ${STATUS^}
-Route: $DEP ➔ $ARR
-Arr Time: $ETA"
-
-    curl -s -d "$MSG" ntfy.sh/$TOPIC > /dev/null
-    echo "$STATUS"
-}
-
-# Start tracking
-curl -s -d "📡 Tracking $FLIGHT_ID every 30m. Send 'stop $FLIGHT_ID' to end." ntfy.sh/$TOPIC > /dev/null
-
-while true; do
-    CURRENT_STATUS=$(check_flight)
-    
-    # Auto-stop if landed or cancelled
-    if [[ "$CURRENT_STATUS" == "landed" || "$CURRENT_STATUS" == "cancelled" ]]; then
-        curl -s -d "🏁 $FLIGHT_ID has $CURRENT_STATUS. Tracking finished." ntfy.sh/$TOPIC > /dev/null
-        break
+    if [[ -n "$STATUS" && "$STATUS" != "null" ]]; then
+        LAT=$(echo $AV_RES | jq -r '.data[0].live.latitude // "N/A"')
+        LNG=$(echo $AV_RES | jq -r '.data[0].live.longitude // "N/A"')
+        ALT=$(echo $AV_RES | jq -r '.data[0].live.altitude // "N/A"')
+        SOURCE="Aviationstack"
+    else
+        echo "❌ Both APIs failed to find flight $FLIGHT_IATA."
+        exit 1
     fi
-    
-    sleep 1800 # 30 mins
-done
+fi
+
+# --- 3. SEND NOTIFICATION ---
+MSG="✈️ $FLIGHT_IATA Update ($SOURCE)
+Status: $STATUS
+Alt: ${ALT}ft
+Loc: $LAT, $LNG"
+
+curl -d "$MSG" ntfy.sh/$NTFY_TOPIC
+echo "✅ Status: $STATUS via $SOURCE. Notification sent."
