@@ -1,8 +1,7 @@
 #!/bin/bash
-# Remote-Only Guide
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
-HELP_MSG="🛠️ $HOSTNAME Automation Guide:
+HELP_MSG="🛠️ $HOSTNAME Bot Commands:
 --------------------------
 ✈️  Flight [ID]
    Ex: 'Flight DL1660'
@@ -10,16 +9,14 @@ HELP_MSG="🛠️ $HOSTNAME Automation Guide:
 🏁 Flight [ID] to [DEST]
    Ex: 'Flight DL1660 to MSP'
 
-🔄 Rebuild
-   Restores system, cron, & dash
+📊 Flight /status
+   Check if a tracker is running
 
-📂 Sync
-   Backs up all scripts to GitHub
+🛑 Flight /stop
+   Kill all active tracking
 
-🧹 Cleanup
-   (VM Only) Wipes the test environment
---------------------------
-Check logs: tail -f ~/ntfy.log"
+🔄 rebuild
+   Restore system & crontab
+--------------------------"
 
-# Push to phone
 curl -s -d "$HELP_MSG" ntfy.sh/$TOPIC > /dev/null
