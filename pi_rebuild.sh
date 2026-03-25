@@ -1,8 +1,8 @@
 #!/bin/bash
-# Agnostic Rebuild - Strictly contained in ~/scripts
+# Agnostic Rebuild - Now with Phone Notifications
 SCRIPT_DIR="$HOME/scripts"
 
-echo "🚀 Starting Pi 5 Rebuild for $HOSTNAME..."
+echo "🚀 Starting Rebuild for $HOSTNAME..."
 
 # 1. CLEANUP: Delete the "escaped" files from the Home folder
 rm -f ~/*.sh ~/*-help.txt
@@ -24,4 +24,8 @@ CRON
 crontab $SCRIPT_DIR/temp_cron
 rm $SCRIPT_DIR/temp_cron
 
-echo "✅ Rebuild complete. Home directory is now clean."
+# 5. NOTIFY: The "Victory Shout"
+echo "📡 Sending notification to phone..."
+curl -d "✅ $HOSTNAME: System Rebuild Complete. All services are active." ntfy.sh/patrick_mitch_pi5_x9k2v_alerts
+
+echo "✅ Rebuild complete. Home directory is clean."
