@@ -2,7 +2,7 @@
 # RPi5 Printer & Network Watchdog (Quiet vs Verbose)
 
 PRINTER_IP="192.168.50.56"
-WORKSPACE_FILE="/home/pi/.openclaw/workspace/printer_status.html"
+WORKSPACE_FILE="/home/pi/printer_data/printer_status.html"
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 MODE=$1  # Check if "manual" was passed as an argument
 
