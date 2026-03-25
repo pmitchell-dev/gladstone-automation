@@ -1,8 +1,8 @@
 #!/bin/bash
-# Remote-Only Guide for Pi 5 Automation
+# Remote-Only Guide
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
-HELP_MSG="🛠️ Pi 5 Remote Commands:
+HELP_MSG="🛠️ $HOSTNAME Automation Guide:
 --------------------------
 ✈️  Flight [ID]
    Ex: 'Flight DL1660'
@@ -19,7 +19,7 @@ HELP_MSG="🛠️ Pi 5 Remote Commands:
 🧹 Cleanup
    (VM Only) Wipes the test environment
 --------------------------
-Triggered by: $HOSTNAME"
+Check logs: tail -f ~/ntfy.log"
 
-# Send directly to ntfy with no terminal output
+# Push to phone
 curl -s -d "$HELP_MSG" ntfy.sh/$TOPIC > /dev/null
