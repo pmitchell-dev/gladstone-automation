@@ -1,38 +1,45 @@
 #!/bin/bash
-# RPi5 Printer & Network Watchdog (Quiet vs Verbose)
-
-PRINTER_IP="192.168.50.56"
-WORKSPACE_FILE="/home/pi/printer_data/printer_status.html"
+# Brother Printer Status Monitor
+STATUS_FILE="/home/pi/printer_data/status.html"
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
-MODE=$1  # Check if "manual" was passed as an argument
 
-# 1. Network Check
-if ! ping -c 1 -W 2 $PRINTER_IP > /dev/null; then
-    TITLE="🚨 NETWORK ALERT"
-    MESSAGE="Brother Printer ($PRINTER_IP) is OFFLINE."
-    TAGS="rotating_light,error"
-    PRIORITY="urgent"
-else
-    # 2. Toner Check
-    HEIGHT=$(grep 'tonerremain' $WORKSPACE_FILE | grep -o 'height="[0-9]*"' | cut -d'"' -f2)
-    THRESHOLD=10
-
-    if [ -n "$HEIGHT" ] && [ "$HEIGHT" -lt "$THRESHOLD" ]; then
-        TITLE="⚠️ LOW TONER ALERT"
-        MESSAGE="Toner height is at $HEIGHT. Order soon!"
-        TAGS="warning,printer"
-        PRIORITY="high"
-    elif [ "$MODE" == "manual" ]; then
-        # 3. Manual Status Report (Only if called via 'health')
-        TITLE="✅ PRINTER STATUS: OK"
-        MESSAGE="Printer is online. Toner height: $HEIGHT (Threshold: $THRESHOLD)"
-        TAGS="white_check_mark,printer"
-        PRIORITY="low"
-    fi
+# 1. Check if the status file exists
+if [ ! -f "$STATUS_FILE" ]; then
+    echo "⚠️ Status file not found. Run get_printer_status.sh first."
+    exit 1
 fi
 
-# Send to ntfy if a message exists
-if [ -n "$MESSAGE" ]; then
-    curl -s -H "Title: $TITLE" -H "Priority: $PRIORITY" -H "Tags: $TAGS" \
-         -d "$MESSAGE" ntfy.sh/$TOPIC > /dev/null
+# 2. Define Brother Error Keywords
+# We use -qi to search quietly and ignore case
+LOW_TONER=$(grep -Ei "Toner Low|Replace Toner|End of Life" "$STATUS_FILE")
+OUT_OF_PAPER=$(grep -Ei "No Paper|Out of Paper|Load Paper" "$STATUS_FILE")
+JAM=$(grep -Ei "Jam|Paper Jam" "$STATUS_FILE")
+
+# 3. Logic: Send Notification based on findings
+if [[ -n "$LOW_TONER" ]]; then
+    curl -s -H "Title: 🖨️ Brother Printer Alert" \
+         -H "Priority: high" \
+         -H "Tags: warning,printer" \
+         -d "Toner is Low! You might need to grab a cartridge soon." \
+         ntfy.sh/$TOPIC
+    echo "🚨 Alert Sent: Toner Low"
+
+elif [[ -n "$OUT_OF_PAPER" ]]; then
+    curl -s -H "Title: 🖨️ Brother Printer Alert" \
+         -H "Priority: default" \
+         -H "Tags: package,printer" \
+         -d "The printer is out of paper. Refill the tray!" \
+         ntfy.sh/$TOPIC
+    echo "🚨 Alert Sent: Out of Paper"
+
+elif [[ -n "$JAM" ]]; then
+    curl -s -H "Title: 🖨️ Brother Printer Alert" \
+         -H "Priority: urgent" \
+         -H "Tags: fire,printer" \
+         -d "Paper Jam detected in the Brother printer!" \
+         ntfy.sh/$TOPIC
+    echo "🚨 Alert Sent: Paper Jam"
+
+else
+    echo "✅ Printer status is Normal (No alerts needed)."
 fi

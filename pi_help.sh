@@ -3,20 +3,21 @@ TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
 HELP_MSG="🛠️ $HOSTNAME Bot Commands:
 --------------------------
-✈️  Flight [ID]
-   Ex: 'Flight DL1660'
+🏥 health
+   Get Printer Toner & Status
 
-🏁 Flight [ID] to [DEST]
-   Ex: 'Flight DL1660 to MSP'
+✈️  flight [ID]
+   Ex: 'flight WN102'
 
-📊 Flight /status
-   Check if a tracker is running
+📊 flight /status
+   Check active trackers
 
-🛑 Flight /stop
-   Kill all active tracking
-
-🔄 rebuild
-   Restore system & crontab
+🛑 flight /stop
+   Kill all tracking
 --------------------------"
 
+# Send the Guide
 curl -s -d "$HELP_MSG" ntfy.sh/$TOPIC > /dev/null
+
+# Immediately follow up with the actual Health Check
+bash /home/pi/scripts/printer_health.sh
