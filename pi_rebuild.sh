@@ -26,3 +26,5 @@ rm $SCRIPT_DIR/temp_cron
 # 4. NOTIFY
 curl -d "✅ $HOSTNAME: System Rebuild Complete." ntfy.sh/patrick_mitch_pi5_x9k2v_alerts
 echo "✅ Rebuild complete. Master Aliases are now linked."
+mkdir -p /home/pi/printer_data
+chmod +x /home/pi/scripts/*.sh
