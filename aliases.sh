@@ -17,3 +17,5 @@ cycle() {
 if ! grep -q "scripts/aliases.sh" ~/.bashrc; then
     echo "source /home/pi/scripts/aliases.sh" >> ~/.bashrc
 fi
+alias refresh='source ~/.bashrc && echo "✅ Environment refreshed."' 
+alias update='bash /home/pi/scripts/pi_update.sh'

@@ -56,5 +56,5 @@ echo "------------------------------------------------------------"
 
 # 4. Command Lists
 echo "📱 REMOTE (ntfy): flight, health, sync, cycle, reinstall"
-echo "⌨️  LOCAL (Bash): db, sync, cycle, sniff, rebuild"
+echo "⌨️  LOCAL (Bash): refresh, update, db, sync, cycle, sniff, rebuild"
 echo "------------------------------------------------------------"
