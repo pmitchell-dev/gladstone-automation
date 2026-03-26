@@ -1,4 +1,5 @@
 #!/bin/bash
+exec > >(tee -a /home/pi/rebuild.log) 2>&1
 # Gladstone Full System Provisioner
 echo "🛠️ Rebuilding Gladstone Environment..."
 
