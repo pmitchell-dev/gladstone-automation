@@ -1,10 +1,14 @@
 #cloud-config
 autoinstall:
   version: 1
+  # Let the installer handle the laptop's specific SSD/NVMe drive
+  interactive-sections:
+    - storage
   identity:
     hostname: gladstone-laptop
     username: pi
-    password: "$6$YOUR_HASHED_PASSWORD" # Generate with: openssl passwd -6
+    # Replace the hash below with your own (Instructions below)
+    passwd: "$6$YCqHY3y.k49fFDIc$rbDNRxU3WtzHXudAdwFY3HzD143IWCipPYN6sYg.ocSpa.KbldU01fXN9x.84OcemA0dM0JbQzs9NKaij2y5x1"
   ssh:
     install-server: true
     allow-pw: true
@@ -12,18 +16,20 @@ autoinstall:
     - git
     - curl
     - jq
-    - chromium-browser
-    - cifs-utils
+    - lm-sensors   # For x86 Temperature (replaces vcgencmd)
     - build-essential
-    - cmake
-    - lm-sensors
+    - cifs-utils   # For your localrepo.net shares
+    - htop
+    - net-tools
   late-commands:
-    # 1. Setup the workspace
+    # 1. Prepare the workspace
     - curtin in-target -- target/bin/mkdir -p /home/pi/scripts
     - curtin in-target -- target/bin/chown pi:pi /home/pi/scripts
     
     # 2. Pull your Gladstone scripts from GitHub
+    # Update the URL if your repo name is different
     - curtin in-target -- target/bin/sudo -u pi git clone https://github.com/patrick-mitchell/scripts.git /home/pi/scripts
     
-    # 3. Trigger the architecture-aware rebuild
+    # 3. Trigger the Architecture-Aware Rebuild
+    # This sets up your crontabs, ntfy listener, and local aliases automatically
     - curtin in-target -- target/bin/bash /home/pi/scripts/pi_rebuild.sh
