@@ -5,7 +5,6 @@ alias sync='bash /home/pi/scripts/pi_sync.sh'
 alias rebuild='bash /home/pi/scripts/pi_rebuild.sh'
 alias reinstall='bash /home/pi/scripts/pi_rebuild.sh'
 alias sniff='bash /home/pi/scripts/sniffspot_check.sh'
-alias 3dp='bash /home/pi/scripts/3dprint_status.sh'
 
 # Listener Cycle Function
 cycle() {

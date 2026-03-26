@@ -1,0 +1,29 @@
+#cloud-config
+autoinstall:
+  version: 1
+  identity:
+    hostname: gladstone-laptop
+    username: pi
+    password: "$6$YOUR_HASHED_PASSWORD" # Generate with: openssl passwd -6
+  ssh:
+    install-server: true
+    allow-pw: true
+  packages:
+    - git
+    - curl
+    - jq
+    - chromium-browser
+    - cifs-utils
+    - build-essential
+    - cmake
+    - lm-sensors
+  late-commands:
+    # 1. Setup the workspace
+    - curtin in-target -- target/bin/mkdir -p /home/pi/scripts
+    - curtin in-target -- target/bin/chown pi:pi /home/pi/scripts
+    
+    # 2. Pull your Gladstone scripts from GitHub
+    - curtin in-target -- target/bin/sudo -u pi git clone https://github.com/patrick-mitchell/scripts.git /home/pi/scripts
+    
+    # 3. Trigger the architecture-aware rebuild
+    - curtin in-target -- target/bin/bash /home/pi/scripts/pi_rebuild.sh
