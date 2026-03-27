@@ -16,28 +16,33 @@
 ## ?? Core File Registry & Permissions
 | File | Permissions | Purpose |
 | :--- | :--- | :--- |
-| `install.sh` | `775 (-rwxrwxr-x)` | **Bootstrap:** Installs dependencies & enforces permissions. |
+| `install.sh` | `775 (-rwxrwxr-x)` | **Bootstrap:** Installs dependencies (jq, curl, zip, speedtest) & enforces permissions. |
 | `pi_rebuild.sh` | `775 (-rwxrwxr-x)` | **Provisioner:** Sets up folders, Cron, and Aliases. |
 | `pi_services_manager.sh`| `775 (-rwxrwxr-x)` | **Watchdog:** Restarts the ntfy listener every 5 mins. |
-| `pi-dashboard.sh` | `775 (-rwxrwxr-x)` | **UI (db):** Displays vitals, printer status, and network speeds. |
+| `pi-dashboard.sh` | `775 (-rwxrwxr-x)` | **UI (db):** Displays vitals, printer status, network speeds, and cloud sync info. |
+| `pi_backup.sh` | `775 (-rwxrwxr-x)` | **Backup:** Daily midnight ZIP of scripts (Keeps only 2 most recent). |
 | `net_speed.sh` | `775 (-rwxrwxr-x)` | **Monitor:** Runs background speedtests every 6 hours. |
 | `ntfy_listener.sh` | `775 (-rwxrwxr-x)` | **Service:** Translates ntfy pings into shell commands. |
-| `pi_sync.sh` | `775 (-rwxrwxr-x) `| **Cloud:** Backs up scripts to GitHub (ignores `logs/`). |
+| `pi_sync.sh` | `775 (-rwxrwxr-x)` | **Cloud:** Pushes code to GitHub. Logs to `logs/last_sync.log`. |
 | `pi_update.sh` | `775 (-rwxrwxr-x)` | **Cloud:** Pulls GitHub updates & refreshes environment. |
 | `get_printer_status.sh` | `775 (-rwxrwxr-x)` | **Scraper:** Downloads raw HTML from Brother printer. |
 | `printer_alert.sh` | `775 (-rwxrwxr-x)` | **Alert:** Notifies phone of Jams/Low Toner. |
-| `printer_health.sh` | `775 (-rwxrwxr-x)` | **Report:** Formats printer data into % levels. |
 | `aliases.sh` | `775 (-rwxrwxr-x)` | **Logic:** Shorthand commands for `.bashrc`. |
-| `.gitignore` | `664 (-rw-rw-r--)` | **Shield:** Prevents `logs/` folder from being pushed to GitHub. |
+| `.gitignore` | `664 (-rw-rw-r--)` | **Shield:** Excludes `logs/` and `backup/` from GitHub. |
 
 ---
 
-## ?? Log Management (Local Only)
-All runtime logs are consolidated in `~/scripts/logs/` and are **excluded** from GitHub sync.
-* `rebuild.log`: History of system provisions.
-* `ntfy.log`: Inbound command history.
-* `net_speed.log`: Results of the last 6-hour speedtest.
-* `services_manager.log`: Watchdog activity and service restarts.
+## ?? Local Storage Management (Excluded from GitHub)
+### ?? Logs (`~/scripts/logs/`)
+- `rebuild.log`: Provisioning history.
+- `ntfy.log`: Inbound command history.
+- `net_speed.log`: Result of the latest speedtest.
+- `last_sync.log`: Timestamp of the last successful GitHub push.
+- `services_manager.log`: Watchdog activity.
+
+### ?? Backups (`~/scripts/backup/`)
+- Local `.zip` archives of the entire scripts directory.
+- Strictly maintained rotation: **Only the 2 most recent backups are kept.**
 
 ---
 
@@ -49,6 +54,9 @@ All runtime logs are consolidated in `~/scripts/logs/` and are **excluded** from
 
 # Every 6 hours: Network Speedtest
 0 */6 * * * /home/pi/scripts/net_speed.sh
+
+# Daily at Midnight: Local ZIP Backup
+0 0 * * * /home/pi/scripts/pi_backup.sh
 
 # Every 5 mins: Watchdog check
 */5 * * * * /home/pi/scripts/pi_services_manager.sh
