@@ -1,5 +1,25 @@
 #!/bin/bash
-# Official Gladstone Pi 5 Listener
+
+# ==========================================================
+# OFFICIAL GLADSTONE PI 5 COMMAND LISTENER
+# ==========================================================
+# PURPOSE:
+# This script maintains a persistent connection to a private
+# ntfy.sh topic to act as a remote command-and-control hub.
+#
+# HOW IT WORKS:
+# 1. Streams JSON data from ntfy.sh using a continuous curl.
+# 2. Filters out system status emojis to prevent loops.
+# 3. Normalizes all incoming text to lowercase for matching.
+# 4. Executes local bash scripts from the /scripts directory
+#    based on keyword triggers (help, health, sync, etc.).
+# 5. Supports regex-based flight tracking via track_flight.sh.
+#
+# RELIABILITY:
+# Commands are launched in the background (&) to ensure the
+# listener remains responsive to subsequent messages.
+# ==========================================================
+
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 SCRIPT_DIR="/home/pi/scripts"
 
@@ -13,7 +33,7 @@ curl -sN ntfy.sh/$TOPIC/json | while read -r line; do
 
     if [[ -n "$MSG" ]]; then
         echo "📥 Received: $RAW_MSG"
-        
+
         if [[ "$MSG" == "help" ]]; then
             bash "$SCRIPT_DIR/pi_help.sh" &
         elif [[ "$MSG" == "health" || "$MSG" == "status" ]]; then

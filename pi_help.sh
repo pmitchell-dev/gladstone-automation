@@ -1,6 +1,18 @@
 #!/bin/bash
+
+# ==========================================================
+# GLADSTONE NTFY COMMAND GUIDE (HELP SYSTEM)
+# ==========================================================
+# PURPOSE:
+# Sends a formatted menu of available remote commands to the
+# user's ntfy topic. Acts as the "UI" for the Pi 5 bot.
+# ==========================================================
+
+# --- CONFIGURATION ---
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
+# --- THE HELP MENU ---
+# Using $HOSTNAME makes the message dynamic (e.g., "Gladstone-Pi5 Bot")
 HELP_MSG="🛠️ $HOSTNAME Bot Commands:
 --------------------------
 🏥 health
@@ -15,8 +27,11 @@ HELP_MSG="🛠️ $HOSTNAME Bot Commands:
    Kill all tracking
 --------------------------"
 
-# Send the Guide
+# --- EXECUTION ---
+# 1. Send the text-based Guide to ntfy
 curl -s -d "$HELP_MSG" ntfy.sh/$TOPIC > /dev/null
 
-# Immediately follow up with the actual Health Check
+# 2. PROACTIVE UPDATE:
+# Immediately follow up by running the actual Printer Health script.
+# This ensures the user sees live data right after the help menu.
 bash /home/pi/scripts/printer_health.sh
