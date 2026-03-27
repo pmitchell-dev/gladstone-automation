@@ -24,7 +24,7 @@ MEM=$(free -h | awk 'NR==2 {print $3 "/" $2}')
 echo -e "?? IP: $IP    ??? Temp: $TEMP    ?? Disk: $DISK"
 echo -e "?? Mem: $MEM    ?? Uptime: $(uptime -p)"
 
-# --- NETWORK SPEED STATUS (Updated Path) ---
+# --- NETWORK SPEED STATUS ---
 SPEED_LOG="/home/pi/scripts/logs/net_speed.log"
 if [ -f "$SPEED_LOG" ]; then
     DOWNLOAD=$(grep "Download" "$SPEED_LOG" | awk '{print $2}')
@@ -35,16 +35,18 @@ else
 fi
 echo "------------------------------------------------------------"
 
-# --- 2. ACTIVITY & CLOUD STATUS ---
+# --- 2. ACTIVITY & CLOUD STATUS (Updated Path) ---
 if pgrep -f "track_flight.sh" > /dev/null; then
     echo -e "??  ACTIVE TRACKING: $(pgrep -f track_flight.sh | wc -l) flight(s)"
 else
     echo -e "??  ACTIVE TRACKING: None"
 fi
 
-# Updated to look in scripts/logs for sync info if needed
-if [ -f "/home/pi/last_sync.log" ]; then
-    echo -e "??  LAST CLOUD SYNC: $(cat /home/pi/last_sync.log)"
+SYNC_LOG="/home/pi/scripts/logs/last_sync.log"
+if [ -f "$SYNC_LOG" ]; then
+    echo -e "??  LAST CLOUD SYNC: $(cat $SYNC_LOG)"
+else
+    echo -e "??  LAST CLOUD SYNC: Never"
 fi
 echo "------------------------------------------------------------"
 

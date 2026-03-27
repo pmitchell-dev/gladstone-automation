@@ -1,45 +1,38 @@
 #!/bin/bash
 
 # ==========================================================
-# GLADSTONE PI 5 CLOUD SYNC & DASHBOARD LOGGING
+# GLADSTONE CLOUD SYNC (pi_sync.sh)
 # ==========================================================
 # PURPOSE:
-# Performs an automated GitHub backup and maintains a local 
-# log file to track the last successful synchronization.
+# Pushes local script changes to GitHub and logs a heartbeat.
 #
 # LOGIC:
 # 1. Navigates to the scripts directory.
-# 2. Stages, commits, and pushes all local changes to GitHub.
-# 3. If successful, writes a timestamp to /home/pi/last_sync.log.
-# 4. If failed, alerts the user via the terminal/logs.
+# 2. Stages, commits, and pushes to origin main.
+# 3. Writes the success timestamp to the local logs folder.
 # ==========================================================
 
-# --- CONFIGURATION ---
-# The central repository for all Gladstone automation
 SCRIPT_DIR="/home/pi/scripts"
+LOG_FILE="$SCRIPT_DIR/logs/last_sync.log"
 
-echo "🔄 Starting Cloud Sync to GitHub..."
+cd $SCRIPT_DIR || exit
 
-# 1. DIRECTORY NAVIGATION
-# Ensures we are inside the Git repository before running commands.
-cd "$SCRIPT_DIR" || exit
+echo "?? Starting Cloud Sync to GitHub..."
 
-# 2. GIT SYNCHRONIZATION
-# git add .: Stages all new and modified files.
-# git commit: Saves the snapshot with a readable date/time string.
-# git push: Uploads the local repository to the 'main' branch on GitHub.
+# Ensure the logs directory exists before writing
+mkdir -p "$SCRIPT_DIR/logs"
+
+# Git Operations
 git add .
-git commit -m "Automated Sync: $(date '+%Y-%m-%d %H:%M')"
+git commit -m "Automated Gladstone Sync: $(date)"
 git push origin main
 
-# 3. DASHBOARD LOGGING & ERROR HANDLING
-# $? checks the exit status of the 'git push' command.
-# 0 = Success | Any other number = Failure.
 if [ $? -eq 0 ]; then
-    # Create/Overwrite the heartbeat file with the current timestamp
-    date "+%Y-%m-%d %H:%M" > /home/pi/last_sync.log
-    echo "✅ Sync Successful. Dashboard updated."
+    echo "$(date '+%Y-%m-%d %H:%M')" > "$LOG_FILE"
+    echo "? Sync Successful. Timestamp updated in $LOG_FILE"
+    
+    # Optional: Send ntfy heartbeat (using the _vitals channel if you choose)
+    curl -d "Gladstone Sync Complete: $(hostname)" ntfy.sh/patrick_mitch_pi5_x9k2v_alerts
 else
-    # Alerts the user if there is a credential issue or internet outage
-    echo "❌ Sync Failed. Check your GitHub connection or SSH keys."
+    echo "? Sync Failed. Check GitHub credentials or connection."
 fi
