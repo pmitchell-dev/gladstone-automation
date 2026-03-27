@@ -1,26 +1,23 @@
 #!/bin/bash
 
 # ==========================================================
-# GLADSTONE FULL SYSTEM PROVISIONER (REBUILD)
+# GLADSTONE FULL SYSTEM PROVISIONER (pi_rebuild.sh)
 # ==========================================================
 # PURPOSE:
-# Automatically configures the environment, installs needed
-# software, sets up folders, and schedules tasks. 
-# Works on both the Pi 5 and x86 Laptops.
+# Configures directories, schedules tasks, and resets 
+# the crontab to the Gladstone Master Standard.
 # ==========================================================
 
-# LOGGING: Redirects all output to rebuild.log and the terminal.
 exec > >(tee -a /home/pi/rebuild.log) 2>&1
-
-echo "🛠️ Rebuilding Gladstone Environment..."
+echo "??? Rebuilding Gladstone Environment..."
 
 # --- 1. ARCHITECTURE-SPECIFIC INSTALLATION ---
 if [[ "$(uname -m)" == "x86_64" ]]; then
-    echo "💻 x86 detected. Installing laptop support tools..."
+    echo "?? x86 detected. Installing laptop support tools..."
     sudo apt update && sudo apt install -y lm-sensors htop jq curl git
     sudo sensors-detect --auto > /dev/null
 else
-    echo "🍓 Raspberry Pi detected. Installing Pi support tools..."
+    echo "?? Raspberry Pi detected. Installing Pi support tools..."
     sudo apt update && sudo apt install -y jq curl git
 fi
 
@@ -28,30 +25,26 @@ fi
 mkdir -p /home/pi/scripts
 mkdir -p /home/pi/printer_data
 
-# --- 3. ALIAS & REGISTRY CONFIGURATION ---
-# Injects shorthand commands into .bashrc.
+# --- 3. ALIAS & REGISTRY ---
 bash /home/pi/scripts/aliases.sh
 
-# Ensure the Service Registry exists for the Master Manager
 if [ ! -f "/home/pi/scripts/services.registry" ]; then
     echo "ntfy_listener.sh|8080|Main ntfy command listener" > /home/pi/scripts/services.registry
-    echo "✅ Service Registry initialized."
 fi
 
-# --- 4. CRON SCHEDULING (UPDATED 4-HOUR CYCLE) ---
-# Cleans old printer/watchdog/heartbeat entries and reapplies the Master Crontab logic.
-echo "📅 Updating Crontab schedules..."
-(crontab -l 2>/dev/null | grep -vE "printer|manager|heartbeat|ntfy_listener"; 
+# --- 4. CRON SCHEDULING (UPDATED FOR SPEEDTEST) ---
+echo "?? Updating Crontab schedules..."
+(crontab -l 2>/dev/null | grep -vE "printer|manager|heartbeat|ntfy_listener|net_speed"; 
  echo "0 0,8,12,16,20 * * * /home/pi/scripts/get_printer_status.sh"
  echo "1 0,8,12,16,20 * * * /home/pi/scripts/printer_alert.sh"
+ echo "0 */6 * * * /home/pi/scripts/net_speed.sh"
  echo "*/5 * * * * /home/pi/scripts/pi_services_manager.sh"
- echo "0 12 * * * curl -d \"Pi 5 Daily Heartbeat: Local Cron is Healthy 💓\" ntfy.sh/patrick_mitch_pi5_x9k2v_alerts"
+ echo "0 12 * * * curl -d \"Pi 5 Daily Heartbeat: Healthy\" ntfy.sh/patrick_mitch_pi5_x9k2v_alerts"
  echo "@reboot /bin/bash /home/pi/scripts/ntfy_listener.sh > /home/pi/ntfy.log 2>&1 &"
 ) | crontab -
 
 # --- 5. SERVICE INITIALIZATION ---
-echo "📡 Restarting ntfy_listener..."
 pkill -f ntfy_listener.sh
 nohup /bin/bash /home/pi/scripts/ntfy_listener.sh > /home/pi/ntfy.log 2>&1 &
 
-echo "✅ Rebuild Complete. Type 'db' to view status."
+echo "? Rebuild Complete."
