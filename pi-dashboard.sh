@@ -24,10 +24,11 @@ MEM=$(free -h | awk 'NR==2 {print $3 "/" $2}')
 echo -e "?? IP: $IP    ??? Temp: $TEMP    ?? Disk: $DISK"
 echo -e "?? Mem: $MEM    ?? Uptime: $(uptime -p)"
 
-# --- NEW: NETWORK SPEED STATUS ---
-if [ -f "/home/pi/scripts/net_speed.log" ]; then
-    DOWNLOAD=$(grep "Download" /home/pi/scripts/net_speed.log | awk '{print $2}')
-    UPLOAD=$(grep "Upload" /home/pi/scripts/net_speed.log | awk '{print $2}')
+# --- NETWORK SPEED STATUS (Updated Path) ---
+SPEED_LOG="/home/pi/scripts/logs/net_speed.log"
+if [ -f "$SPEED_LOG" ]; then
+    DOWNLOAD=$(grep "Download" "$SPEED_LOG" | awk '{print $2}')
+    UPLOAD=$(grep "Upload" "$SPEED_LOG" | awk '{print $2}')
     echo -e "?? Speed: ? $DOWNLOAD Mbps | ? $UPLOAD Mbps"
 else
     echo -e "?? Speed: No data (Run 'net_speed.sh' manually first)"
@@ -41,6 +42,7 @@ else
     echo -e "??  ACTIVE TRACKING: None"
 fi
 
+# Updated to look in scripts/logs for sync info if needed
 if [ -f "/home/pi/last_sync.log" ]; then
     echo -e "??  LAST CLOUD SYNC: $(cat /home/pi/last_sync.log)"
 fi
