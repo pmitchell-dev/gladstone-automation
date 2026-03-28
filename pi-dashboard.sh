@@ -3,9 +3,13 @@
 # ==========================================================
 # GLADSTONE CONTROL CENTER (pi-dashboard.sh)
 # ==========================================================
+# Version: 1.2.0
+# Logic: Architecture-aware vitals, Printer stats, 
+#        Network Speed, and Permission Integrity Check.
+# ==========================================================
 
 echo "------------------------------------------------------------"
-echo "  Gladstone Control Center                $(date)"
+echo "  Gladstone Control Center ($HOSTNAME)     $(date)"
 echo "------------------------------------------------------------"
 
 # --- 1. ARCHITECTURE AWARE VITALS ---
@@ -31,11 +35,27 @@ if [ -f "$SPEED_LOG" ]; then
     UPLOAD=$(grep "Upload" "$SPEED_LOG" | awk '{print $2}')
     echo -e "?? Speed: ? $DOWNLOAD Mbps | ? $UPLOAD Mbps"
 else
-    echo -e "?? Speed: No data (Run 'net_speed.sh' manually first)"
+    echo -e "?? Speed: No data (Run 'net_speed.sh' manually)"
 fi
 echo "------------------------------------------------------------"
 
-# --- 2. ACTIVITY & CLOUD STATUS (Updated Path) ---
+# --- 1.5 SYSTEM HEALTH & PERMISSIONS ---
+# Check for files NOT owned by the current user in the scripts folder
+BAD_OWNER=$(find /home/pi/scripts -not -user $USER | wc -l)
+LOG_WRITE=$( [ -w "/home/pi/scripts/logs" ] && echo "OK" || echo "LOCKED" )
+
+if [ "$BAD_OWNER" -gt 0 ]; then
+    echo -e "??  SECURITY: $BAD_OWNER files have wrong ownership! (Run 'reinstall')"
+else
+    echo -e "? PERMISSIONS: All files owned by $USER"
+fi
+
+if [ "$LOG_WRITE" == "LOCKED" ]; then
+    echo -e "? LOGGING: Scripts cannot write to logs/ folder!"
+fi
+echo "------------------------------------------------------------"
+
+# --- 2. ACTIVITY & CLOUD STATUS ---
 if pgrep -f "track_flight.sh" > /dev/null; then
     echo -e "??  ACTIVE TRACKING: $(pgrep -f track_flight.sh | wc -l) flight(s)"
 else
