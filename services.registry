@@ -1,4 +1,4 @@
 # Gladstone Pi 5 Service Registry
 # Format: SCRIPT_NAME|PORT|DESCRIPTION
-
+# ------------------------------------------
 ntfy_listener.sh|8080|Main ntfy command listener
