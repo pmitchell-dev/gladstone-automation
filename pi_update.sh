@@ -1,44 +1,31 @@
 #!/bin/bash
-
 # ==========================================================
-# GLADSTONE PI 5 GITHUB PULL & REFRESH
-# ==========================================================
-# PURPOSE:
-# Pulls the latest script updates from the GitHub repository 
-# and automatically refreshes the Bash environment to apply
-# new aliases or configuration changes.
-#
-# LOGIC:
-# 1. Navigates to the local /scripts/ directory.
-# 2. Pulls updates from the 'main' branch on GitHub.
-# 3. If successful, reloads ~/.bashrc so the user's active
-#    terminal session is updated with the latest aliases.
+# GLADSTONE MODE-AWARE UPDATE (pi_update.sh)
 # ==========================================================
 
-# --- CONFIGURATION ---
-# The target directory for all Gladstone automation scripts
 SCRIPT_DIR="/home/pi/scripts"
+MODE=$(cat ~/.gladstone_mode 2>/dev/null || echo "unknown")
 
-echo "📥 Checking GitHub for updates..."
+cd $SCRIPT_DIR || exit
 
-# 1. DIRECTORY NAVIGATION
-# Ensures the script is running inside the local Git repository
-cd "$SCRIPT_DIR" || exit
+echo "?? [$HOSTNAME] Pulling updates from GitHub..."
+git pull origin main
 
-# 2. VERSION CONTROL PULL
-# Attempts to download and merge the latest code from the 'main' branch
-if git pull origin main; then
-    echo "✅ Scripts updated successfully."
+# Standard Permissions Fix
+chmod +x *.sh
 
-    # 3. ENVIRONMENT REFRESH
-    # 'source' re-reads the bash configuration file immediately.
-    # This ensures any new aliases added to aliases.sh (which is sourced 
-    # in .bashrc) are available to the user right now.
-    source ~/.bashrc
-    echo "🔄 Environment refreshed. Your new aliases are ready."
-else
-    # ERROR HANDLING
-    # Triggers if there is no internet or if there are "local conflicts"
-    # (meaning a file was edited on the Pi and on GitHub simultaneously).
-    echo "❌ Update failed. Check for local conflicts or connection."
+# MODE-SPECIFIC REFRESH
+if [ "$MODE" == "ntfy" ]; then
+    echo "???  Refreshing Communication Hub Services..."
+    # Only the Hub needs to cycle the listener and watchdog
+    pkill -f ntfy_listener.sh
+    nohup /bin/bash $SCRIPT_DIR/ntfy_listener.sh > $SCRIPT_DIR/logs/ntfy.log 2>&1 &
+    bash $SCRIPT_DIR/pi_services_manager.sh
+    
+elif [ "$MODE" == "webhost" ]; then
+    echo "?? Refreshing Webhost Node..."
+    # Webhost might only need to restart a specific web service or heartbeat
+    # nohup python3 web_app.py & 
 fi
+
+echo "? [$HOSTNAME] Update Complete ($MODE mode)."
