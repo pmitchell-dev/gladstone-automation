@@ -1,28 +1,22 @@
 #!/bin/bash
 
 # ==========================================================
-# PI 5 MASTER SERVICES WATCHDOG (PROCESS MONITOR)
-# ==========================================================
-# 1. Monitors scripts in /home/pi/scripts/
-# 2. Restarts them if they crash or stop.
-# 3. Sends recovery alerts to the PUBLIC ntfy.sh cloud.
+# GLADSTONE SERVICE WATCHDOG (pi_services_manager.sh)
 # ==========================================================
 
-SERVICES=("ntfy_listener.sh")
-LOG_FILE="/home/pi/services_manager.log"
+REGISTRY="/home/pi/scripts/services.registry"
+LOG="/home/pi/scripts/logs/services_manager.log"
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
-echo "--- Check running at $(date) ---" >> $LOG_FILE
-
-for SCRIPT in "${SERVICES[@]}"; do
-    # Check if the script is running
-    if ! pgrep -f "$SCRIPT" > /dev/null; then
-        echo "⚠️ ALERT: $SCRIPT was down. Restarting..." >> $LOG_FILE
+while IFS='|' read -r service port description; do
+    if ! pgrep -f "$service" > /dev/null; then
+        echo "$(date): $service down. Restarting..." >> "$LOG"
         
-        # Correct path to the scripts folder
-        /home/pi/scripts/$SCRIPT >> /home/pi/ntfy.log 2>&1 &
-        
-        # Send alert to the PUBLIC cloud so you get it on your phone
-        curl -s -d "🛠️ Service Manager: $SCRIPT was down and has been restarted." ntfy.sh/$TOPIC
+        # Updated: Includes Hostname
+        curl -H "Priority: high" \
+             -d "[$HOSTNAME] ?? Service Down: $service. Attempting restart..." \
+             ntfy.sh/$TOPIC
+             
+        nohup /bin/bash /home/pi/scripts/"$service" > /home/pi/scripts/logs/ntfy.log 2>&1 &
     fi
-done
+done < "$REGISTRY"

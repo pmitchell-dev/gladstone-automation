@@ -27,11 +27,7 @@ mkdir -p /home/pi/printer_data
 # --- 3. ALIAS & REGISTRY ---
 bash /home/pi/scripts/aliases.sh
 
-if [ ! -f "/home/pi/scripts/services.registry" ]; then
-    echo "ntfy_listener.sh|8080|Main ntfy command listener" > /home/pi/scripts/services.registry
-fi
-
-# --- 4. CRON SCHEDULING (UPDATED FOR DAILY BACKUP) ---
+# --- 4. CRON SCHEDULING (Updated Heartbeat with Hostname) ---
 echo "?? Updating Crontab schedules..."
 (crontab -l 2>/dev/null | grep -vE "printer|manager|heartbeat|ntfy_listener|net_speed|pi_backup"; 
  echo "0 0,8,12,16,20 * * * /home/pi/scripts/get_printer_status.sh"
@@ -39,7 +35,7 @@ echo "?? Updating Crontab schedules..."
  echo "0 */6 * * * /home/pi/scripts/net_speed.sh"
  echo "0 0 * * * /home/pi/scripts/pi_backup.sh"
  echo "*/5 * * * * /home/pi/scripts/pi_services_manager.sh"
- echo "0 12 * * * curl -d \"Pi 5 Daily Heartbeat: Healthy\" ntfy.sh/patrick_mitch_pi5_x9k2v_alerts"
+ echo "0 12 * * * curl -d \"[$HOSTNAME] Daily Heartbeat: Healthy\" ntfy.sh/patrick_mitch_pi5_x9k2v_alerts"
  echo "@reboot /bin/bash /home/pi/scripts/ntfy_listener.sh > /home/pi/scripts/logs/ntfy.log 2>&1 &"
 ) | crontab -
 
