@@ -2,5 +2,3 @@
 # Format: SCRIPT_NAME|PORT|DESCRIPTION
 
 ntfy_listener.sh|8080|Main ntfy command listener
-printer_health.sh|5000|OctoPrint/Klipper monitoring
-pi_sync.sh|2200|Local repo synchronization
