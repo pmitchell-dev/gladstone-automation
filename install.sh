@@ -1,14 +1,11 @@
 #!/bin/bash
 # ==========================================================
-# GLADSTONE UNIVERSAL BOOTSTRAP (v1.7)
+# GLADSTONE UNIVERSAL BOOTSTRAP (v1.9)
 # ==========================================================
-# Supports: RPi5 (Hub) & Ubuntu Laptop (Webhost)
-# ==========================================================
-
 SCRIPT_DIR="/home/pi/scripts"
 ID_FILE="$HOME/.gladstone_mode"
 
-# 1. Capture Flag from Command Line
+# 1. Capture Flag
 MODE=""
 for arg in "$@"; do
     case $arg in
@@ -17,68 +14,39 @@ for arg in "$@"; do
     esac
 done
 
-# 2. Smart Fallback: Check existing ID if no flag provided
+# 2. Identity Check
 if [ -z "$MODE" ] && [ -f "$ID_FILE" ]; then
     MODE=$(cat "$ID_FILE" | xargs)
-    echo "?? No flag detected. Using existing identity: $MODE"
 elif [ -z "$MODE" ]; then
-    echo "? ERROR: No mode specified! Usage: ./install.sh --ntfy | --webhost"
+    echo "? ERROR: No mode specified!"
     exit 1
 fi
-
-# 3. Save Identity & Prep Directories
 echo "$MODE" > "$ID_FILE"
-mkdir -p "$SCRIPT_DIR/logs" "$SCRIPT_DIR/backup" "/home/pi/printer_data"
 
-# 4. Mode-Specific Installation Logic
-sudo apt update
-if [ "$MODE" == "ntfy" ]; then
-    echo "???  Installing Hub Tools (Speedtest, ntfy)..."
-    sudo apt install -y jq curl git bc zip ntfy speedtest-cli
+# 3. System Prep
+sudo apt update && sudo apt install -y jq curl git bc zip
 
-elif [ "$MODE" == "webhost" ]; then
-    echo "?? Installing Webhost Stack (Docker + Compose)..."
-    sudo apt install -y jq curl git bc zip
-    
-    # INSTALL DOCKER ENGINE (Official Script)
+if [ "$MODE" == "webhost" ]; then
+    echo "?? Configuring Webhost Stack..."
+    # Install Docker if missing
     if ! command -v docker &> /dev/null; then
-        echo "?? Pulling Docker convenience script..."
         curl -fsSL https://get.docker.com -o get-docker.sh
         sudo sh get-docker.sh
         sudo usermod -aG docker $USER
         rm get-docker.sh
     fi
-    
-    # INSTALL COMPOSE PLUGIN
     sudo apt install -y docker-compose-plugin
-
-    # FORCE SERVICE START & PERMISSIONS
-    echo "??  Waking up Docker services..."
     sudo systemctl enable --now docker
-    
-    # FORCE PATH REFRESH for this session
     export PATH="$PATH:/usr/bin:/usr/local/bin"
+
+    # CLONE HOMEBOX FORK
+    if [ ! -d "/home/pi/homebox" ]; then
+        echo "?? Cloning Custom Homebox Fork..."
+        git clone https://github.com/legendary034/homebox.git /home/pi/homebox
+    fi
 fi
 
-# 5. Ownership & Global Permissions
-echo "?? Enforcing Gladstone Permissions..."
+# 4. Finalize
 sudo chown -R $USER:$USER "$SCRIPT_DIR"
 chmod +x $SCRIPT_DIR/*.sh
-
-# 6. Alias Injection
-if ! grep -q "aliases.sh" ~/.bashrc; then
-    echo "source $SCRIPT_DIR/aliases.sh" >> ~/.bashrc
-fi
-
-# 7. Hand-off to Rebuild
-if [ -f "$SCRIPT_DIR/pi_rebuild.sh" ]; then
-    bash "$SCRIPT_DIR/pi_rebuild.sh" "--$MODE"
-else
-    echo "? Error: pi_rebuild.sh not found."
-    exit 1
-fi
-
-echo "-------------------------------------------------------"
-echo "? [$HOSTNAME] Gladstone v1.7 Installation Complete ($MODE)"
-echo "?? Run 'source ~/.bashrc' or 'refresh' to start."
-echo "-------------------------------------------------------"
+bash "$SCRIPT_DIR/pi_rebuild.sh" "--$MODE"
