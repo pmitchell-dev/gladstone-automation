@@ -1,38 +1,40 @@
 #!/bin/bash
 # ==========================================================
-# GLADSTONE COMMUNICATION RELAY (relay.sh)
+# GLADSTONE COMMUNICATION RELAY (v1.2)
 # ==========================================================
-# PURPOSE: 
-# A shorthand tool to send formatted ntfy messages to 
-# specific Gladstone channels.
-# 
-# USAGE: 
-# relay [topic_suffix] [priority] "message"
-# Example: relay alerts high "Printer is on fire!"
+# USAGE: relay [priority 1-5] "message"
+# 5 = URGENT (Loud/Sticky) | 1 = MIN (Silent)
 # ==========================================================
 
-SUFFIX=$1   # alerts, vitals, track, webhost
-PRIORITY=$2 # min, low, default, high, urgent
-MESSAGE=$3
+PRIORITY=$1
+MESSAGE=$2
+TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
-# Mapping suffixes to your master topic base
-BASE_TOPIC="patrick_mitch_pi5_x9k2v"
-TARGET_TOPIC="${BASE_TOPIC}_${SUFFIX}"
-
-if [ -z "$MESSAGE" ]; then
-    echo "❌ Usage: relay [suffix] [priority] \"message\""
+# Validate Priority input
+if [[ ! "$PRIORITY" =~ ^[1-5]$ ]]; then
+    echo "? Usage: relay [1-5] \"message\""
     exit 1
 fi
 
-echo "🛰️  Relaying to $TARGET_TOPIC..."
+# Auto-assign Tags based on Priority for visual scanning
+case $PRIORITY in
+    5) TAGS="skull,rotating_light,fire"; TITLE="?? FATAL ERROR" ;;
+    4) TAGS="warning,bangbang"; TITLE="??  HIGH ALERT" ;;
+    3) TAGS="white_check_mark,bell"; TITLE="?? INFO" ;;
+    2) TAGS="speech_balloon,blue_book"; TITLE="?? LOW PRIORITY" ;;
+    1) TAGS="ghost,zzz"; TITLE="?? DEBUG/MIN" ;;
+esac
+
+echo "???  Relaying Priority $PRIORITY to Gladstone Hub..."
 
 curl -H "Priority: $PRIORITY" \
-     -H "Title: Gladstone Relay ($HOSTNAME)" \
+     -H "Tags: $TAGS" \
+     -H "Title: $TITLE ($HOSTNAME)" \
      -d "$MESSAGE" \
-     "ntfy.sh/$TARGET_TOPIC"
+     "ntfy.sh/$TOPIC"
 
 if [ $? -eq 0 ]; then
-    echo "✅ Message sent."
+    echo "? Relay Successful."
 else
-    echo "❌ Failed to send message."
+    echo "? Relay Failed."
 fi
