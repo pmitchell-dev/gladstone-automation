@@ -42,3 +42,14 @@ sed -i '/scripts\/aliases.sh/d' ~/.bashrc
 echo "-------------------------------------------------------"
 echo "? [$HOSTNAME] System is now NAKED."
 echo "-------------------------------------------------------"
+
+
+# Add this to the end of your cleanup_test.sh
+if command -v docker &> /dev/null; then
+    echo "?? Found Docker. Should I wipe all containers/volumes? (y/N)"
+    read -r response
+    if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
+        docker system prune -af --volumes
+        sudo apt-get purge -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    fi
+fi
