@@ -1,11 +1,11 @@
 #!/bin/bash
 # ==========================================================
-# GLADSTONE UNIVERSAL BOOTSTRAP (v1.9)
+# GLADSTONE UNIVERSAL BOOTSTRAP (v2.0)
 # ==========================================================
 SCRIPT_DIR="/home/pi/scripts"
 ID_FILE="$HOME/.gladstone_mode"
 
-# 1. Capture Flag
+# 1. Capture Flag (ntfy for Hub, webhost for Laptop)
 MODE=""
 for arg in "$@"; do
     case $arg in
@@ -14,39 +14,44 @@ for arg in "$@"; do
     esac
 done
 
-# 2. Identity Check
+# 2. Identity Check & Persistence
 if [ -z "$MODE" ] && [ -f "$ID_FILE" ]; then
     MODE=$(cat "$ID_FILE" | xargs)
 elif [ -z "$MODE" ]; then
-    echo "? ERROR: No mode specified!"
+    echo "? ERROR: No mode specified! Usage: ./install.sh --ntfy | --webhost"
     exit 1
 fi
 echo "$MODE" > "$ID_FILE"
 
-# 3. System Prep
+# 3. Base System Update
 sudo apt update && sudo apt install -y jq curl git bc zip
 
+# 4. Webhost Specific Logic (Docker + Code Cloning)
 if [ "$MODE" == "webhost" ]; then
     echo "?? Configuring Webhost Stack..."
-    # Install Docker if missing
+    
+    # Install Docker Engine if missing
     if ! command -v docker &> /dev/null; then
+        echo "?? Installing Docker Engine..."
         curl -fsSL https://get.docker.com -o get-docker.sh
         sudo sh get-docker.sh
         sudo usermod -aG docker $USER
         rm get-docker.sh
     fi
+    
+    # Install Compose and wake up services
     sudo apt install -y docker-compose-plugin
     sudo systemctl enable --now docker
     export PATH="$PATH:/usr/bin:/usr/local/bin"
 
-    # CLONE HOMEBOX FORK
+    # Clone your custom Homebox Fork
     if [ ! -d "/home/pi/homebox" ]; then
-        echo "?? Cloning Custom Homebox Fork..."
+        echo "?? Initial Clone of Homebox Fork..."
         git clone https://github.com/legendary034/homebox.git /home/pi/homebox
     fi
 fi
 
-# 4. Finalize
+# 5. Permissions & Hand-off to Rebuild
 sudo chown -R $USER:$USER "$SCRIPT_DIR"
 chmod +x $SCRIPT_DIR/*.sh
 bash "$SCRIPT_DIR/pi_rebuild.sh" "--$MODE"
