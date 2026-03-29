@@ -26,6 +26,8 @@ alias update='bash /home/pi/scripts/pi_update.sh'
 # Reloads the bash profile to apply changes immediately
 alias refresh='source ~/.bashrc && echo "✅ Environment refreshed."'
 
+alias reinstall='bash ~/scripts/install.sh'
+
 # --- SERVICE MANAGEMENT ---
 # cycle: A function to hard-restart the ntfy listener.
 # It kills any active instance and restarts it in the background.
