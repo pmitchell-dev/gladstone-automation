@@ -3,6 +3,9 @@
 # GLADSTONE MULTI-MODE REBUILD (v2.0 - Auto-Sync)
 # ==========================================================
 MODE=$1 
+if [ -z "$MODE" ] && [ -f "$HOME/.gladstone_mode" ]; then
+    MODE="--$(cat $HOME/.gladstone_mode | xargs)"
+fi
 exec > >(tee -a /home/pi/scripts/logs/rebuild.log) 2>&1
 
 echo "???  [$HOSTNAME] Rebuilding in $MODE mode..."
