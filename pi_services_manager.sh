@@ -20,7 +20,13 @@ if [ "$MODE" == "webhost" ]; then
         sed -i "/^homeasset:/d" "$RETRY_FILE"; echo "homeasset:$NEW_COUNT" >> "$RETRY_FILE"
         
         if [ "$NEW_COUNT" -ge 5 ]; then
-            curl -H "Priority: 5" -d "[$HOSTNAME] ?? FATAL: HomeAsset Container Failed." ntfy.sh/$TOPIC
+            NOW=$(date +%s)
+            MUTE_UNTIL=$(cat /tmp/gladstone_ntfy_mute 2>/dev/null || echo 0)
+            if [[ "$MUTE_UNTIL" =~ ^[0-9]+$ ]] && [ "$NOW" -ge "$MUTE_UNTIL" ]; then
+                curl -H "Priority: 5" \
+                     -H "Actions: http, Mute rest of the day, https://ntfy.sh/patrick_mitch_pi5_x9k2v_actions, method=POST, body=mute_watchdog" \
+                     -d "[$HOSTNAME] ?? FATAL: HomeAsset Container Failed." ntfy.sh/$TOPIC
+            fi
         fi
     else
         sed -i "/^homeasset:/d" "$RETRY_FILE"; echo "homeasset:0" >> "$RETRY_FILE"

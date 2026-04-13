@@ -21,11 +21,12 @@
 # ==========================================================
 
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
+LISTEN_TOPICS="patrick_mitch_pi5_x9k2v_alerts,patrick_mitch_pi5_x9k2v_actions"
 SCRIPT_DIR="/home/pi/scripts"
 
 echo "👂 [$(date)] Listener starting..."
 
-curl -sN ntfy.sh/$TOPIC/json | while read -r line; do
+curl -sN ntfy.sh/$LISTEN_TOPICS/json | while read -r line; do
     [[ -z "$line" ]] && continue
     RAW_MSG=$(echo "$line" | jq -r '.message // empty' | xargs)
     [[ "$RAW_MSG" =~ ^[❌✅🛠️📊🏥📋✈️] ]] && continue
@@ -48,6 +49,9 @@ curl -sN ntfy.sh/$TOPIC/json | while read -r line; do
             bash "$SCRIPT_DIR/pi_rebuild.sh" &
         elif [[ "$MSG" =~ ^flight\ *([a-z]{2})\ *([0-9]+)(\ *to\ *([a-z]{3}))?$ ]]; then
             bash "$SCRIPT_DIR/track_flight.sh" "${BASH_REMATCH[1]}${BASH_REMATCH[2]}" "${BASH_REMATCH[4]}" &
+        elif [[ "$MSG" == "mute_watchdog" ]]; then
+            date -d "tomorrow 08:00" +%s > /tmp/gladstone_ntfy_mute
+            curl -s -H "Priority: 3" -d "🔕 Watchdog alerts muted until 8 AM tomorrow." ntfy.sh/$TOPIC &
         fi
     fi
 done
