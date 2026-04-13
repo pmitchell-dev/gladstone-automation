@@ -25,6 +25,14 @@ if [ "$MODE" == "--ntfy" ]; then
 elif [ "$MODE" == "--webhost" ]; then
     echo "?? Synchronizing Webhost Services..."
     
+    if [ ! -d "/home/pi/homeasset" ]; then
+        echo "?? HomeAsset missing. Cloning repository..."
+        git clone https://github.com/legendary034/HomeAsset.git /home/pi/homeasset
+        if [ -f "/home/pi/scripts/homeasset-compose.yml" ]; then
+            cp "/home/pi/scripts/homeasset-compose.yml" "/home/pi/homeasset/docker-compose.yml"
+        fi
+    fi
+
     if [ -d "/home/pi/homeasset" ]; then
         echo "?? Pulling latest HomeAsset code from GitHub..."
         cd /home/pi/homeasset
@@ -38,6 +46,14 @@ elif [ "$MODE" == "--webhost" ]; then
             echo "? Warning: No docker-compose.yml found in /home/pi/homeasset"
         fi
         echo "? Deployment Successful."
+    fi
+
+    if [ ! -d "/home/pi/hivemind" ]; then
+        echo "?? HiveMind missing. Cloning repository..."
+        git clone https://github.com/legendary034/HiveMind.git /home/pi/hivemind
+        if [ -f "/home/pi/scripts/hivemind-compose.yml" ]; then
+            cp "/home/pi/scripts/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
+        fi
     fi
 
     if [ -d "/home/pi/hivemind" ]; then
