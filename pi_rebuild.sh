@@ -36,7 +36,7 @@ elif [ "$MODE" == "--webhost" ]; then
     if [ -d "/home/pi/homeasset" ]; then
         echo "?? Pulling latest HomeAsset code from GitHub..."
         cd /home/pi/homeasset
-        git pull origin main
+        git pull
         
         echo "?? Rebuilding local HomeAsset image..."
         # Rebuilds from your modified source code using the compose file
@@ -59,7 +59,7 @@ elif [ "$MODE" == "--webhost" ]; then
     if [ -d "/home/pi/hivemind" ]; then
         echo "?? Pulling latest HiveMind code from GitHub..."
         cd /home/pi/hivemind
-        git pull origin main
+        git pull
         
         echo "?? Rebuilding local HiveMind image..."
         # If a docker-compose.yml is present, it will build and run it
