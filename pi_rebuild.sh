@@ -22,17 +22,34 @@ if [ "$MODE" == "--ntfy" ]; then
 elif [ "$MODE" == "--webhost" ]; then
     echo "?? Synchronizing Webhost Services..."
     
-    if [ -d "/home/pi/homebox" ]; then
-        echo "?? Pulling latest code from GitHub..."
-        cd /home/pi/homebox
+    if [ -d "/home/pi/homeasset" ]; then
+        echo "?? Pulling latest HomeAsset code from GitHub..."
+        cd /home/pi/homeasset
         git pull origin main
         
-        echo "?? Rebuilding local Homebox-Custom image..."
-        # Rebuilds from your modified source code
-        docker build -t homebox-custom:latest .
-        # Restarts the container with the new build
-        docker compose up -d
+        echo "?? Rebuilding local HomeAsset image..."
+        # Rebuilds from your modified source code using the compose file
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d --build
+        else
+            echo "? Warning: No docker-compose.yml found in /home/pi/homeasset"
+        fi
         echo "? Deployment Successful."
+    fi
+
+    if [ -d "/home/pi/hivemind" ]; then
+        echo "?? Pulling latest HiveMind code from GitHub..."
+        cd /home/pi/hivemind
+        git pull origin main
+        
+        echo "?? Rebuilding local HiveMind image..."
+        # If a docker-compose.yml is present, it will build and run it
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d --build
+        else
+            echo "? Warning: No docker-compose.yml found in /home/pi/hivemind"
+        fi
+        echo "? HiveMind Deployment Check Complete."
     fi
 
     # Webhost Maintenance Crontab

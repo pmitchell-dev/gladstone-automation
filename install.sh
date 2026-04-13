@@ -44,10 +44,24 @@ if [ "$MODE" == "webhost" ]; then
     sudo systemctl enable --now docker
     export PATH="$PATH:/usr/bin:/usr/local/bin"
 
-    # Clone your custom Homebox Fork
-    if [ ! -d "/home/pi/homebox" ]; then
-        echo "?? Initial Clone of Homebox Fork..."
-        git clone https://github.com/legendary034/homebox.git /home/pi/homebox
+    # Clone your custom HomeAsset Fork
+    if [ ! -d "/home/pi/homeasset" ]; then
+        echo "?? Initial Clone of HomeAsset Fork..."
+        git clone https://github.com/legendary034/HomeAsset.git /home/pi/homeasset
+        # Copy the provided docker-compose file for homeasset
+        if [ -f "$SCRIPT_DIR/homeasset-compose.yml" ]; then
+            cp "$SCRIPT_DIR/homeasset-compose.yml" "/home/pi/homeasset/docker-compose.yml"
+        fi
+    fi
+
+    # Clone your custom HiveMind Fork
+    if [ ! -d "/home/pi/hivemind" ]; then
+        echo "?? Initial Clone of HiveMind Fork..."
+        git clone https://github.com/legendary034/HiveMind.git /home/pi/hivemind
+        # Copy the provided docker-compose file
+        if [ -f "$SCRIPT_DIR/hivemind-compose.yml" ]; then
+            cp "$SCRIPT_DIR/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
+        fi
     fi
 fi
 

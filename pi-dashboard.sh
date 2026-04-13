@@ -16,9 +16,9 @@ echo "------------------------------------------------------------"
 IP=$(hostname -I | awk '{print $1}')
 
 if command -v vcgencmd >/dev/null; then
-    TEMP=$(vcgencmd measure_temp | grep -oP '\d+\.\d+')�C
+    TEMP=$(vcgencmd measure_temp | grep -oP '\d+\.\d+')Â°C
 else
-    TEMP=$(sensors 2>/dev/null | grep -m1 "Package id 0" | grep -oP '\+\K\d+\.\d+')�C
+    TEMP=$(sensors 2>/dev/null | grep -m1 "Package id 0" | grep -oP '\+\K\d+\.\d+')Â°C
     [[ -z "$TEMP" ]] && TEMP="N/A"
 fi
 
@@ -88,6 +88,17 @@ fi
 echo "------------------------------------------------------------"
 
 # --- 4. QUICK REFERENCE ---
-echo "?? REMOTE (ntfy): flight, health, sync, cycle, reinstall"
-echo "??  LOCAL (Bash): refresh, update, db, sync, cycle, rebuild"
+echo "[ REMOTE ] (ntfy):"
+echo "   - flight: Track a specific flight"
+echo "   - health: Check printer status"
+echo "   - sync: Trigger repository sync"
+echo "   - cycle: Restart command listener"
+echo "   - reinstall: Force update and rebuild"
+echo "[ LOCAL ] (Bash):"
+echo "   - refresh: Reload terminal environment"
+echo "   - update: Update OS and Software"
+echo "   - db: Launch this dashboard"
+echo "   - sync: Trigger repository sync"
+echo "   - cycle: Restart command listener"
+echo "   - rebuild: Rebuild docker containers"
 echo "------------------------------------------------------------"

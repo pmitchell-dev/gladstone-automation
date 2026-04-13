@@ -1,0 +1,25 @@
+version: '3.8'
+
+services:
+  hivemind:
+    build: .
+    image: hivemind-custom:latest
+    container_name: hivemind_app
+    restart: unless-stopped
+    ports:
+      # Map the port your application exposes inside the container to a port on the host.
+      # You may need to change 8081 depending on what port HiveMind listens on.
+      - "8081:8080"
+    environment:
+      - NODE_ENV=production
+      - TZ=America/New_York
+    volumes:
+      # Persist the data directory if HiveMind creates any.
+      - ./data:/app/data
+    # Optionally add networks if it needs to communicate with other services like Homebox
+    # networks:
+    #   - internal
+
+# networks:
+#   internal:
+#     driver: bridge
