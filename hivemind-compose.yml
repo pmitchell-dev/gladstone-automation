@@ -16,7 +16,7 @@ services:
     volumes:
       # Persist the data directory if HiveMind creates any.
       - ./data:/app/data
-    # Optionally add networks if it needs to communicate with other services like Homebox
+    # Optionally add networks if it needs to communicate with other services like HomeAsset
     # networks:
     #   - internal
 

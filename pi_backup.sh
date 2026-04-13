@@ -29,9 +29,9 @@ else
     exit 1
 fi
 
-if [ -d "/home/pi/homebox/data" ]; then
-    echo "?? Backing up Homebox Data..."
-    cp -r /home/pi/homebox/data /home/pi/scripts/backup/homebox_data_$(date +%F)
+if [ -d "/home/pi/homeasset/data" ]; then
+    echo "?? Backing up HomeAsset Data..."
+    cp -r /home/pi/homeasset/data /home/pi/scripts/backup/homeasset_data_$(date +%F)
 fi
 
 # 3. Rotation Logic: Keep only the 2 most recent files

@@ -13,17 +13,17 @@ touch "$RETRY_FILE"
 
 # DOCKER MONITOR (Webhost Only)
 if [ "$MODE" == "webhost" ]; then
-    if ! docker ps --format '{{.Names}}' | grep -q "^homebox$"; then
-        cd /home/pi/homebox && docker compose up -d
-        COUNT=$(grep "^homebox:" "$RETRY_FILE" | cut -d: -f2 || echo 0)
+    if ! docker ps --format '{{.Names}}' | grep -q "^homeasset$"; then
+        cd /home/pi/homeasset && docker compose up -d
+        COUNT=$(grep "^homeasset:" "$RETRY_FILE" | cut -d: -f2 || echo 0)
         NEW_COUNT=$((COUNT + 1))
-        sed -i "/^homebox:/d" "$RETRY_FILE"; echo "homebox:$NEW_COUNT" >> "$RETRY_FILE"
+        sed -i "/^homeasset:/d" "$RETRY_FILE"; echo "homeasset:$NEW_COUNT" >> "$RETRY_FILE"
         
         if [ "$NEW_COUNT" -ge 5 ]; then
-            curl -H "Priority: 5" -d "[$HOSTNAME] ?? FATAL: Homebox Container Failed." ntfy.sh/$TOPIC
+            curl -H "Priority: 5" -d "[$HOSTNAME] ?? FATAL: HomeAsset Container Failed." ntfy.sh/$TOPIC
         fi
     else
-        sed -i "/^homebox:/d" "$RETRY_FILE"; echo "homebox:0" >> "$RETRY_FILE"
+        sed -i "/^homeasset:/d" "$RETRY_FILE"; echo "homeasset:0" >> "$RETRY_FILE"
     fi
 fi
 
