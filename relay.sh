@@ -27,9 +27,17 @@ esac
 
 echo "???  Relaying Priority $PRIORITY to Gladstone Hub..."
 
+NOW=$(date +%s)
+MUTE_UNTIL=$(cat /tmp/gladstone_ntfy_mute 2>/dev/null || echo 0)
+if [[ "$MUTE_UNTIL" =~ ^[0-9]+$ ]] && [ "$NOW" -lt "$MUTE_UNTIL" ]; then
+    echo "🔕 Mute is active. Skipping relay."
+    exit 0
+fi
+
 curl -H "Priority: $PRIORITY" \
      -H "Tags: $TAGS" \
      -H "Title: $TITLE ($HOSTNAME)" \
+     -H "Actions: http, Mute rest of the day, https://ntfy.sh/patrick_mitch_pi5_x9k2v_actions, method=POST, body=mute_watchdog" \
      -d "$MESSAGE" \
      "ntfy.sh/$TOPIC"
 
