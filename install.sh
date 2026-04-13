@@ -54,15 +54,15 @@ if [ "$MODE" == "webhost" ]; then
         fi
     fi
 
-    # Clone your custom HiveMind Fork
-    if [ ! -d "/home/pi/hivemind" ]; then
-        echo "?? Initial Clone of HiveMind Fork..."
-        git clone https://github.com/legendary034/HiveMind.git /home/pi/hivemind
-        # Copy the provided docker-compose file
-        if [ -f "$SCRIPT_DIR/hivemind-compose.yml" ]; then
-            cp "$SCRIPT_DIR/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
-        fi
-    fi
+    # Clone your custom HiveMind Fork (Temporarily Disabled)
+    #if [ ! -d "/home/pi/hivemind" ]; then
+    #    echo "?? Initial Clone of HiveMind Fork..."
+    #    git clone https://github.com/legendary034/HiveMind.git /home/pi/hivemind
+    #    # Copy the provided docker-compose file
+    #    if [ -f "$SCRIPT_DIR/hivemind-compose.yml" ]; then
+    #        cp "$SCRIPT_DIR/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
+    #    fi
+    #fi
 fi
 
 # 5. Permissions & Hand-off to Rebuild

@@ -48,28 +48,29 @@ elif [ "$MODE" == "--webhost" ]; then
         echo "? Deployment Successful."
     fi
 
-    if [ ! -d "/home/pi/hivemind" ]; then
-        echo "?? HiveMind missing. Cloning repository..."
-        git clone https://github.com/legendary034/HiveMind.git /home/pi/hivemind
-        if [ -f "/home/pi/scripts/hivemind-compose.yml" ]; then
-            cp "/home/pi/scripts/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
-        fi
-    fi
-
-    if [ -d "/home/pi/hivemind" ]; then
-        echo "?? Pulling latest HiveMind code from GitHub..."
-        cd /home/pi/hivemind
-        git pull
-        
-        echo "?? Rebuilding local HiveMind image..."
-        # If a docker-compose.yml is present, it will build and run it
-        if [ -f "docker-compose.yml" ]; then
-            docker compose up -d --build
-        else
-            echo "? Warning: No docker-compose.yml found in /home/pi/hivemind"
-        fi
-        echo "? HiveMind Deployment Check Complete."
-    fi
+    # HiveMind Temporarily Disabled
+    #if [ ! -d "/home/pi/hivemind" ]; then
+    #    echo "?? HiveMind missing. Cloning repository..."
+    #    git clone https://github.com/legendary034/HiveMind.git /home/pi/hivemind
+    #    if [ -f "/home/pi/scripts/hivemind-compose.yml" ]; then
+    #        cp "/home/pi/scripts/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
+    #    fi
+    #fi
+#
+    #if [ -d "/home/pi/hivemind" ]; then
+    #    echo "?? Pulling latest HiveMind code from GitHub..."
+    #    cd /home/pi/hivemind
+    #    git pull
+    #    
+    #    echo "?? Rebuilding local HiveMind image..."
+    #    # If a docker-compose.yml is present, it will build and run it
+    #    if [ -f "docker-compose.yml" ]; then
+    #        docker compose up -d --build
+    #    else
+    #        echo "? Warning: No docker-compose.yml found in /home/pi/hivemind"
+    #    fi
+    #    echo "? HiveMind Deployment Check Complete."
+    #fi
 
     # Webhost Maintenance Crontab
     WEB_CRON="0 0 * * * /home/pi/scripts/pi_backup.sh
