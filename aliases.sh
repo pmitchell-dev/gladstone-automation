@@ -5,8 +5,13 @@
 # ==========================================================
 
 # --- DASHBOARD & MONITORING ---
-alias db='/home/pi/scripts/pi-dashboard.sh'
-alias dashboard='/home/pi/scripts/pi-dashboard.sh'
+if [ -f "$HOME/.gladstone_mode" ] && grep -q "webhost" "$HOME/.gladstone_mode"; then
+    alias db='bash /home/pi/scripts/webhost-dashboard.sh'
+    alias dashboard='bash /home/pi/scripts/webhost-dashboard.sh'
+else
+    alias db='bash /home/pi/scripts/pi-dashboard.sh'
+    alias dashboard='bash /home/pi/scripts/pi-dashboard.sh'
+fi
 
 # --- MAINTENANCE & RECOVERY ---
 alias sync='bash /home/pi/scripts/pi_sync.sh'
