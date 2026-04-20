@@ -56,9 +56,12 @@ if [ "$MODE" == "webhost" ]; then
 
     # 4a. Invidious Stack Setup (Standard/Optional Items)
     INVID_DIR="/home/pi/invidious"
-    if [ ! -d "$INVID_DIR" ]; then
+    mkdir -p "$INVID_DIR/config"
+    sudo chown -R $USER:$USER "$INVID_DIR"
+    chmod -R 755 "$INVID_DIR"
+
+    if [ ! -f "$INVID_DIR/docker-compose.yml" ]; then
         echo "?? Provisioning Invidious Stack (3 Containers)..."
-        mkdir -p "$INVID_DIR/config"
         
         # Copy Stack Definition
         if [ -f "$SCRIPT_DIR/invidious-compose.yml" ]; then
@@ -73,6 +76,7 @@ if [ "$MODE" == "webhost" ]; then
             echo "!! IMPORTANT: Update PO_TOKEN and VISITOR_DATA in config/config.yml for playback."
         fi
     fi
+
 
 
     # Clone your custom HiveMind Fork (Temporarily Disabled)
