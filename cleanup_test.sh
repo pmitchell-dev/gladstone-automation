@@ -28,6 +28,8 @@ rm -f /tmp/service_retries
 
 # 5. Remove Data & Logs
 rm -rf /home/pi/printer_data
+rm -rf /home/pi/homeasset
+rm -rf /home/pi/invidious
 
 # 6. Delete the Script Tree
 # Now that we are in /home/pi, this will run cleanly.

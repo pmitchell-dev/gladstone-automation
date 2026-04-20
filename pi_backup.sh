@@ -34,6 +34,12 @@ if [ -d "/home/pi/homeasset/data" ]; then
     cp -r /home/pi/homeasset/data /home/pi/scripts/backup/homeasset_data_$(date +%F)
 fi
 
+if [ -d "/home/pi/invidious" ]; then
+    echo "?? Backing up Invidious Config and Data..."
+    cp -r /home/pi/invidious /home/pi/scripts/backup/invidious_backup_$(date +%F)
+fi
+
+
 # 3. Rotation Logic: Keep only the 2 most recent files
 # ls -t lists by time (newest first). tail -n +3 selects everything after the 2nd file.
 echo "Cleaning up old backups (keeping top 2)..."
