@@ -1,0 +1,38 @@
+version: "3"
+services:
+  db:
+    image: postgres:14
+    restart: always
+    volumes:
+      - ./postgresdata:/var/lib/postgresql/data
+    environment:
+      - POSTGRES_DB=invidious
+      - POSTGRES_USER=kemal
+      - POSTGRES_PASSWORD=kemal
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U kemal -d invidious"]
+      interval: 2s
+      timeout: 5s
+      retries: 20
+
+  invidious:
+    image: quay.io/invidious/invidious:latest
+    restart: always
+    volumes:
+      - ./config/config.yml:/invidious/config/config.yml:ro
+    environment:
+      - INVIDIOUS_DATABASE_URL=postgres://kemal:kemal@db:5432/invidious
+    ports:
+      - "3000:3000"
+    depends_on:
+      db:
+        condition: service_healthy
+
+  invidious-companion:
+    image: quay.io/invidious/invidious-companion:latest
+    restart: always
+    environment:
+      - INVIDIOUS_URL=http://invidious:3000
+      - UPDATE_INTERVAL=3600
+    depends_on:
+      - invidious

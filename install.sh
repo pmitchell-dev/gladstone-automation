@@ -54,6 +54,27 @@ if [ "$MODE" == "webhost" ]; then
         fi
     fi
 
+    # 4a. Invidious Stack Setup (Standard/Optional Items)
+    INVID_DIR="/home/pi/invidious"
+    if [ ! -d "$INVID_DIR" ]; then
+        echo "?? Provisioning Invidious Stack (3 Containers)..."
+        mkdir -p "$INVID_DIR/config"
+        
+        # Copy Stack Definition
+        if [ -f "$SCRIPT_DIR/invidious-compose.yml" ]; then
+            cp "$SCRIPT_DIR/invidious-compose.yml" "$INVID_DIR/docker-compose.yml"
+        fi
+        
+        # Generate Security Secrets
+        if [ -f "$SCRIPT_DIR/invidious-config.yml.template" ]; then
+            HMAC_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+            sed "s/\${HMAC_KEY}/$HMAC_KEY/g" "$SCRIPT_DIR/invidious-config.yml.template" > "$INVID_DIR/config/config.yml"
+            echo "?? Invidious config created in $INVID_DIR/config/config.yml"
+            echo "!! IMPORTANT: Update PO_TOKEN and VISITOR_DATA in config/config.yml for playback."
+        fi
+    fi
+
+
     # Clone your custom HiveMind Fork (Temporarily Disabled)
     #if [ ! -d "/home/pi/hivemind" ]; then
     #    echo "?? Initial Clone of HiveMind Fork..."

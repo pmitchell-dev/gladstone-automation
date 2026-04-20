@@ -48,6 +48,19 @@ elif [ "$MODE" == "--webhost" ]; then
         echo "? Deployment Successful."
     fi
 
+    # Invidious Stack Synchronization
+    if [ -d "/home/pi/invidious" ]; then
+        echo "?? Synchronizing Invidious Stack..."
+        cd /home/pi/invidious
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d
+            echo "? Invidious Stack Deployment Check Complete."
+        else
+            echo "? Warning: No docker-compose.yml found in /home/pi/invidious"
+        fi
+    fi
+
+
     # HiveMind Temporarily Disabled
     #if [ ! -d "/home/pi/hivemind" ]; then
     #    echo "?? HiveMind missing. Cloning repository..."
