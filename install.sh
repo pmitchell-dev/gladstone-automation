@@ -78,42 +78,55 @@ if [ "$MODE" == "webhost" ]; then
         cp "$SCRIPT_DIR/init-db.sql" "$INVID_DIR/init-db.sql"
     fi
 
+    if [ -f "$SCRIPT_DIR/pi_invidious_wipe.sh" ]; then
+        cp "$SCRIPT_DIR/pi_invidious_wipe.sh" "$INVID_DIR/pi_invidious_wipe.sh"
+    fi
+
     if [ -f "$SCRIPT_DIR/apply_schema_fix.sh" ]; then
         cp "$SCRIPT_DIR/apply_schema_fix.sh" "$INVID_DIR/apply_schema_fix.sh"
     fi
 
-    # Only provision the config if it's missing or was just deleted by the healer
+    # Retrieve or Generate Secrets
+    HMAC_KEY=""
+    COMPANION_KEY=""
+
+    if [ -f "$INVID_DIR/config/config.yml" ]; then
+        # Try to extract existing keys to maintain consistency
+        HMAC_KEY=$(grep "hmac_key:" "$INVID_DIR/config/config.yml" | awk '{print $2}' | tr -d '"')
+        COMPANION_KEY=$(grep "invidious_companion_key:" "$INVID_DIR/config/config.yml" | awk '{print $2}' | tr -d '"')
+    fi
+
+    if [ -z "$HMAC_KEY" ]; then
+        HMAC_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+    fi
+    if [ -z "$COMPANION_KEY" ]; then
+        COMPANION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
+    fi
+
+    # Always ensure the compose file has the companion secret synchronized
+    if [ -f "$INVID_DIR/docker-compose.yml" ]; then
+        sed -i "s/\${COMPANION_KEY}/$COMPANION_KEY/g" "$INVID_DIR/docker-compose.yml"
+    fi
+
+    # Provision/Update Configuration
     if [ ! -f "$INVID_DIR/config/config.yml" ]; then
         echo "?? Provisioning new Invidious configuration..."
         if [ -f "$SCRIPT_DIR/invidious-config.yml.template" ]; then
-            HMAC_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-            COMPANION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
-            
             sed -e "s/\${HMAC_KEY}/$HMAC_KEY/g" \
                 -e "s/\${COMPANION_KEY}/$COMPANION_KEY/g" \
                 "$SCRIPT_DIR/invidious-config.yml.template" > "$INVID_DIR/config/config.yml"
             
-            # Update the compose file with the companion secret too
-            if [ -f "$INVID_DIR/docker-compose.yml" ]; then
-                sed -i "s/\${COMPANION_KEY}/$COMPANION_KEY/g" "$INVID_DIR/docker-compose.yml"
-            fi
-            
             echo "?? Invidious config created in $INVID_DIR/config/config.yml"
-            echo "?? Automated Companion integration complete (Zero manual tokens required)."
         fi
     else
         # Force disable captcha in existing config if it was already provisioned
         if grep -q "captcha_enabled:" "$INVID_DIR/config/config.yml"; then
             sed -i "s/captcha_enabled: .*/captcha_enabled: false/" "$INVID_DIR/config/config.yml"
         else
-            # Prepend to General settings area if possible, or just append
             echo "captcha_enabled: false" >> "$INVID_DIR/config/config.yml"
         fi
-        echo "?? Existing Invidious config found. Force-disabled captcha."
+        echo "?? Existing Invidious config updated (Captcha disabled)."
     fi
-
-
-
 
     # Clone your custom HiveMind Fork (Temporarily Disabled)
     #if [ ! -d "/home/pi/hivemind" ]; then
