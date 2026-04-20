@@ -57,10 +57,14 @@ if [ "$MODE" == "webhost" ]; then
     # 4a. Invidious Stack Setup (Standard/Optional Items)
     INVID_DIR="/home/pi/invidious"
     mkdir -p "$INVID_DIR/config"
-    sudo chown -R $USER:$USER "$INVID_DIR"
+    mkdir -p "$INVID_DIR/postgresdata"
+    
+    # Fix permissions for the config files (db data handled by docker)
+    sudo chown -R $USER:$USER "$INVID_DIR/config"
     chmod -R 755 "$INVID_DIR"
 
     if [ ! -f "$INVID_DIR/docker-compose.yml" ]; then
+
         echo "?? Provisioning Invidious Stack (3 Containers)..."
         
         # Copy Stack Definition
