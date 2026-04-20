@@ -59,27 +59,25 @@ if [ "$MODE" == "webhost" ]; then
     mkdir -p "$INVID_DIR/config"
     mkdir -p "$INVID_DIR/postgresdata"
     
+    # Self-healing: Ensure config.yml is a file, NOT a directory (fix Docker accidental mounts)
+    if [ -d "$INVID_DIR/config/config.yml" ]; then
+        echo "?? Fixing accidental Docker directory mount for config.yml..."
+        sudo rm -rf "$INVID_DIR/config/config.yml"
+    fi
+
     # Fix permissions for the config files (db data handled by docker)
     sudo chown -R $USER:$USER "$INVID_DIR/config"
     chmod -R 755 "$INVID_DIR"
 
-    if [ ! -f "$INVID_DIR/docker-compose.yml" ]; then
+    # Always ensure the latest stack definition is present
+    if [ -f "$SCRIPT_DIR/invidious-compose.yml" ]; then
+        cp "$SCRIPT_DIR/invidious-compose.yml" "$INVID_DIR/docker-compose.yml"
+    fi
 
-        echo "?? Provisioning Invidious Stack (3 Containers)..."
-        
-        # Copy Stack Definition
-        if [ -f "$SCRIPT_DIR/invidious-compose.yml" ]; then
-            cp "$SCRIPT_DIR/invidious-compose.yml" "$INVID_DIR/docker-compose.yml"
-        fi
-        
-        # Self-healing: Delete config.yml if Docker mistakenly created it as a directory
-        if [ -d "$INVID_DIR/config/config.yml" ]; then
-            sudo rm -rf "$INVID_DIR/config/config.yml"
-        fi
-
-        # Generate Security Secrets
+    # Only provision the config if it's missing or was just deleted by the healer
+    if [ ! -f "$INVID_DIR/config/config.yml" ]; then
+        echo "?? Provisioning new Invidious configuration..."
         if [ -f "$SCRIPT_DIR/invidious-config.yml.template" ]; then
-
             HMAC_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
             COMPANION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
             
@@ -88,13 +86,15 @@ if [ "$MODE" == "webhost" ]; then
                 "$SCRIPT_DIR/invidious-config.yml.template" > "$INVID_DIR/config/config.yml"
             
             # Update the compose file with the companion secret too
-            sed -i "s/\${COMPANION_KEY}/$COMPANION_KEY/g" "$INVID_DIR/docker-compose.yml"
+            if [ -f "$INVID_DIR/docker-compose.yml" ]; then
+                sed -i "s/\${COMPANION_KEY}/$COMPANION_KEY/g" "$INVID_DIR/docker-compose.yml"
+            fi
             
             echo "?? Invidious config created in $INVID_DIR/config/config.yml"
             echo "?? Automated Companion integration complete (Zero manual tokens required)."
         fi
-
     fi
+
 
 
 
