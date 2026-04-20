@@ -74,6 +74,10 @@ if [ "$MODE" == "webhost" ]; then
         cp "$SCRIPT_DIR/invidious-compose.yml" "$INVID_DIR/docker-compose.yml"
     fi
 
+    if [ -f "$SCRIPT_DIR/init-db.sql" ]; then
+        cp "$SCRIPT_DIR/init-db.sql" "$INVID_DIR/init-db.sql"
+    fi
+
     # Only provision the config if it's missing or was just deleted by the healer
     if [ ! -f "$INVID_DIR/config/config.yml" ]; then
         echo "?? Provisioning new Invidious configuration..."

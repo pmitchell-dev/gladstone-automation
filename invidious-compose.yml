@@ -4,6 +4,7 @@ services:
     restart: always
     volumes:
       - ./postgresdata:/var/lib/postgresql/data
+      - ./init-db.sql:/docker-entrypoint-initdb.d/init-db.sql
     environment:
       - POSTGRES_DB=invidious
       - POSTGRES_USER=kemal
