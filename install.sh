@@ -101,6 +101,15 @@ if [ "$MODE" == "webhost" ]; then
             echo "?? Invidious config created in $INVID_DIR/config/config.yml"
             echo "?? Automated Companion integration complete (Zero manual tokens required)."
         fi
+    else
+        # Force disable captcha in existing config if it was already provisioned
+        if grep -q "captcha_enabled:" "$INVID_DIR/config/config.yml"; then
+            sed -i "s/captcha_enabled: .*/captcha_enabled: false/" "$INVID_DIR/config/config.yml"
+        else
+            # Prepend to General settings area if possible, or just append
+            echo "captcha_enabled: false" >> "$INVID_DIR/config/config.yml"
+        fi
+        echo "?? Existing Invidious config found. Force-disabled captcha."
     fi
 
 
