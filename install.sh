@@ -127,8 +127,16 @@ if [ "$MODE" == "webhost" ]; then
         else
             echo "captcha_enabled: false" >> "$INVID_DIR/config/config.yml"
         fi
-        echo "?? Existing Invidious config updated (Captcha disabled)."
+        
+        # Force empty domain for IP access
+        if grep -q "^domain:" "$INVID_DIR/config/config.yml"; then
+            sed -i "s/^domain:.*/domain: \"\"/" "$INVID_DIR/config/config.yml"
+        else
+            echo "domain: \"\"" >> "$INVID_DIR/config/config.yml"
+        fi
+        echo "?? Existing Invidious config updated (Captcha disabled & Domain cleared)."
     fi
+
 
     # Clone your custom HiveMind Fork (Temporarily Disabled)
     #if [ ! -d "/home/pi/hivemind" ]; then
