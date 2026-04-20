@@ -17,7 +17,8 @@ hmac_key: "${HMAC_KEY}"
 # Automated Token Management (Replenishes po_token automatically)
 invidious_companion:
   - private_url: http://invidious-companion:8282/companion
-    invidious_companion_key: "${COMPANION_KEY}"
+
+invidious_companion_key: "${COMPANION_KEY}"
 
 
 # Performance & UI
