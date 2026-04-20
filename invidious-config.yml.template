@@ -1,5 +1,9 @@
 db:
-  url: postgres://kemal:kemal@db:5432/invidious
+  dbname: invidious
+  user: kemal
+  password: kemal
+  host: db
+  port: 5432
 
 # General settings
 check_tables: true
