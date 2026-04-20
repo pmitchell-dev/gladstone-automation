@@ -72,8 +72,14 @@ if [ "$MODE" == "webhost" ]; then
             cp "$SCRIPT_DIR/invidious-compose.yml" "$INVID_DIR/docker-compose.yml"
         fi
         
+        # Self-healing: Delete config.yml if Docker mistakenly created it as a directory
+        if [ -d "$INVID_DIR/config/config.yml" ]; then
+            sudo rm -rf "$INVID_DIR/config/config.yml"
+        fi
+
         # Generate Security Secrets
         if [ -f "$SCRIPT_DIR/invidious-config.yml.template" ]; then
+
             HMAC_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
             COMPANION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
             
