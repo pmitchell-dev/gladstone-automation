@@ -1,15 +1,15 @@
--- Force the exact column order required by the Feb 2026 binary
+-- Force the exact column order required by Invidious v2.20260207.0 (Blind Insert Match)
 DROP TABLE IF EXISTS users CASCADE;
 CREATE TABLE users (
-    id TEXT PRIMARY KEY,
+    updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
     notifications TEXT[] DEFAULT '{}',
     subscriptions TEXT[] DEFAULT '{}',
-    preferences JSONB DEFAULT '{}',
-    username TEXT UNIQUE,
+    email TEXT NOT NULL UNIQUE,
+    preferences TEXT DEFAULT '{}',
     password TEXT,
-    email TEXT DEFAULT '',
-    created TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP,
-    updated TIMESTAMP WITH TIME ZONE DEFAULT CURRENT_TIMESTAMP
+    token TEXT,
+    watched TEXT[] DEFAULT '{}',
+    feed_needs_update BOOLEAN DEFAULT FALSE
 );
 
 -- Ensure auxiliary tables exist for the 'Popular' and 'Channel' feeds
