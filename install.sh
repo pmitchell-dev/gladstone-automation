@@ -103,9 +103,11 @@ if [ "$MODE" == "webhost" ]; then
         COMPANION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
     fi
 
-    # Always ensure the compose file has the companion secret synchronized
+    # Always ensure the compose file environment is synchronized
     if [ -f "$INVID_DIR/docker-compose.yml" ]; then
-        sed -i "s/\${COMPANION_KEY}/$COMPANION_KEY/g" "$INVID_DIR/docker-compose.yml"
+        # Create/Update .env file in the deployment directory
+        echo "COMPANION_KEY=$COMPANION_KEY" > "$INVID_DIR/.env"
+        echo "?? Synchronized .env file for Docker Compose."
     fi
 
     # Provision/Update Configuration
