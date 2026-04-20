@@ -79,7 +79,7 @@ if [ "$MODE" == "webhost" ]; then
         echo "?? Provisioning new Invidious configuration..."
         if [ -f "$SCRIPT_DIR/invidious-config.yml.template" ]; then
             HMAC_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-            COMPANION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+            COMPANION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 16 | head -n 1)
             
             sed -e "s/\${HMAC_KEY}/$HMAC_KEY/g" \
                 -e "s/\${COMPANION_KEY}/$COMPANION_KEY/g" \
