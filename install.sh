@@ -71,10 +71,19 @@ if [ "$MODE" == "webhost" ]; then
         # Generate Security Secrets
         if [ -f "$SCRIPT_DIR/invidious-config.yml.template" ]; then
             HMAC_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
-            sed "s/\${HMAC_KEY}/$HMAC_KEY/g" "$SCRIPT_DIR/invidious-config.yml.template" > "$INVID_DIR/config/config.yml"
+            COMPANION_KEY=$(cat /dev/urandom | tr -dc 'a-zA-Z0-9' | fold -w 32 | head -n 1)
+            
+            sed -e "s/\${HMAC_KEY}/$HMAC_KEY/g" \
+                -e "s/\${COMPANION_KEY}/$COMPANION_KEY/g" \
+                "$SCRIPT_DIR/invidious-config.yml.template" > "$INVID_DIR/config/config.yml"
+            
+            # Update the compose file with the companion secret too
+            sed -i "s/\${COMPANION_KEY}/$COMPANION_KEY/g" "$INVID_DIR/docker-compose.yml"
+            
             echo "?? Invidious config created in $INVID_DIR/config/config.yml"
-            echo "!! IMPORTANT: Update PO_TOKEN and VISITOR_DATA in config/config.yml for playback."
+            echo "?? Automated Companion integration complete (Zero manual tokens required)."
         fi
+
     fi
 
 

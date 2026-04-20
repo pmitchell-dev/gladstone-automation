@@ -32,7 +32,9 @@ services:
     image: quay.io/invidious/invidious-companion:latest
     restart: always
     environment:
-      - INVIDIOUS_URL=http://invidious:3000
-      - UPDATE_INTERVAL=3600
+      - SERVER_SECRET_KEY=${COMPANION_KEY}
+    volumes:
+      - ./companion-cache:/var/tmp/youtubei.js
     depends_on:
       - invidious
+
