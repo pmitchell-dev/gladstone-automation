@@ -78,6 +78,10 @@ if [ "$MODE" == "webhost" ]; then
         cp "$SCRIPT_DIR/init-db.sql" "$INVID_DIR/init-db.sql"
     fi
 
+    if [ -f "$SCRIPT_DIR/apply_schema_fix.sh" ]; then
+        cp "$SCRIPT_DIR/apply_schema_fix.sh" "$INVID_DIR/apply_schema_fix.sh"
+    fi
+
     # Only provision the config if it's missing or was just deleted by the healer
     if [ ! -f "$INVID_DIR/config/config.yml" ]; then
         echo "?? Provisioning new Invidious configuration..."
