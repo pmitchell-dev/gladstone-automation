@@ -13,7 +13,9 @@ touch "$RETRY_FILE"
 
 # DOCKER MONITOR (Webhost Only)
 if [ "$MODE" == "webhost" ]; then
+    # HomeAsset (with alerting)
     if ! docker ps --format '{{.Names}}' | grep -q "^homeasset$"; then
+        echo "?? Recovering HomeAsset container..."
         cd /home/pi/homeasset && docker compose up -d
         COUNT=$(grep "^homeasset:" "$RETRY_FILE" | cut -d: -f2 || echo 0)
         NEW_COUNT=$((COUNT + 1))
@@ -30,6 +32,22 @@ if [ "$MODE" == "webhost" ]; then
         fi
     else
         sed -i "/^homeasset:/d" "$RETRY_FILE"; echo "homeasset:0" >> "$RETRY_FILE"
+    fi
+
+    # Invidious
+    if ! docker ps --format '{{.Names}}' | grep -q "^invidious$"; then
+        echo "?? Recovering Invidious container..."
+        cd /home/pi/invidious && docker compose up -d
+    fi
+
+    # RustDesk
+    if ! docker ps --format '{{.Names}}' | grep -q "^hbbs$"; then
+        echo "?? Recovering RustDesk ID server (hbbs)..."
+        cd /home/pi/rustdesk && docker compose up -d
+    fi
+    if ! docker ps --format '{{.Names}}' | grep -q "^hbbr$"; then
+        echo "?? Recovering RustDesk Relay server (hbbr)..."
+        cd /home/pi/rustdesk && docker compose up -d
     fi
 fi
 

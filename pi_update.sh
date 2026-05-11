@@ -24,8 +24,8 @@ if [ "$MODE" == "ntfy" ]; then
     
 elif [ "$MODE" == "webhost" ]; then
     echo "?? Refreshing Webhost Node..."
-    # Webhost might only need to restart a specific web service or heartbeat
-    # nohup python3 web_app.py & 
+    # Trigger a rebuild to apply any stack changes
+    bash $SCRIPT_DIR/pi_rebuild.sh --webhost
 fi
 
 echo "? [$HOSTNAME] Update Complete ($MODE mode)."

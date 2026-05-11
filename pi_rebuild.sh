@@ -10,6 +10,13 @@ exec > >(tee -a /home/pi/scripts/logs/rebuild.log) 2>&1
 
 echo "???  [$HOSTNAME] Rebuilding in $MODE mode..."
 
+# Ensure the scripts themselves are up to date
+if [ -d "/home/pi/scripts/.git" ]; then
+    echo "?? Updating scripts from GitHub..."
+    cd /home/pi/scripts && git pull origin main
+fi
+
+
 # --- 1. HUB MODE (Raspberry Pi Only) ---
 if [ "$MODE" == "--ntfy" ]; then
     echo "??? Applying Hub Crontab..."
