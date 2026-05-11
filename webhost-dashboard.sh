@@ -19,6 +19,14 @@ echo -e "🌐 IP: $IP    💾 Disk: $DISK"
 echo -e "🧠 Mem: $MEM    🚀 Uptime: $(uptime -p)"
 
 echo "------------------------------------------------------------"
+echo "[ DOCKER CONTAINERS ]"
+if command -v docker &> /dev/null; then
+    docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+else
+    echo "   Docker is not installed."
+fi
+
+echo "------------------------------------------------------------"
 echo "[ LOCAL ] (Bash):"
 echo "   - refresh: Reload terminal environment (aliases/paths)"
 echo "   - update: Fetch and install system updates"
