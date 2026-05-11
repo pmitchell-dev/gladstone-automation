@@ -68,6 +68,14 @@ elif [ "$MODE" == "--webhost" ]; then
     fi
 
     # RustDesk Stack Synchronization
+    if [ ! -d "/home/pi/rustdesk" ]; then
+        echo "?? RustDesk missing. Provisioning stack..."
+        mkdir -p "/home/pi/rustdesk/data"
+        if [ -f "/home/pi/scripts/rustdesk-compose.yml" ]; then
+            cp "/home/pi/scripts/rustdesk-compose.yml" "/home/pi/rustdesk/docker-compose.yml"
+        fi
+    fi
+
     if [ -d "/home/pi/rustdesk" ]; then
         echo "?? Synchronizing RustDesk Stack..."
         cd /home/pi/rustdesk
