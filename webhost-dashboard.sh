@@ -3,34 +3,41 @@
 # ==========================================================
 # WEBHOST CONTROL CENTER (webhost-dashboard.sh)
 # ==========================================================
-# Version: 1.0.0
+# Version: 1.1.0
 # Logic: Server identification and local command reference.
 # ==========================================================
 
-echo "------------------------------------------------------------"
-echo "  Webhost Server ($HOSTNAME)      $(date)"
-echo "------------------------------------------------------------"
+# Color Definitions
+CYAN='\033[0;36m'
+GREEN='\033[0;32m'
+YELLOW='\033[1;33m'
+BLUE='\033[0;34m'
+NC='\033[0m' # No Color
+
+echo -e "${CYAN}------------------------------------------------------------${NC}"
+echo -e "  ${GREEN}Webhost Server ($HOSTNAME)${NC}      $(date)"
+echo -e "${CYAN}------------------------------------------------------------${NC}"
 
 IP=$(hostname -I | awk '{print $1}')
 DISK=$(df -h / | awk 'NR==2 {print $3 "/" $2}')
 MEM=$(free -h | awk 'NR==2 {print $3 "/" $2}')
 
-echo -e "🌐 IP: $IP    💾 Disk: $DISK"
-echo -e "🧠 Mem: $MEM    🚀 Uptime: $(uptime -p)"
+echo -e "🌐 ${YELLOW}IP:${NC} $IP    💾 ${YELLOW}Disk:${NC} $DISK"
+echo -e "🧠 ${YELLOW}Mem:${NC} $MEM    🚀 ${YELLOW}Uptime:${NC} $(uptime -p)"
 
-echo "------------------------------------------------------------"
-echo "[ DOCKER CONTAINERS ]"
+echo -e "${CYAN}------------------------------------------------------------${NC}"
+echo -e "${BLUE}[ DOCKER CONTAINERS ]${NC}"
 if command -v docker &> /dev/null; then
     docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
 else
-    echo "   Docker is not installed."
+    echo -e "   ${YELLOW}Docker is not installed.${NC}"
 fi
 
-echo "------------------------------------------------------------"
-echo "[ LOCAL ] (Bash):"
-echo "   - refresh: Reload terminal environment (aliases/paths)"
-echo "   - update: Fetch and install system updates"
-echo "   - db: Launch this webhost dashboard"
-echo "   - sync: Backup codebase to GitHub repository"
-echo "   - rebuild: Pull latest code and re-deploy Docker containers"
-echo "------------------------------------------------------------"
+echo -e "${CYAN}------------------------------------------------------------${NC}"
+echo -e "${BLUE}[ LOCAL COMMANDS ] (Bash):${NC}"
+echo -e "   - ${GREEN}refresh:${NC} Reload terminal environment (aliases/paths)"
+echo -e "   - ${GREEN}update:${NC}  Fetch and install system updates"
+echo -e "   - ${GREEN}db:${NC}      Launch this webhost dashboard"
+echo -e "   - ${GREEN}sync:${NC}    Backup codebase to GitHub repository"
+echo -e "   - ${GREEN}rebuild:${NC} Pull latest code and re-deploy Docker containers"
+echo -e "${CYAN}------------------------------------------------------------${NC}"
