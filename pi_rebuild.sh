@@ -60,6 +60,17 @@ elif [ "$MODE" == "--webhost" ]; then
         fi
     fi
 
+    # RustDesk Stack Synchronization
+    if [ -d "/home/pi/rustdesk" ]; then
+        echo "?? Synchronizing RustDesk Stack..."
+        cd /home/pi/rustdesk
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d
+            echo "? RustDesk Stack Deployment Check Complete."
+        else
+            echo "? Warning: No docker-compose.yml found in /home/pi/rustdesk"
+        fi
+    fi
 
     # HiveMind Temporarily Disabled
     #if [ ! -d "/home/pi/hivemind" ]; then

@@ -137,6 +137,14 @@ if [ "$MODE" == "webhost" ]; then
         echo "?? Existing Invidious config updated (Captcha disabled & Domain cleared)."
     fi
 
+    # RustDesk Server Stack Setup
+    RUSTDESK_DIR="/home/pi/rustdesk"
+    mkdir -p "$RUSTDESK_DIR/data"
+    
+    if [ -f "$SCRIPT_DIR/rustdesk-compose.yml" ]; then
+        cp "$SCRIPT_DIR/rustdesk-compose.yml" "$RUSTDESK_DIR/docker-compose.yml"
+        echo "?? RustDesk Stack provisioned."
+    fi
 
     # Clone your custom HiveMind Fork (Temporarily Disabled)
     #if [ ! -d "/home/pi/hivemind" ]; then
