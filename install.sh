@@ -157,7 +157,86 @@ if [ "$MODE" == "webhost" ]; then
     #fi
 fi
 
-# 5. Permissions & Hand-off to Rebuild
+# 5. TerminalBuddy Setup (embedded — no internet required)
+# ──────────────────────────────────────────────
+echo "→ Setting up TerminalBuddy..."
+
+# Create the config directory
+mkdir -p ~/.config/terminalbuddy
+
+# Write the shell integration script directly (no download needed)
+cat > ~/.config/terminalbuddy/terminalbuddy.sh << 'TERMINALBUDDY_EOF'
+#!/usr/bin/env bash
+# TerminalBuddy Shell Integration Script
+[[ "$TERM" == "dumb" ]] && return
+
+__tb_osc() {
+    printf '\e]7701;%s\a' "$1"
+}
+
+__tb_strip_ansi() {
+    echo "$1" | sed 's/\x1b\[[0-9;]*[mGKHF]//g; s/\x1b\][^\x07]*\x07//g; s/\x1b[()][ -~]//g'
+}
+
+__tb_preexec() {
+    local full_cmd="$1"
+    local cmd
+    cmd=$(echo "$full_cmd" | awk '{print $1}' | xargs basename 2>/dev/null || echo "$full_cmd")
+    __tb_osc "cmd=${cmd}"
+}
+
+__tb_precmd() {
+    local cwd="$PWD"
+    local dashboard_b64=""
+
+    if [[ -f "${HOME}/dashboard/dashboard.txt" ]]; then
+        local raw
+        raw=$(cat "${HOME}/dashboard/dashboard.txt")
+        local stripped
+        stripped=$(__tb_strip_ansi "$raw")
+        dashboard_b64=$(echo "$stripped" | base64 -w 0 2>/dev/null || echo "$stripped" | base64)
+    fi
+
+    __tb_osc "prompt;cwd=${cwd};dashboard=${dashboard_b64}"
+}
+
+if [[ -n "$BASH_VERSION" ]]; then
+    __tb_prev_debug_trap=$(trap -p DEBUG | sed "s/trap -- '\(.*\)' DEBUG/\1/")
+    if [[ -z "$__tb_prev_debug_trap" ]]; then
+        trap '__tb_preexec "$BASH_COMMAND"' DEBUG
+    else
+        trap "${__tb_prev_debug_trap}; __tb_preexec \"\$BASH_COMMAND\"" DEBUG
+    fi
+    if [[ -z "$PROMPT_COMMAND" ]]; then
+        PROMPT_COMMAND='__tb_precmd'
+    else
+        PROMPT_COMMAND="${PROMPT_COMMAND}; __tb_precmd"
+    fi
+fi
+
+if [[ -n "$ZSH_VERSION" ]]; then
+    autoload -Uz add-zsh-hook
+    add-zsh-hook preexec __tb_preexec
+    add-zsh-hook precmd __tb_precmd
+fi
+TERMINALBUDDY_EOF
+
+chmod +x ~/.config/terminalbuddy/terminalbuddy.sh
+
+# Add to .bashrc (idempotent — won't duplicate on rebuild)
+if ! grep -qF 'terminalbuddy.sh' ~/.bashrc; then
+    echo '' >> ~/.bashrc
+    echo '# TerminalBuddy shell integration' >> ~/.bashrc
+    echo '[ -f ~/.config/terminalbuddy/terminalbuddy.sh ] && source ~/.config/terminalbuddy/terminalbuddy.sh' >> ~/.bashrc
+fi
+
+# Ensure dashboard directory exists
+mkdir -p ~/dashboard
+
+echo "✓ TerminalBuddy setup complete"
+# ──────────────────────────────────────────────
+
+# 6. Permissions & Hand-off to Rebuild
 sudo chown -R $USER:$USER "$SCRIPT_DIR"
 chmod +x $SCRIPT_DIR/*.sh
 bash "$SCRIPT_DIR/pi_rebuild.sh" "--$MODE"
