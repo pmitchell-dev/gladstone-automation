@@ -1,0 +1,17 @@
+services:
+  jobboard:
+    build: .
+    container_name: jobboard
+    ports:
+      # Host port 3001 — Invidious already occupies 3000
+      - "3001:3000"
+    volumes:
+      - ./data:/app/data
+      - ./cache:/app/cache
+    environment:
+      - NODE_ENV=production
+      - PORT=3000
+      - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
+    restart: unless-stopped
+    security_opt:
+      - seccomp:unconfined

@@ -150,6 +150,10 @@ if [ "$MODE" == "webhost" ]; then
     if [ ! -d "/home/pi/jobboard" ]; then
         echo "📋 Initial Clone of JobBoard..."
         git clone https://github.com/pmitchell-dev/JobBoard.git /home/pi/jobboard
+        # Override upstream compose with our port-remapped version (3001 — Invidious owns 3000)
+        if [ -f "$SCRIPT_DIR/jobboard-compose.yml" ]; then
+            cp "$SCRIPT_DIR/jobboard-compose.yml" "/home/pi/jobboard/docker-compose.yml"
+        fi
     fi
     # Ensure persistent host directories exist (survives container rebuilds)
     mkdir -p /home/pi/jobboard/data/backups

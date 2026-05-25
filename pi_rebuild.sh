@@ -100,13 +100,18 @@ elif [ "$MODE" == "--webhost" ]; then
         cd /home/pi/jobboard
         git pull
 
+        # Always restore our port-remapped compose (git pull may reset it)
+        if [ -f "/home/pi/scripts/jobboard-compose.yml" ]; then
+            cp "/home/pi/scripts/jobboard-compose.yml" "/home/pi/jobboard/docker-compose.yml"
+        fi
+
         echo "🔨 Rebuilding local JobBoard image..."
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d --build
         else
             echo "⚠ Warning: No docker-compose.yml found in /home/pi/jobboard"
         fi
-        echo "✅ JobBoard Deployment Complete."
+        echo "✅ JobBoard Deployment Complete. (http://localhost:3001)"
     fi
 
     # HiveMind Temporarily Disabled

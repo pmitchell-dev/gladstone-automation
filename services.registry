@@ -2,4 +2,4 @@
 # Format: SCRIPT_NAME|PORT|DESCRIPTION
 # ------------------------------------------
 ntfy_listener.sh|8080|Main ntfy command listener
-jobboard|3000|Personal job application tracker (kanban + PDF cache + notes)
+jobboard|3001|Personal job application tracker (kanban + PDF cache + notes)
