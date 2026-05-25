@@ -158,6 +158,8 @@ if [ "$MODE" == "webhost" ]; then
     # Ensure persistent host directories exist (survives container rebuilds)
     mkdir -p /home/pi/jobboard/data/backups
     mkdir -p /home/pi/jobboard/cache
+    # Fix ownership so container user (1000:1000) can write to mounted volumes
+    sudo chown -R 1000:1000 /home/pi/jobboard/data /home/pi/jobboard/cache
 
     # Clone your custom HiveMind Fork (Temporarily Disabled)
     #if [ ! -d "/home/pi/hivemind" ]; then
