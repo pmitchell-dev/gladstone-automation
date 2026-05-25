@@ -93,6 +93,8 @@ elif [ "$MODE" == "--webhost" ]; then
         git clone https://github.com/pmitchell-dev/JobBoard.git /home/pi/jobboard
         mkdir -p /home/pi/jobboard/data/backups
         mkdir -p /home/pi/jobboard/cache
+        # Ensure pi user owns these dirs so the container (user: 1000:1000) can write to them
+        chown -R 1000:1000 /home/pi/jobboard/data /home/pi/jobboard/cache
     fi
 
     if [ -d "/home/pi/jobboard" ]; then
