@@ -12,9 +12,6 @@ services:
       - NODE_ENV=production
       - PORT=3000
       - PUPPETEER_EXECUTABLE_PATH=/usr/bin/chromium
-    # Run as host pi user (1000:1000) so the process can write to
-    # the volume-mounted data/ and cache/ directories
-    user: "1000:1000"
     restart: unless-stopped
     security_opt:
       - seccomp:unconfined
