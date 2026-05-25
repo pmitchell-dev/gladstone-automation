@@ -146,6 +146,15 @@ if [ "$MODE" == "webhost" ]; then
         echo "?? RustDesk Stack provisioned."
     fi
 
+    # JobBoard Stack Setup
+    if [ ! -d "/home/pi/jobboard" ]; then
+        echo "📋 Initial Clone of JobBoard..."
+        git clone https://github.com/pmitchell-dev/JobBoard.git /home/pi/jobboard
+    fi
+    # Ensure persistent host directories exist (survives container rebuilds)
+    mkdir -p /home/pi/jobboard/data/backups
+    mkdir -p /home/pi/jobboard/cache
+
     # Clone your custom HiveMind Fork (Temporarily Disabled)
     #if [ ! -d "/home/pi/hivemind" ]; then
     #    echo "?? Initial Clone of HiveMind Fork..."

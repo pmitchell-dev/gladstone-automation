@@ -87,6 +87,28 @@ elif [ "$MODE" == "--webhost" ]; then
         fi
     fi
 
+    # JobBoard Stack Synchronization
+    if [ ! -d "/home/pi/jobboard" ]; then
+        echo "📋 JobBoard missing. Cloning repository..."
+        git clone https://github.com/pmitchell-dev/JobBoard.git /home/pi/jobboard
+        mkdir -p /home/pi/jobboard/data/backups
+        mkdir -p /home/pi/jobboard/cache
+    fi
+
+    if [ -d "/home/pi/jobboard" ]; then
+        echo "📋 Pulling latest JobBoard code from GitHub..."
+        cd /home/pi/jobboard
+        git pull
+
+        echo "🔨 Rebuilding local JobBoard image..."
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d --build
+        else
+            echo "⚠ Warning: No docker-compose.yml found in /home/pi/jobboard"
+        fi
+        echo "✅ JobBoard Deployment Complete."
+    fi
+
     # HiveMind Temporarily Disabled
     #if [ ! -d "/home/pi/hivemind" ]; then
     #    echo "?? HiveMind missing. Cloning repository..."
