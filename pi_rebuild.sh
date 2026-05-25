@@ -99,15 +99,24 @@ elif [ "$MODE" == "--webhost" ]; then
         echo "📋 Pulling latest JobBoard code from GitHub..."
         cd /home/pi/jobboard
 
-        # One-time migration: untrack data/jobs.json if git still has it indexed
-        # (older clones may have pulled it before it was added to .gitignore)
-        # This is safe — it only removes git tracking, not the actual file
-        if git ls-files --error-unmatch data/jobs.json &>/dev/null 2>&1; then
-            echo "📋 Untracking data/jobs.json from git index (one-time migration)..."
-            git rm --cached data/jobs.json
+        # Safe pull: preserve live jobs data across git operations.
+        # data/jobs.json may still be tracked in the remote repo, so we
+        # stash it, let git do the pull, then restore the real data.
+        if [ -f "data/jobs.json" ]; then
+            cp data/jobs.json /tmp/jobs.json.bak
+            echo "📋 Stashed jobs.json to /tmp/jobs.json.bak"
         fi
+        # Also untrack from local index if git still has it (older clone migration)
+        git ls-files --error-unmatch data/jobs.json &>/dev/null 2>&1 && git rm --cached data/jobs.json
+        rm -f data/jobs.json
 
         git pull
+
+        # Restore live data — always prefer the real file over whatever git pulled
+        if [ -f "/tmp/jobs.json.bak" ]; then
+            cp /tmp/jobs.json.bak data/jobs.json
+            echo "📋 Restored jobs.json from stash"
+        fi
 
         # Always restore our port-remapped compose (git pull may reset it)
         if [ -f "/home/pi/scripts/jobboard-compose.yml" ]; then
