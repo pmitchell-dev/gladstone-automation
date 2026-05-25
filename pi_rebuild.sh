@@ -98,6 +98,15 @@ elif [ "$MODE" == "--webhost" ]; then
     if [ -d "/home/pi/jobboard" ]; then
         echo "📋 Pulling latest JobBoard code from GitHub..."
         cd /home/pi/jobboard
+
+        # One-time migration: untrack data/jobs.json if git still has it indexed
+        # (older clones may have pulled it before it was added to .gitignore)
+        # This is safe — it only removes git tracking, not the actual file
+        if git ls-files --error-unmatch data/jobs.json &>/dev/null 2>&1; then
+            echo "📋 Untracking data/jobs.json from git index (one-time migration)..."
+            git rm --cached data/jobs.json
+        fi
+
         git pull
 
         # Always restore our port-remapped compose (git pull may reset it)
