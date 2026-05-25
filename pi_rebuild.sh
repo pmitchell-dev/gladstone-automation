@@ -119,6 +119,8 @@ elif [ "$MODE" == "--webhost" ]; then
             cp /tmp/jobs.json.bak data/jobs.json
             echo "📋 Restored jobs.json from stash"
         fi
+        # Re-assert ownership after cp/git ops (script may run as ntfy/cron user)
+        sudo chown -R 1000:1000 /home/pi/jobboard/data /home/pi/jobboard/cache
 
         # Always restore our port-remapped compose (git pull may reset it)
         if [ -f "/home/pi/scripts/jobboard-compose.yml" ]; then
