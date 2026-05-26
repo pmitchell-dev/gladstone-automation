@@ -29,7 +29,7 @@ echo "👂 [$(date)] Listener starting..."
 while true; do
     echo "🔌 [$(date)] Connecting to ntfy stream..."
 
-    curl -N --max-time 0 "https://ntfy.sh/$LISTEN_TOPICS/json" | while read -r line; do
+    curl -sS -N --max-time 0 "https://ntfy.sh/$LISTEN_TOPICS/json" | while read -r line; do
         [[ -z "$line" ]] && continue
         RAW_MSG=$(echo "$line" | jq -r '.message // empty' | xargs)
         [[ "$RAW_MSG" =~ ^[❌✅🛠️📊🏥📋✈️] ]] && continue
