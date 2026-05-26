@@ -26,7 +26,7 @@ SCRIPT_DIR="/home/pi/scripts"
 
 echo "👂 [$(date)] Listener starting..."
 
-curl -sN ntfy.sh/$LISTEN_TOPICS/json | while read -r line; do
+curl -N "https://ntfy.sh/$LISTEN_TOPICS/json" | while read -r line; do
     [[ -z "$line" ]] && continue
     RAW_MSG=$(echo "$line" | jq -r '.message // empty' | xargs)
     [[ "$RAW_MSG" =~ ^[❌✅🛠️📊🏥📋✈️] ]] && continue
