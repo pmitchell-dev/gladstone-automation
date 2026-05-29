@@ -55,4 +55,26 @@ Cloud Sync: Run sync.
 
 Why: This pushes your changes to GitHub so that if the Pi dies 5 minutes from now, your new script isn't lost.
 
-Test Recovery: (Optional but Recommended) Run update on your secondary device (Laptop) to ensure the new script pulls down correctly and permissions are set.
+5. Updating the Dozzle Log Viewer (or any Docker Compose Stack)
+When you modify a compose file (e.g., dozzle-agent-compose.yml, jobboard-compose.yml):
+
+  DO NOT run docker compose up directly from /home/pi/dozzle or similar.
+  These directories contain COPIES managed by install.sh.
+  Running docker compose there without re-running install.sh uses stale config.
+
+  Correct update flow (Pi5 / ntfy hub):
+    cd /home/pi/scripts && git pull && ./install.sh
+
+  Correct update flow (Webhost / laptop):
+    cd /home/pi/scripts && git pull && ./install.sh --webhost
+
+  Why: install.sh copies the compose files from ~/scripts/ into their
+  deployment directories (/home/pi/dozzle/, /home/pi/jobboard/, etc.)
+  before restarting the containers. Skipping this step means the container
+  restarts with the old configuration, making any fix appear to not work.
+
+6. Log Viewer Quick Reference
+  URL:     http://192.168.50.217:8888
+  Pi5 hub: Dozzle agent on port 7007 (auto-connected)
+  Scripts: /home/pi/scripts/logs/ → streamed via gladstone-scripts-log container
+  NVR:     ANNKE Alarm Host → 192.168.50.217:514 (UDP) → nvr-syslog container
