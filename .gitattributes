@@ -1,0 +1,4 @@
+# Enforce LF line endings for all files in this repo.
+# These scripts run on Linux (Pi5/Ubuntu). CRLF will break shell scripts
+# and YAML multiline blocks when checked out on the Pi.
+* text=auto eol=lf
