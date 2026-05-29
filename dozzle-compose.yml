@@ -8,8 +8,6 @@
 services:
 
   # ── Main Dozzle Instance ──────────────────────────────
-  # Reads all local Docker container logs via the socket,
-  # and connects to the Pi5 agent for hub-side logs.
   dozzle:
     image: amir20/dozzle:latest
     container_name: dozzle
@@ -20,41 +18,36 @@ services:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
       DOZZLE_HOSTNAME: "Webhost (192.168.50.217)"
-      # Connect to Dozzle Agent on the Pi5 (ntfy hub)
       DOZZLE_REMOTE_AGENT: "192.168.50.138:7007"
-      # Optional: uncomment to enable basic auth
       # DOZZLE_USERNAME: admin
       # DOZZLE_PASSWORD: changeme
 
-  # ── Pi5 Script Log Bridge ─────────────────────────────
-  # Tails all Pi5 Gladstone script logs in real-time.
-  # These are mounted from the host filesystem via volume.
-  # The Pi5 scripts log to: /home/pi/scripts/logs/
-  gladstone-scripts-log:
-    image: alpine:3.19
-    container_name: gladstone-scripts-log
+  # ── Webhost Script Log Bridge ─────────────────────────
+  # Tails Gladstone script logs written on the webhost itself.
+  webhost-scripts-log:
+    image: debian:bookworm-slim
+    container_name: webhost-scripts-log
     restart: unless-stopped
-    # NOTE: This sidecar runs on the Pi5 (via the Dozzle agent),
-    # not directly here. See the agent-compose.yml for the Pi5 side.
-    # This entry is a placeholder/documentation reminder.
-    # The actual sidecar is defined in dozzle-agent-compose.yml.
-    entrypoint: ["echo", "See dozzle-agent-compose.yml on Pi5 for script log bridge"]
+    volumes:
+      - /home/pi/scripts/logs:/logs
+    entrypoint: ["bash", "-c", "mkdir -p /logs && touch /logs/rebuild.log /logs/pi_services_manager.log /logs/pi_backup.log && echo '📋 [Webhost] Script log stream starting...' && tail -f /logs/rebuild.log /logs/pi_services_manager.log /logs/pi_backup.log"]
+    labels:
+      dozzle.name: "Webhost Scripts"
 
   # ── NVR Syslog Receiver ───────────────────────────────
-  # Listens on UDP 514 for syslog messages from the ANNKE NVR.
-  # Configure your ANNKE NVR: Menu > Network > Alarm Host
-  #   Alarm Host IP  = 192.168.50.217  (this machine)
-  #   Alarm Host Port = 514
-  # If ANNKE does not support syslog forwarding, logs from
-  # the NVR web UI must be checked manually. This container
-  # will log "Waiting for NVR syslog..." until traffic arrives.
+  # Listens on UDP 514 for syslog from the ANNKE NVR.
+  # ANNKE config: Network > Log Server Settings
+  #   Log Server Address = 192.168.50.217
+  #   Log Server Port    = 514
+  # Uses Python3 for unambiguous UDP socket binding
+  # (netcat-openbsd -p flag does not set listen port).
   nvr-syslog:
-    image: debian:bookworm-slim
+    image: python:3.11-slim
     container_name: nvr-syslog
     restart: unless-stopped
     ports:
       - "514:514/udp"
-    entrypoint: ["bash", "-c", "echo '📡 [NVR Syslog] Listening on UDP 514 for ANNKE NVR logs...' && while true; do nc -u -l -p 514 && echo '[reconnect]'; done"]
+    entrypoint: ["python3", "-c", "import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1); s.bind(('0.0.0.0',514)); print('[NVR Syslog] Listening on UDP 514...',flush=True)\nwhile True: d,a=s.recvfrom(65535); print('['+a[0]+'] '+d.decode('utf-8','replace'),flush=True)"]
     labels:
       dozzle.name: "ANNKE NVR Syslog"
 
