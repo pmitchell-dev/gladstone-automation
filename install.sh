@@ -15,12 +15,30 @@ for arg in "$@"; do
 done
 
 # 2. Identity Check & Persistence
-if [ -z "$MODE" ] && [ -f "$ID_FILE" ]; then
-    MODE=$(cat "$ID_FILE" | xargs)
+if [ -f "$ID_FILE" ]; then
+    EXISTING_MODE=$(cat "$ID_FILE" | xargs)
+    # Guard Rail 1: Prevent changing an established server's role
+    if [ -n "$MODE" ] && [ "$MODE" != "$EXISTING_MODE" ]; then
+        echo "❌ ERROR: This server is already designated as a '$EXISTING_MODE' server!"
+        echo "You cannot run the install script with --$MODE here."
+        exit 1
+    fi
+    if [ -z "$MODE" ]; then
+        MODE=$EXISTING_MODE
+    fi
 elif [ -z "$MODE" ]; then
-    echo "? ERROR: No mode specified! Usage: ./install.sh --ntfy | --webhost"
+    echo "❓ ERROR: No mode specified! Usage: ./install.sh --ntfy | --webhost"
     exit 1
 fi
+
+# Guard Rail 2: Prevent fresh Pi installs from becoming a webhost
+HOSTNAME=$(hostname)
+if [ "$MODE" == "webhost" ] && [[ "$HOSTNAME" == *"raspberrypi"* || "$HOSTNAME" == *"pi"* ]]; then
+    echo "❌ ERROR: Hostname suggests this is a Raspberry Pi!"
+    echo "Please use './install.sh --ntfy' for the Hub."
+    exit 1
+fi
+
 echo "$MODE" > "$ID_FILE"
 
 # 3. Base System Update
