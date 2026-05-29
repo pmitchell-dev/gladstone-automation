@@ -38,7 +38,7 @@ services:
     container_name: gladstone-scripts-log
     restart: unless-stopped
     volumes:
-      - /home/pi/scripts/logs:/logs:ro
+      - /home/pi/scripts/logs:/logs
     entrypoint: >
       sh -c "
         echo '📋 [Gladstone] Script log stream starting...' &&
