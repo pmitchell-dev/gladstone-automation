@@ -16,8 +16,19 @@
 
 ---
 
-## ?? Central Hub Schedule
+## ⏱ Central Hub Schedule
 * **Printer Scrape:** 4-hour intervals.
 * **Network Audit:** 6-hour intervals.
 * **Self-Backup:** Daily at midnight.
 * **Watchdog:** 5-minute check with 5-strike retry logic.
+
+---
+
+## 📊 Centralized Log Viewer
+* **Tool:** Dozzle (lightweight Docker log viewer)
+* **URL:** http://192.168.50.217:8888
+* **Main instance:** Webhost (Ubuntu Laptop) — `dozzle-compose.yml`
+* **Agent:** Pi5 Hub — `dozzle-agent-compose.yml` (port 7007)
+* **Streams:** All Docker containers on both hosts + Pi5 Gladstone script logs (`/home/pi/scripts/logs/`)
+* **NVR (ANNKE):** UDP syslog receiver on port 514 — configure ANNKE Alarm Host to 192.168.50.217
+* **Pi5 LAN IP:** 192.168.50.138 | **Webhost LAN IP:** 192.168.50.217

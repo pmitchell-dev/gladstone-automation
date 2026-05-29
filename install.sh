@@ -26,25 +26,23 @@ echo "$MODE" > "$ID_FILE"
 # 3. Base System Update
 sudo apt update && sudo apt install -y jq curl git bc zip
 
-# 4. Webhost Specific Logic (Docker + Code Cloning)
-if [ "$MODE" == "webhost" ]; then
-    echo "?? Configuring Webhost Stack..."
-    
-    # Install Docker Engine if missing
-    if ! command -v docker &> /dev/null; then
-        echo "?? Installing Docker Engine..."
-        curl -fsSL https://get.docker.com -o get-docker.sh
-        sudo sh get-docker.sh
-        sudo usermod -aG docker $USER
-        rm get-docker.sh
-    fi
-    
-    # Install Compose and wake up services
-    sudo apt install -y docker-compose-plugin
-    sudo systemctl enable --now docker
-    export PATH="$PATH:/usr/bin:/usr/local/bin"
+# 3b. Docker Engine (required by both ntfy agent and webhost)
+if ! command -v docker &> /dev/null; then
+    echo "🐳 Installing Docker Engine..."
+    curl -fsSL https://get.docker.com -o get-docker.sh
+    sudo sh get-docker.sh
+    sudo usermod -aG docker $USER
+    rm get-docker.sh
+fi
 
-    # Clone your custom HomeAsset Fork
+# Install Compose plugin and enable Docker daemon
+sudo apt install -y docker-compose-plugin
+sudo systemctl enable --now docker
+export PATH="$PATH:/usr/bin:/usr/local/bin"
+
+# 4. Webhost Specific Logic (Code Cloning)
+if [ "$MODE" == "webhost" ]; then
+    echo "🖥️  Configuring Webhost Stack..."
     if [ ! -d "/home/pi/homeasset" ]; then
         echo "?? Initial Clone of HomeAsset Fork..."
         git clone https://github.com/legendary034/HomeAsset.git /home/pi/homeasset
@@ -170,6 +168,39 @@ if [ "$MODE" == "webhost" ]; then
     #        cp "$SCRIPT_DIR/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
     #    fi
     #fi
+fi
+
+# 4b. Webhost — Dozzle Log Viewer Stack
+if [ "$MODE" == "webhost" ]; then
+    echo "📊 Deploying Dozzle Log Viewer (Webhost main instance)..."
+    DOZZLE_DIR="/home/pi/dozzle"
+    mkdir -p "$DOZZLE_DIR"
+
+    if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
+        cp "$SCRIPT_DIR/dozzle-compose.yml" "$DOZZLE_DIR/docker-compose.yml"
+    fi
+
+    cd "$DOZZLE_DIR"
+    docker compose up -d
+    echo "✅ Dozzle Log Viewer running at http://192.168.50.217:8888"
+fi
+
+# 4c. Pi5 Hub — Dozzle Agent Stack
+if [ "$MODE" == "ntfy" ]; then
+    echo "📊 Deploying Dozzle Agent (Pi5 hub)..."
+    DOZZLE_DIR="/home/pi/dozzle"
+    mkdir -p "$DOZZLE_DIR"
+
+    # Ensure the shared log directory exists (scripts write here)
+    mkdir -p /home/pi/scripts/logs
+
+    if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
+        cp "$SCRIPT_DIR/dozzle-agent-compose.yml" "$DOZZLE_DIR/docker-compose.yml"
+    fi
+
+    cd "$DOZZLE_DIR"
+    docker compose up -d
+    echo "✅ Dozzle Agent running on port 7007 (connected to Webhost)"
 fi
 
 # 5. TerminalBuddy Setup (embedded — no internet required)

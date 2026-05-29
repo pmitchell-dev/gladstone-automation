@@ -1,0 +1,55 @@
+# ==========================================================
+# GLADSTONE DOZZLE AGENT (Pi5 Hub — 192.168.50.138)
+# ==========================================================
+# Deploy:  cd /home/pi/dozzle && docker compose -f dozzle-agent-compose.yml up -d
+# This exposes Pi5 Docker logs to the Webhost Dozzle instance.
+# Port 7007 must be reachable from 192.168.50.217.
+# ==========================================================
+
+services:
+
+  # ── Dozzle Agent ──────────────────────────────────────
+  # Securely exposes this host's Docker logs to the
+  # main Dozzle instance on the Webhost.
+  dozzle-agent:
+    image: amir20/dozzle:latest
+    container_name: dozzle-agent
+    restart: unless-stopped
+    command: agent
+    ports:
+      - "7007:7007"
+    volumes:
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+    environment:
+      DOZZLE_HOSTNAME: "Pi5 Hub (192.168.50.138)"
+
+  # ── Gladstone Script Log Bridge ───────────────────────
+  # Tails all Pi5 Gladstone script logs to stdout so Dozzle
+  # can stream them in real-time alongside container logs.
+  #
+  # Log files tailed:
+  #   - ntfy.log         (ntfy listener — always running)
+  #   - rebuild.log      (pi_rebuild.sh — captures all build events)
+  #   - net_speed.log    (net_speed.sh — 6-hour intervals)
+  #   - ntfy_listener.log (watchdog restarts of the listener)
+  #   - pi_services_manager.log (watchdog, auto-appended by registry)
+  gladstone-scripts-log:
+    image: alpine:3.19
+    container_name: gladstone-scripts-log
+    restart: unless-stopped
+    volumes:
+      - /home/pi/scripts/logs:/logs:ro
+    entrypoint: >
+      sh -c "
+        echo '📋 [Gladstone] Script log stream starting...' &&
+        touch /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/pi_services_manager.log 2>/dev/null || true &&
+        tail -qF \
+          /logs/ntfy.log \
+          /logs/rebuild.log \
+          /logs/net_speed.log \
+          /logs/ntfy_listener.log \
+          /logs/pi_services_manager.log \
+          2>/dev/null
+      "
+    labels:
+      dozzle.name: "Gladstone Pi5 Scripts"

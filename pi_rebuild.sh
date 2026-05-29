@@ -19,7 +19,7 @@ fi
 
 # --- 1. HUB MODE (Raspberry Pi Only) ---
 if [ "$MODE" == "--ntfy" ]; then
-    echo "??? Applying Hub Crontab..."
+    echo "📝 Applying Hub Crontab..."
     MASTER_CRON="0 0,8,12,16,20 * * * /home/pi/scripts/get_printer_status.sh
 1 0,8,12,16,20 * * * /home/pi/scripts/printer_alert.sh
 0 */6 * * * /home/pi/scripts/net_speed.sh
@@ -27,6 +27,17 @@ if [ "$MODE" == "--ntfy" ]; then
 */5 * * * * /home/pi/scripts/pi_services_manager.sh
 @reboot /bin/bash /home/pi/scripts/ntfy_listener.sh > /home/pi/scripts/logs/ntfy.log 2>&1 &"
     echo "$MASTER_CRON" | crontab -
+
+    # Dozzle Agent Stack Sync
+    if [ -d "/home/pi/dozzle" ]; then
+        echo "📊 Synchronizing Dozzle Agent..."
+        if [ -f "/home/pi/scripts/dozzle-agent-compose.yml" ]; then
+            cp "/home/pi/scripts/dozzle-agent-compose.yml" "/home/pi/dozzle/docker-compose.yml"
+        fi
+        mkdir -p /home/pi/scripts/logs
+        cd /home/pi/dozzle && docker compose up -d
+        echo "✅ Dozzle Agent synced on port 7007."
+    fi
 
 # --- 2. WEBHOST MODE (Laptop Only) ---
 elif [ "$MODE" == "--webhost" ]; then
@@ -165,6 +176,16 @@ elif [ "$MODE" == "--webhost" ]; then
 */5 * * * * /home/pi/scripts/pi_services_manager.sh
 0 3 * * 0 docker system prune -af --volumes"
     echo "$WEB_CRON" | crontab -
+
+    # Dozzle Log Viewer Stack Sync
+    if [ -d "/home/pi/dozzle" ]; then
+        echo "📊 Synchronizing Dozzle Log Viewer..."
+        if [ -f "/home/pi/scripts/dozzle-compose.yml" ]; then
+            cp "/home/pi/scripts/dozzle-compose.yml" "/home/pi/dozzle/docker-compose.yml"
+        fi
+        cd /home/pi/dozzle && docker compose up -d
+        echo "✅ Dozzle Log Viewer synced. (http://192.168.50.217:8888)"
+    fi
 fi
 
 
