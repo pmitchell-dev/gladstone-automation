@@ -45,9 +45,10 @@ services:
     image: python:3.11-slim
     container_name: nvr-syslog
     restart: unless-stopped
-    ports:
-      - "514:514/udp"
-    entrypoint: ["python3", "-c", "import socket; s=socket.socket(socket.AF_INET,socket.SOCK_DGRAM); s.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1); s.bind(('0.0.0.0',514)); print('[NVR Syslog] Listening on UDP 514...',flush=True)\nwhile True: d,a=s.recvfrom(65535); print('['+a[0]+'] '+d.decode('utf-8','replace'),flush=True)"]
+    network_mode: "host"
+    volumes:
+      - /home/pi/scripts/nvr_syslog.py:/nvr_syslog.py:ro
+    entrypoint: ["python3", "-u", "/nvr_syslog.py"]
     labels:
       dozzle.name: "ANNKE NVR Syslog"
 
