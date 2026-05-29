@@ -49,17 +49,12 @@ services:
   # the NVR web UI must be checked manually. This container
   # will log "Waiting for NVR syslog..." until traffic arrives.
   nvr-syslog:
-    image: alpine:3.19
+    image: debian:bookworm-slim
     container_name: nvr-syslog
     restart: unless-stopped
     ports:
       - "514:514/udp"
-    entrypoint: >
-      sh -c "
-        apk add --no-cache socat &&
-        echo '📡 [NVR Syslog] Listening on UDP 514 for ANNKE NVR logs...' &&
-        socat -u UDP-RECV:514 STDOUT
-      "
+    entrypoint: ["bash", "-c", "echo '📡 [NVR Syslog] Listening on UDP 514 for ANNKE NVR logs...' && while true; do nc -u -l -p 514 && echo '[reconnect]'; done"]
     labels:
       dozzle.name: "ANNKE NVR Syslog"
 
