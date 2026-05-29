@@ -35,7 +35,7 @@ if [ "$MODE" == "--ntfy" ]; then
             cp "/home/pi/scripts/dozzle-agent-compose.yml" "/home/pi/dozzle/docker-compose.yml"
         fi
         mkdir -p /home/pi/scripts/logs
-        cd /home/pi/dozzle && docker compose up -d
+        cd /home/pi/dozzle && sudo docker compose up -d
         echo "✅ Dozzle Agent synced on port 7007."
     fi
 
@@ -183,7 +183,7 @@ elif [ "$MODE" == "--webhost" ]; then
         if [ -f "/home/pi/scripts/dozzle-compose.yml" ]; then
             cp "/home/pi/scripts/dozzle-compose.yml" "/home/pi/dozzle/docker-compose.yml"
         fi
-        cd /home/pi/dozzle && docker compose up -d
+        cd /home/pi/dozzle && sudo docker compose up -d
         echo "✅ Dozzle Log Viewer synced. (http://192.168.50.217:8888)"
     fi
 fi

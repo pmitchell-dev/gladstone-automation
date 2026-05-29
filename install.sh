@@ -181,7 +181,7 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     cd "$DOZZLE_DIR"
-    docker compose up -d
+    sudo docker compose up -d
     echo "✅ Dozzle Log Viewer running at http://192.168.50.217:8888"
 fi
 
@@ -199,7 +199,7 @@ if [ "$MODE" == "ntfy" ]; then
     fi
 
     cd "$DOZZLE_DIR"
-    docker compose up -d
+    sudo docker compose up -d
     echo "✅ Dozzle Agent running on port 7007 (connected to Webhost)"
 fi
 
