@@ -168,6 +168,29 @@ elif [ "$MODE" == "--webhost" ]; then
         fi
     fi
 
+    # LiteLLM Stack Synchronization
+    if [ ! -d "/home/pi/litellm" ]; then
+        echo "🐳 LiteLLM missing. Provisioning stack..."
+        mkdir -p "/home/pi/litellm"
+    fi
+
+    if [ -d "/home/pi/litellm" ]; then
+        echo "🐳 Synchronizing LiteLLM Stack..."
+        cd /home/pi/litellm
+        if [ -f "/home/pi/scripts/litellm-compose.yml" ]; then
+            cp "/home/pi/scripts/litellm-compose.yml" "/home/pi/litellm/docker-compose.yml"
+        fi
+        if [ -f "/home/pi/scripts/litellm-config.yaml" ] && [ ! -f "config.yaml" ]; then
+            cp "/home/pi/scripts/litellm-config.yaml" "config.yaml"
+        fi
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d
+            echo "✅ LiteLLM Deployment Complete. (http://localhost:4000)"
+        else
+            echo "⚠ Warning: No docker-compose.yml found in /home/pi/litellm"
+        fi
+    fi
+
     # HiveMind Temporarily Disabled
     #if [ ! -d "/home/pi/hivemind" ]; then
     #    echo "?? HiveMind missing. Cloning repository..."

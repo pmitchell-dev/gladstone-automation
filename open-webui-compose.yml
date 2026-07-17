@@ -16,5 +16,7 @@ services:
       - ./data:/app/backend/data
     environment:
       - OLLAMA_BASE_URL=http://host.docker.internal:11434
+      - OPENAI_API_BASE_URL=http://host.docker.internal:4000/v1
+      - OPENAI_API_KEY=sk-1234
     extra_hosts:
       - "host.docker.internal:host-gateway"

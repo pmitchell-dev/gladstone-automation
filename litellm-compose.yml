@@ -1,0 +1,20 @@
+# ==========================================================
+# GLADSTONE LITELLM PROXY STACK (Webhost — 192.168.50.217)
+# ==========================================================
+# Deploy:  cd /home/pi/litellm && docker compose up -d
+# UI:      http://192.168.50.217:4000
+# ==========================================================
+
+services:
+  litellm:
+    image: ghcr.io/berriai/litellm:main-stable
+    container_name: litellm
+    restart: unless-stopped
+    ports:
+      - "4000:4000"
+    volumes:
+      - ./config.yaml:/app/config.yaml:ro
+    command: ["--config", "/app/config.yaml"]
+    env_file:
+      - path: .env
+        required: false

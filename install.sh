@@ -186,6 +186,18 @@ if [ "$MODE" == "webhost" ]; then
         echo "🐳 Open WebUI Stack provisioned."
     fi
 
+    # LiteLLM Stack Setup
+    LITELLM_DIR="/home/pi/litellm"
+    mkdir -p "$LITELLM_DIR"
+    if [ -f "$SCRIPT_DIR/litellm-compose.yml" ]; then
+        cp "$SCRIPT_DIR/litellm-compose.yml" "$LITELLM_DIR/docker-compose.yml"
+        echo "🐳 LiteLLM Stack provisioned."
+    fi
+    if [ -f "$SCRIPT_DIR/litellm-config.yaml" ] && [ ! -f "$LITELLM_DIR/config.yaml" ]; then
+        cp "$SCRIPT_DIR/litellm-config.yaml" "$LITELLM_DIR/config.yaml"
+        echo "🐳 LiteLLM config.yaml provisioned."
+    fi
+
     # Clone your custom HiveMind Fork (Temporarily Disabled)
     #if [ ! -d "/home/pi/hivemind" ]; then
     #    echo "?? Initial Clone of HiveMind Fork..."

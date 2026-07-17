@@ -1,0 +1,24 @@
+# ==========================================================
+# GLADSTONE LITELLM CONFIGURATION (litellm-config.yaml)
+# ==========================================================
+
+general_settings:
+  master_key: "sk-1234"
+
+model_list:
+  # Add your models here. 
+  # Reference environment variables securely using "os.environ/KEY_NAME".
+  - model_name: gpt-4o
+    litellm_params:
+      model: openai/gpt-4o
+      api_key: "os.environ/OPENAI_API_KEY"
+
+  - model_name: claude-3-5-sonnet
+    litellm_params:
+      model: anthropic/claude-3-5-sonnet-20240620
+      api_key: "os.environ/ANTHROPIC_API_KEY"
+
+  - model_name: local-llama3
+    litellm_params:
+      model: ollama/llama3
+      api_base: http://host.docker.internal:11434

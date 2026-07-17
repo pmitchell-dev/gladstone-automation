@@ -55,6 +55,12 @@ if [ "$MODE" == "webhost" ]; then
         echo "🐳 Recovering Open WebUI container..."
         cd /home/pi/open-webui && docker compose up -d
     fi
+
+    # LiteLLM
+    if ! docker ps --format '{{.Names}}' | grep -q "^litellm$"; then
+        echo "🐳 Recovering LiteLLM container..."
+        cd /home/pi/litellm && docker compose up -d
+    fi
 fi
 
 # REGISTRY MONITOR (Shared)
