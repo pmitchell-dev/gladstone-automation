@@ -6,8 +6,16 @@ general_settings:
   master_key: "sk-1234"
 
 model_list:
-  # Add your models here. 
-  # Reference environment variables securely using "os.environ/KEY_NAME".
+  - model_name: gemini-2.5-pro
+    litellm_params:
+      model: gemini/gemini-2.5-pro
+      api_key: "os.environ/GEMINI_API_KEY"
+
+  - model_name: gemini-2.5-flash
+    litellm_params:
+      model: gemini/gemini-2.5-flash
+      api_key: "os.environ/GEMINI_API_KEY"
+
   - model_name: gpt-4o
     litellm_params:
       model: openai/gpt-4o

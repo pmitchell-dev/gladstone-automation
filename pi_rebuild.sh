@@ -188,8 +188,11 @@ elif [ "$MODE" == "--webhost" ]; then
         if [ -f "/home/pi/scripts/litellm-compose.yml" ]; then
             cp "/home/pi/scripts/litellm-compose.yml" "/home/pi/litellm/docker-compose.yml"
         fi
-        if [ -f "/home/pi/scripts/litellm-config.yaml" ] && [ ! -f "config.yaml" ]; then
+        if [ -f "/home/pi/scripts/litellm-config.yaml" ]; then
             cp "/home/pi/scripts/litellm-config.yaml" "config.yaml"
+        fi
+        if [ ! -f ".env" ]; then
+            touch ".env"
         fi
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d

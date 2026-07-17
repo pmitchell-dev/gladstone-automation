@@ -197,6 +197,10 @@ if [ "$MODE" == "webhost" ]; then
         cp "$SCRIPT_DIR/litellm-config.yaml" "$LITELLM_DIR/config.yaml"
         echo "🐳 LiteLLM config.yaml provisioned."
     fi
+    if [ ! -f "$LITELLM_DIR/.env" ]; then
+        touch "$LITELLM_DIR/.env"
+        echo "🐳 LiteLLM .env file initialized."
+    fi
 
     # Clone your custom HiveMind Fork (Temporarily Disabled)
     #if [ ! -d "/home/pi/hivemind" ]; then
