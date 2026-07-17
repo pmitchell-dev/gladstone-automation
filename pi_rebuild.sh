@@ -147,9 +147,13 @@ elif [ "$MODE" == "--webhost" ]; then
             cp "/home/pi/scripts/jobboard-compose.yml" "/home/pi/jobboard/docker-compose.yml"
         fi
 
+        # Clear and refresh the JobBoard cache
+        echo "🧹 Clearing JobBoard cache..."
+        sudo rm -rf /home/pi/jobboard/cache/*
+
         echo "🔨 Rebuilding local JobBoard image..."
         if [ -f "docker-compose.yml" ]; then
-            docker compose up -d --build
+            docker compose up -d --build --force-recreate
         else
             echo "⚠ Warning: No docker-compose.yml found in /home/pi/jobboard"
         fi

@@ -61,6 +61,12 @@ if [ "$MODE" == "webhost" ]; then
         echo "🐳 Recovering LiteLLM container..."
         cd /home/pi/litellm && docker compose up -d
     fi
+
+    # JobBoard
+    if ! docker ps --format '{{.Names}}' | grep -q "^jobboard$"; then
+        echo "📋 Recovering JobBoard container..."
+        cd /home/pi/jobboard && docker compose up -d
+    fi
 fi
 
 # REGISTRY MONITOR (Shared)
