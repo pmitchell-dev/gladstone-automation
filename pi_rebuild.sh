@@ -197,6 +197,7 @@ elif [ "$MODE" == "--webhost" ]; then
         fi
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d
+            docker compose restart litellm
             echo "✅ LiteLLM Deployment Complete. (http://$HOST_IP:4000)"
         else
             echo "⚠ Warning: No docker-compose.yml found in /home/pi/litellm"
