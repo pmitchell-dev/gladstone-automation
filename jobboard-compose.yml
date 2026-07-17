@@ -15,3 +15,5 @@ services:
     restart: unless-stopped
     security_opt:
       - seccomp:unconfined
+    extra_hosts:
+      - "host.docker.internal:host-gateway"
