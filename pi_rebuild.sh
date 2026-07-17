@@ -147,6 +147,27 @@ elif [ "$MODE" == "--webhost" ]; then
         echo "✅ JobBoard Deployment Complete. (http://localhost:3001)"
     fi
 
+    # Open WebUI Stack Synchronization
+    if [ ! -d "/home/pi/open-webui" ]; then
+        echo "🐳 Open WebUI missing. Provisioning stack..."
+        mkdir -p "/home/pi/open-webui/data"
+    fi
+
+    if [ -d "/home/pi/open-webui" ]; then
+        echo "🐳 Synchronizing Open WebUI Stack..."
+        cd /home/pi/open-webui
+        if [ -f "/home/pi/scripts/open-webui-compose.yml" ]; then
+            cp "/home/pi/scripts/open-webui-compose.yml" "/home/pi/open-webui/docker-compose.yml"
+        fi
+        sudo chown -R 1000:1000 /home/pi/open-webui/data
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d
+            echo "✅ Open WebUI Deployment Complete. (http://localhost:3002)"
+        else
+            echo "⚠ Warning: No docker-compose.yml found in /home/pi/open-webui"
+        fi
+    fi
+
     # HiveMind Temporarily Disabled
     #if [ ! -d "/home/pi/hivemind" ]; then
     #    echo "?? HiveMind missing. Cloning repository..."

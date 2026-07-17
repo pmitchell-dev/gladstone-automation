@@ -49,6 +49,12 @@ if [ "$MODE" == "webhost" ]; then
         echo "?? Recovering RustDesk Relay server (hbbr)..."
         cd /home/pi/rustdesk && docker compose up -d
     fi
+
+    # Open WebUI
+    if ! docker ps --format '{{.Names}}' | grep -q "^open-webui$"; then
+        echo "🐳 Recovering Open WebUI container..."
+        cd /home/pi/open-webui && docker compose up -d
+    fi
 fi
 
 # REGISTRY MONITOR (Shared)

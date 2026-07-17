@@ -5,3 +5,4 @@ ntfy_listener.sh|8080|Main ntfy command listener
 jobboard|3001|Personal job application tracker (kanban + PDF cache + notes)
 dozzle|8888|Centralized real-time log viewer (Webhost main — http://192.168.50.217:8888)
 dozzle-agent|7007|Dozzle log agent (Pi5 hub — streams Docker + script logs to Webhost)
+open-webui|3002|Open WebUI (Webhost — http://192.168.50.217:3002)
