@@ -13,7 +13,15 @@ echo "???  [$HOSTNAME] Rebuilding in $MODE mode..."
 # Ensure the scripts themselves are up to date
 if [ -d "/home/pi/scripts/.git" ]; then
     echo "?? Updating scripts from GitHub..."
-    cd /home/pi/scripts && git pull --rebase origin main
+    SCRIPT_PATH=$(realpath "$0")
+    cd /home/pi/scripts || exit
+    BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
+    git pull --rebase origin main
+    AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
+    if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
+        echo "🔄 Scripts updated. Re-executing rebuild script..."
+        exec /bin/bash "$SCRIPT_PATH" "$@"
+    fi
 fi
 
 

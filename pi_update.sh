@@ -6,10 +6,18 @@
 SCRIPT_DIR="/home/pi/scripts"
 MODE=$(cat ~/.gladstone_mode 2>/dev/null || echo "unknown")
 
+SCRIPT_PATH=$(realpath "$0")
 cd $SCRIPT_DIR || exit
 
 echo "?? [$HOSTNAME] Pulling updates from GitHub..."
+BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
 git pull --rebase origin main
+AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
+
+if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
+    echo "🔄 Scripts updated. Re-executing update script..."
+    exec /bin/bash "$SCRIPT_PATH" "$@"
+fi
 
 # Standard Permissions Fix
 chmod +x *.sh
