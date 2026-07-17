@@ -50,6 +50,7 @@ if [ "$MODE" == "--ntfy" ]; then
 # --- 2. WEBHOST MODE (Laptop Only) ---
 elif [ "$MODE" == "--webhost" ]; then
     echo "?? Synchronizing Webhost Services..."
+    HOST_IP=$(hostname -I | awk '{print $1}')
     
     if [ ! -d "/home/pi/homeasset" ]; then
         echo "?? HomeAsset missing. Cloning repository..."
@@ -152,7 +153,7 @@ elif [ "$MODE" == "--webhost" ]; then
         else
             echo "⚠ Warning: No docker-compose.yml found in /home/pi/jobboard"
         fi
-        echo "✅ JobBoard Deployment Complete. (http://localhost:3001)"
+        echo "✅ JobBoard Deployment Complete. (http://$HOST_IP:3001)"
     fi
 
     # Open WebUI Stack Synchronization
@@ -170,7 +171,7 @@ elif [ "$MODE" == "--webhost" ]; then
         sudo chown -R 1000:1000 /home/pi/open-webui/data
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d
-            echo "✅ Open WebUI Deployment Complete. (http://localhost:3002)"
+            echo "✅ Open WebUI Deployment Complete. (http://$HOST_IP:3002)"
         else
             echo "⚠ Warning: No docker-compose.yml found in /home/pi/open-webui"
         fi
@@ -196,7 +197,7 @@ elif [ "$MODE" == "--webhost" ]; then
         fi
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d
-            echo "✅ LiteLLM Deployment Complete. (http://localhost:4000)"
+            echo "✅ LiteLLM Deployment Complete. (http://$HOST_IP:4000)"
         else
             echo "⚠ Warning: No docker-compose.yml found in /home/pi/litellm"
         fi
@@ -239,7 +240,7 @@ elif [ "$MODE" == "--webhost" ]; then
             cp "/home/pi/scripts/dozzle-compose.yml" "/home/pi/dozzle/docker-compose.yml"
         fi
         cd /home/pi/dozzle && sudo docker compose up -d
-        echo "✅ Dozzle Log Viewer synced. (http://192.168.50.217:8888)"
+        echo "✅ Dozzle Log Viewer synced. (http://$HOST_IP:8888)"
     fi
 fi
 
