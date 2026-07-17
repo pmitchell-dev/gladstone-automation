@@ -13,7 +13,7 @@ echo "???  [$HOSTNAME] Rebuilding in $MODE mode..."
 # Ensure the scripts themselves are up to date
 if [ -d "/home/pi/scripts/.git" ]; then
     echo "?? Updating scripts from GitHub..."
-    cd /home/pi/scripts && git pull origin main
+    cd /home/pi/scripts && git pull --rebase origin main
 fi
 
 

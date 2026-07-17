@@ -9,7 +9,7 @@ MODE=$(cat ~/.gladstone_mode 2>/dev/null || echo "unknown")
 cd $SCRIPT_DIR || exit
 
 echo "?? [$HOSTNAME] Pulling updates from GitHub..."
-git pull origin main
+git pull --rebase origin main
 
 # Standard Permissions Fix
 chmod +x *.sh
