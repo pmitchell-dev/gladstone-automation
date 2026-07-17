@@ -63,6 +63,8 @@ elif [ "$MODE" == "--webhost" ]; then
     if [ -d "/home/pi/homeasset" ]; then
         echo "?? Pulling latest HomeAsset code from GitHub..."
         cd /home/pi/homeasset
+        # Discard local changes to tracked files (like docker-compose.yml) to ensure git pull succeeds
+        git checkout -- .
         git pull
         
         echo "?? Rebuilding local HomeAsset image..."
@@ -128,11 +130,14 @@ elif [ "$MODE" == "--webhost" ]; then
             cp data/jobs.json /tmp/jobs.json.bak
             echo "📋 Stashed jobs.json to /tmp/jobs.json.bak"
         fi
+        # Discard local changes to tracked files (like docker-compose.yml) to ensure git pull succeeds
+        git checkout -- .
+
         # Also untrack from local index if git still has it (older clone migration)
         git ls-files --error-unmatch data/jobs.json &>/dev/null 2>&1 && git rm --cached data/jobs.json
         rm -f data/jobs.json
 
-        git pull
+        git pull origin master
 
         # Restore live data — always prefer the real file over whatever git pulled
         if [ -f "/tmp/jobs.json.bak" ]; then
