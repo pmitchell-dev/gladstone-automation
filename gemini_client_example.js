@@ -5,7 +5,7 @@
  * It sends a POST request to your Webhost backend server at http://192.168.50.217:5050/api/query
  */
 
-async function sendGeminiPrompt(userPrompt, modelName = 'gemini-2.5-flash') {
+async function sendGeminiPrompt(userPrompt, modelName = 'gemini-flash-latest') {
     const SERVER_URL = 'http://192.168.50.217:5050/api/query';
 
     try {

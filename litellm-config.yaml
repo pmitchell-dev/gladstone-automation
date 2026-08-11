@@ -11,9 +11,9 @@ model_list:
       model: gemini/gemini-3.1-pro
       api_key: "os.environ/GEMINI_API_KEY"
 
-  - model_name: gemini-3.5-flash
+  - model_name: gemini-flash-latest
     litellm_params:
-      model: gemini/gemini-3.5-flash
+      model: gemini/gemini-flash-latest
       api_key: "os.environ/GEMINI_API_KEY"
 
   - model_name: gpt-4o
