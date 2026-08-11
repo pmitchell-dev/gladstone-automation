@@ -82,12 +82,21 @@ def query_gemini():
 
     # Construct payload parts
     parts = [{"text": prompt}]
+    mime_type = "image/jpeg"
     if image_base64:
-        if "," in image_base64:
+        if image_base64.startswith("data:"):
+            try:
+                header, image_base64 = image_base64.split(",", 1)
+                if ";" in header and ":" in header:
+                    mime_type = header.split(";")[0].split(":")[1]
+            except Exception:
+                pass
+        elif "," in image_base64:
             image_base64 = image_base64.split(",", 1)[1]
+
         parts.append({
-            "inline_data": {
-                "mime_type": "image/jpeg",
+            "inlineData": {
+                "mimeType": mime_type,
                 "data": image_base64
             }
         })
@@ -123,6 +132,10 @@ def query_gemini():
             if system_instruction:
                 logging.info(f"System Instruction: {system_instruction}")
             logging.info(f"Prompt: {prompt}")
+            if image_base64:
+                logging.info(f"[IMAGE ATTACHED] mimeType: {mime_type}, base64 length: {len(image_base64)} chars")
+            else:
+                logging.info("[NO IMAGE ATTACHED]")
 
             response = requests.post(url, headers=headers, json=gemini_payload, timeout=30)
 
