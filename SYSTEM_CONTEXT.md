@@ -1,5 +1,5 @@
 # 🖥️ Gladstone Master System Context
-**Last Updated:** July 17, 2026  
+**Last Updated:** August 10, 2026  
 **Architecture:** Hub & Spoke (Communication Hub Model)
 
 ---
@@ -10,7 +10,7 @@
 
 ---
 
-## ??? Deployment Flags
+## 🚩 Deployment Flags
 * `--ntfy`: Installs the full communication suite (speedtest, printer monitoring, master listener).
 * `--webhost`: Installs a minimal footprint for web services and basic heartbeat monitoring.
 
@@ -32,3 +32,8 @@
 * **Streams:** All Docker containers on both hosts + Pi5 Gladstone script logs (`/home/pi/scripts/logs/`)
 * **NVR (ANNKE):** UDP syslog receiver on port 514 — configure ANNKE Alarm Host to 192.168.50.217
 * **Pi5 LAN IP:** 192.168.50.138 | **Webhost LAN IP:** 192.168.50.217
+
+---
+
+## 🧪 Testing & Verification Workflow
+* **User-Led Testing:** Testing of changes will be completed by the user after changes are committed and pushed to GitHub.

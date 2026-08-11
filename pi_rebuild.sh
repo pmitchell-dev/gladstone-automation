@@ -11,20 +11,38 @@ SCRIPT_DIR="$HOME/scripts"
 mkdir -p "$SCRIPT_DIR/logs"
 exec > >(tee -a "$SCRIPT_DIR/logs/rebuild.log") 2>&1
 
-echo "???  [$HOSTNAME] Rebuilding in $MODE mode..."
+# ANSI Color Definitions
+CYAN='\033[0;36m'
+BOLD_CYAN='\033[1;36m'
+BOLD_GREEN='\033[1;32m'
+BOLD_YELLOW='\033[1;33m'
+RESET='\033[0m'
+
+echo -e "${BOLD_CYAN}🔄 [$HOSTNAME] Rebuilding in $MODE mode...${RESET}"
 
 # Ensure the scripts themselves are up to date
 if [ -d "$SCRIPT_DIR/.git" ]; then
-    echo "?? Updating scripts from GitHub..."
+    echo -e "${BOLD_CYAN}🔄 Updating scripts from GitHub...${RESET}"
     SCRIPT_PATH=$(realpath "$0")
     cd "$SCRIPT_DIR" || exit
+    git remote set-url origin https://github.com/pmitchell-dev/pi5-scripts.git 2>/dev/null || true
     git checkout -- . 2>/dev/null
     BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
-    git pull --rebase origin main
+    git pull --rebase origin main 2>/dev/null || git pull --rebase origin master 2>/dev/null || git pull --rebase
     AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
     if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
-        echo "🔄 Scripts updated. Re-executing rebuild script..."
+        echo -e "${BOLD_GREEN}========================================================================${RESET}"
+        echo -e "${BOLD_YELLOW}🚀 NEW SCRIPT UPDATES DETECTED & PULLED [pi5-scripts]${RESET}"
+        echo -e "${BOLD_GREEN}========================================================================${RESET}"
+        echo -e "${CYAN} Repository:${RESET}   https://github.com/pmitchell-dev/pi5-scripts"
+        echo -e "${CYAN} Commit Range:${RESET} ${BEFORE_PULL:~0:7}..${AFTER_PULL:~0:7}"
+        echo -e "${CYAN} New Commits:${RESET}"
+        git log --oneline -n 5 "$BEFORE_PULL..$AFTER_PULL" | sed 's/^/   • /'
+        echo -e "${BOLD_GREEN}========================================================================${RESET}"
+        echo -e "${BOLD_CYAN}🔄 Scripts updated. Re-executing rebuild script...${RESET}"
         exec /bin/bash "$SCRIPT_PATH" "$@"
+    else
+        echo -e "  ${CYAN}[pi5-scripts]${RESET} Already up to date (no new changes found)."
     fi
 fi
 
@@ -57,28 +75,46 @@ elif [ "$MODE" == "--webhost" ]; then
     HOST_IP=$(hostname -I | awk '{print $1}')
     
     if [ ! -d "$HOME/homeasset" ]; then
-        echo "?? HomeAsset missing. Cloning repository..."
-        git clone https://github.com/legendary034/HomeAsset.git "$HOME/homeasset"
+        echo -e "${BOLD_CYAN}🔄 HomeAsset missing. Cloning repository...${RESET}"
+        git clone https://github.com/pmitchell-dev/HomeAsset.git "$HOME/homeasset"
         if [ -f "$SCRIPT_DIR/homeasset-compose.yml" ]; then
             cp "$SCRIPT_DIR/homeasset-compose.yml" "$HOME/homeasset/docker-compose.yml"
         fi
     fi
 
     if [ -d "$HOME/homeasset" ]; then
-        echo "?? Pulling latest HomeAsset code from GitHub..."
+        echo -e "${BOLD_CYAN}🔄 Checking & pulling latest HomeAsset code from GitHub...${RESET}"
         cd "$HOME/homeasset"
+        # Auto-heal remote URL to point to pmitchell-dev/HomeAsset.git
+        git remote set-url origin https://github.com/pmitchell-dev/HomeAsset.git 2>/dev/null || true
         # Discard local changes to tracked files (like docker-compose.yml) to ensure git pull succeeds
         git checkout -- .
-        git pull
         
-        echo "?? Rebuilding local HomeAsset image..."
+        BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
+        git pull origin main 2>/dev/null || git pull origin master 2>/dev/null || git pull
+        AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
+
+        if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+            echo -e "${BOLD_YELLOW}🚀 NEW UPDATES DETECTED & PULLED [HomeAsset]${RESET}"
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+            echo -e "${CYAN} Repository:${RESET}   https://github.com/pmitchell-dev/HomeAsset"
+            echo -e "${CYAN} Commit Range:${RESET} ${BEFORE_PULL:~0:7}..${AFTER_PULL:~0:7}"
+            echo -e "${CYAN} New Commits:${RESET}"
+            git log --oneline -n 5 "$BEFORE_PULL..$AFTER_PULL" | sed 's/^/   • /'
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+        else
+            echo -e "  ${CYAN}[HomeAsset]${RESET} Already up to date (no new changes found)."
+        fi
+
+        echo -e "${BOLD_CYAN}🔨 Rebuilding local HomeAsset image...${RESET}"
         # Rebuilds from your modified source code using the compose file
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d --build
         else
-            echo "? Warning: No docker-compose.yml found in $HOME/homeasset"
+            echo -e "  ⚠ Warning: No docker-compose.yml found in $HOME/homeasset"
         fi
-        echo "? Deployment Successful."
+        echo -e "  ✅ HomeAsset Deployment Check Complete."
     fi
 
     # Invidious Stack Synchronization
@@ -124,8 +160,9 @@ elif [ "$MODE" == "--webhost" ]; then
     fi
 
     if [ -d "$HOME/jobboard" ]; then
-        echo "📋 Pulling latest JobBoard code from GitHub..."
+        echo -e "${BOLD_CYAN}📋 Checking & pulling latest JobBoard code from GitHub...${RESET}"
         cd "$HOME/jobboard"
+        git remote set-url origin https://github.com/pmitchell-dev/JobBoard.git 2>/dev/null || true
 
         # Safe pull: preserve live jobs data across git operations.
         if [ -f "data/jobs.json" ]; then
@@ -138,7 +175,22 @@ elif [ "$MODE" == "--webhost" ]; then
         git ls-files --error-unmatch data/jobs.json &>/dev/null 2>&1 && git rm --cached data/jobs.json
         rm -f data/jobs.json
 
-        git pull origin master
+        BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
+        git pull origin master 2>/dev/null || git pull origin main 2>/dev/null || git pull
+        AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
+
+        if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+            echo -e "${BOLD_YELLOW}🚀 NEW UPDATES DETECTED & PULLED [JobBoard]${RESET}"
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+            echo -e "${CYAN} Repository:${RESET}   https://github.com/pmitchell-dev/JobBoard"
+            echo -e "${CYAN} Commit Range:${RESET} ${BEFORE_PULL:~0:7}..${AFTER_PULL:~0:7}"
+            echo -e "${CYAN} New Commits:${RESET}"
+            git log --oneline -n 5 "$BEFORE_PULL..$AFTER_PULL" | sed 's/^/   • /'
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+        else
+            echo -e "  ${CYAN}[JobBoard]${RESET} Already up to date (no new changes found)."
+        fi
 
         # Restore live data
         if [ -f "/tmp/jobs.json.bak" ]; then
@@ -156,11 +208,11 @@ elif [ "$MODE" == "--webhost" ]; then
         echo "🧹 Clearing JobBoard cache..."
         sudo rm -rf "$HOME/jobboard/cache/*"
 
-        echo "🔨 Rebuilding local JobBoard image..."
+        echo -e "${BOLD_CYAN}🔨 Rebuilding local JobBoard image...${RESET}"
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d --build --force-recreate
         else
-            echo "⚠ Warning: No docker-compose.yml found in $HOME/jobboard"
+            echo -e "  ⚠ Warning: No docker-compose.yml found in $HOME/jobboard"
         fi
         echo "✅ JobBoard Deployment Complete. (http://$HOST_IP:3001)"
     fi

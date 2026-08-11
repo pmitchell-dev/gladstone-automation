@@ -62,8 +62,8 @@ export PATH="$PATH:/usr/bin:/usr/local/bin"
 if [ "$MODE" == "webhost" ]; then
     echo "🖥️  Configuring Webhost Stack..."
     if [ ! -d "$HOME/homeasset" ]; then
-        echo "?? Initial Clone of HomeAsset Fork..."
-        git clone https://github.com/legendary034/HomeAsset.git "$HOME/homeasset"
+        echo "🔄 Initial Clone of HomeAsset Repository..."
+        git clone https://github.com/pmitchell-dev/HomeAsset.git "$HOME/homeasset"
         # Copy the provided docker-compose file for homeasset
         if [ -f "$SCRIPT_DIR/homeasset-compose.yml" ]; then
             cp "$SCRIPT_DIR/homeasset-compose.yml" "$HOME/homeasset/docker-compose.yml"
