@@ -18,6 +18,7 @@ services:
       - path: .env
         required: false
     environment:
+      - PYTHONUNBUFFERED=1
       - GEMINI_API_KEY=${GEMINI_API_KEY}
       - GEMINI_DEFAULT_MODEL=${GEMINI_DEFAULT_MODEL:-gemini-flash-latest}
       - GEMINI_FALLBACK_MODEL=${GEMINI_FALLBACK_MODEL:-gemini-flash-latest}

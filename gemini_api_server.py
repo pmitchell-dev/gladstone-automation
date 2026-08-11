@@ -119,7 +119,11 @@ def query_gemini():
         headers = {"Content-Type": "application/json"}
 
         try:
-            logging.info(f"Sending prompt to Gemini API (model: {current_model})...")
+            logging.info(f"=== PROMPT SENT TO GEMINI (model: {current_model}) ===")
+            if system_instruction:
+                logging.info(f"System Instruction: {system_instruction}")
+            logging.info(f"Prompt: {prompt}")
+
             response = requests.post(url, headers=headers, json=gemini_payload, timeout=30)
 
             if response.status_code == 200:
@@ -131,6 +135,9 @@ def query_gemini():
                     if c_parts:
                         result_text = c_parts[0].get("text", "")
 
+                logging.info(f"=== RESPONSE RETRIEVED FROM GEMINI (model: {current_model}) ===")
+                logging.info(f"Response: {result_text}")
+
                 return jsonify({
                     "status": "success",
                     "result": result_text,
@@ -139,7 +146,8 @@ def query_gemini():
                 }), 200
 
             err_msg = response.text
-            logging.warning(f"Gemini API model '{current_model}' returned status {response.status_code}: {err_msg}")
+            logging.warning(f"=== ERROR RESPONSE FROM GEMINI (model: {current_model}, status: {response.status_code}) ===")
+            logging.warning(f"Error Details: {err_msg}")
 
             last_error_response = (jsonify({
                 "status": "error",
