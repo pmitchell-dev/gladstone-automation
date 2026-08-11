@@ -321,10 +321,41 @@ TERMINALBUDDY_EOF
 chmod +x ~/.config/terminalbuddy/terminalbuddy.sh
 
 # Add to .bashrc (idempotent — won't duplicate on rebuild)
-if ! grep -qF 'terminalbuddy.sh' ~/.bashrc; then
+if ! grep -qF 'terminalbuddy.sh' ~/.bashrc 2>/dev/null; then
     echo '' >> ~/.bashrc
     echo '# TerminalBuddy shell integration' >> ~/.bashrc
     echo '[ -f ~/.config/terminalbuddy/terminalbuddy.sh ] && source ~/.config/terminalbuddy/terminalbuddy.sh' >> ~/.bashrc
+fi
+
+# Ensure aliases.sh is sourced in .bashrc
+if ! grep -qF 'aliases.sh' ~/.bashrc 2>/dev/null; then
+    echo '' >> ~/.bashrc
+    echo '# Gladstone aliases integration' >> ~/.bashrc
+    echo '[ -f "$HOME/scripts/aliases.sh" ] && source "$HOME/scripts/aliases.sh"' >> ~/.bashrc
+fi
+
+# 5b. Webhost Bashrc Environment Fixes
+if [ "$MODE" == "webhost" ]; then
+    echo "⚙️  Ensuring Webhost .bashrc environment fixes..."
+    if ! grep -qF 'gemini_clean' ~/.bashrc 2>/dev/null; then
+        cat >> ~/.bashrc << 'BASHRC_WEBHOST_ENV_EOF'
+
+# Terminal and Gemini CLI environment fixes
+export TERM=xterm-256color
+export COLORTERM=truecolor
+
+gemini_clean() {
+  command gemini "$@"
+  # Redirect stdin so stty sane never hangs waiting for input
+  stty sane < /dev/null 2>/dev/null || true
+  # Force-kill any lingering node CLI process if it stalls
+  pkill -9 -f "@google/gemini-cli" 2>/dev/null || true
+}
+
+alias gemini='GEMINI_CLI_NO_RELAUNCH=1 node /usr/lib/node_modules/@google/gemini-cli/bundle/gemini.js'
+BASHRC_WEBHOST_ENV_EOF
+        echo "✅ Webhost Gemini CLI & terminal environment fixes appended to ~/.bashrc"
+    fi
 fi
 
 # Ensure dashboard directory exists
