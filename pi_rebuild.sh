@@ -18,6 +18,7 @@ if [ -d "$SCRIPT_DIR/.git" ]; then
     echo "?? Updating scripts from GitHub..."
     SCRIPT_PATH=$(realpath "$0")
     cd "$SCRIPT_DIR" || exit
+    git checkout -- . 2>/dev/null
     BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
     git pull --rebase origin main
     AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
