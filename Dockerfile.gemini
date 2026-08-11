@@ -1,0 +1,13 @@
+FROM python:3.11-slim
+
+WORKDIR /app
+
+# Install runtime dependencies
+RUN pip install --no-cache-dir flask flask-cors requests gunicorn
+
+# Copy server code
+COPY gemini_api_server.py .
+
+EXPOSE 5050
+
+CMD ["gunicorn", "--bind", "0.0.0.0:5050", "--workers", "2", "--timeout", "60", "gemini_api_server:app"]

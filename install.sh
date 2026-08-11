@@ -1,8 +1,8 @@
 #!/bin/bash
 # ==========================================================
-# GLADSTONE UNIVERSAL BOOTSTRAP (v2.0)
+# GLADSTONE UNIVERSAL BOOTSTRAP (v2.1)
 # ==========================================================
-SCRIPT_DIR="/home/pi/scripts"
+SCRIPT_DIR="$HOME/scripts"
 ID_FILE="$HOME/.gladstone_mode"
 
 # 1. Capture Flag (ntfy for Hub, webhost for Laptop)
@@ -61,17 +61,17 @@ export PATH="$PATH:/usr/bin:/usr/local/bin"
 # 4. Webhost Specific Logic (Code Cloning)
 if [ "$MODE" == "webhost" ]; then
     echo "🖥️  Configuring Webhost Stack..."
-    if [ ! -d "/home/pi/homeasset" ]; then
+    if [ ! -d "$HOME/homeasset" ]; then
         echo "?? Initial Clone of HomeAsset Fork..."
-        git clone https://github.com/legendary034/HomeAsset.git /home/pi/homeasset
+        git clone https://github.com/legendary034/HomeAsset.git "$HOME/homeasset"
         # Copy the provided docker-compose file for homeasset
         if [ -f "$SCRIPT_DIR/homeasset-compose.yml" ]; then
-            cp "$SCRIPT_DIR/homeasset-compose.yml" "/home/pi/homeasset/docker-compose.yml"
+            cp "$SCRIPT_DIR/homeasset-compose.yml" "$HOME/homeasset/docker-compose.yml"
         fi
     fi
 
     # 4a. Invidious Stack Setup (Standard/Optional Items)
-    INVID_DIR="/home/pi/invidious"
+    INVID_DIR="$HOME/invidious"
     mkdir -p "$INVID_DIR/config"
     mkdir -p "$INVID_DIR/postgresdata"
     
@@ -154,7 +154,7 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     # RustDesk Server Stack Setup
-    RUSTDESK_DIR="/home/pi/rustdesk"
+    RUSTDESK_DIR="$HOME/rustdesk"
     mkdir -p "$RUSTDESK_DIR/data"
     
     if [ -f "$SCRIPT_DIR/rustdesk-compose.yml" ]; then
@@ -163,22 +163,22 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     # JobBoard Stack Setup
-    if [ ! -d "/home/pi/jobboard" ]; then
+    if [ ! -d "$HOME/jobboard" ]; then
         echo "📋 Initial Clone of JobBoard..."
-        git clone https://github.com/pmitchell-dev/JobBoard.git /home/pi/jobboard
+        git clone https://github.com/pmitchell-dev/JobBoard.git "$HOME/jobboard"
         # Override upstream compose with our port-remapped version (3001 — Invidious owns 3000)
         if [ -f "$SCRIPT_DIR/jobboard-compose.yml" ]; then
-            cp "$SCRIPT_DIR/jobboard-compose.yml" "/home/pi/jobboard/docker-compose.yml"
+            cp "$SCRIPT_DIR/jobboard-compose.yml" "$HOME/jobboard/docker-compose.yml"
         fi
     fi
     # Ensure persistent host directories exist (survives container rebuilds)
-    mkdir -p /home/pi/jobboard/data/backups
-    mkdir -p /home/pi/jobboard/cache
+    mkdir -p "$HOME/jobboard/data/backups"
+    mkdir -p "$HOME/jobboard/cache"
     # Fix ownership so container user (1000:1000) can write to mounted volumes
-    sudo chown -R 1000:1000 /home/pi/jobboard/data /home/pi/jobboard/cache
+    sudo chown -R 1000:1000 "$HOME/jobboard/data" "$HOME/jobboard/cache"
 
     # Open WebUI Stack Setup
-    OPEN_WEBUI_DIR="/home/pi/open-webui"
+    OPEN_WEBUI_DIR="$HOME/open-webui"
     mkdir -p "$OPEN_WEBUI_DIR/data"
     sudo chown -R 1000:1000 "$OPEN_WEBUI_DIR/data"
     if [ -f "$SCRIPT_DIR/open-webui-compose.yml" ]; then
@@ -187,7 +187,7 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     # LiteLLM Stack Setup
-    LITELLM_DIR="/home/pi/litellm"
+    LITELLM_DIR="$HOME/litellm"
     mkdir -p "$LITELLM_DIR"
     if [ -f "$SCRIPT_DIR/litellm-compose.yml" ]; then
         cp "$SCRIPT_DIR/litellm-compose.yml" "$LITELLM_DIR/docker-compose.yml"
@@ -202,21 +202,29 @@ if [ "$MODE" == "webhost" ]; then
         echo "🐳 LiteLLM .env file initialized."
     fi
 
-    # Clone your custom HiveMind Fork (Temporarily Disabled)
-    #if [ ! -d "/home/pi/hivemind" ]; then
-    #    echo "?? Initial Clone of HiveMind Fork..."
-    #    git clone https://github.com/legendary034/HiveMind.git /home/pi/hivemind
-    #    # Copy the provided docker-compose file
-    #    if [ -f "$SCRIPT_DIR/hivemind-compose.yml" ]; then
-    #        cp "$SCRIPT_DIR/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
-    #    fi
-    #fi
+    # Gemini API Backend Stack Setup
+    GEMINI_DIR="$HOME/gemini-api"
+    mkdir -p "$GEMINI_DIR"
+    if [ -f "$SCRIPT_DIR/gemini-compose.yml" ]; then
+        cp "$SCRIPT_DIR/gemini-compose.yml" "$GEMINI_DIR/docker-compose.yml"
+    fi
+    if [ -f "$SCRIPT_DIR/gemini_api_server.py" ]; then
+        cp "$SCRIPT_DIR/gemini_api_server.py" "$GEMINI_DIR/gemini_api_server.py"
+    fi
+    if [ -f "$SCRIPT_DIR/Dockerfile.gemini" ]; then
+        cp "$SCRIPT_DIR/Dockerfile.gemini" "$GEMINI_DIR/Dockerfile.gemini"
+    fi
+    if [ ! -f "$GEMINI_DIR/.env" ]; then
+        echo "GEMINI_API_KEY=your_gemini_api_key_here" > "$GEMINI_DIR/.env"
+        echo "🔑 Created $GEMINI_DIR/.env file (Add your GEMINI_API_KEY here)."
+    fi
+    echo "🤖 Gemini API Stack provisioned."
 fi
 
 # 4b. Webhost — Dozzle Log Viewer Stack
 if [ "$MODE" == "webhost" ]; then
     echo "📊 Deploying Dozzle Log Viewer (Webhost main instance)..."
-    DOZZLE_DIR="/home/pi/dozzle"
+    DOZZLE_DIR="$HOME/dozzle"
     mkdir -p "$DOZZLE_DIR"
 
     if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
@@ -231,11 +239,11 @@ fi
 # 4c. Pi5 Hub — Dozzle Agent Stack
 if [ "$MODE" == "ntfy" ]; then
     echo "📊 Deploying Dozzle Agent (Pi5 hub)..."
-    DOZZLE_DIR="/home/pi/dozzle"
+    DOZZLE_DIR="$HOME/dozzle"
     mkdir -p "$DOZZLE_DIR"
 
     # Ensure the shared log directory exists (scripts write here)
-    mkdir -p /home/pi/scripts/logs
+    mkdir -p "$SCRIPT_DIR/logs"
 
     if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
         cp "$SCRIPT_DIR/dozzle-agent-compose.yml" "$DOZZLE_DIR/docker-compose.yml"

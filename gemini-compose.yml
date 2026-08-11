@@ -1,0 +1,22 @@
+# ==========================================================
+# GLADSTONE GEMINI API BACKEND STACK (Webhost — 192.168.50.217:5050)
+# ==========================================================
+# Deploy:  cd ~/gemini-api && docker compose up -d --build
+# Endpoint: http://192.168.50.217:5050/api/query
+# ==========================================================
+
+services:
+  gemini-api:
+    build:
+      context: .
+      dockerfile: Dockerfile.gemini
+    container_name: gemini-api
+    restart: unless-stopped
+    ports:
+      - "5050:5050"
+    env_file:
+      - path: .env
+        required: false
+    environment:
+      - GEMINI_API_KEY=${GEMINI_API_KEY}
+      - GEMINI_DEFAULT_MODEL=${GEMINI_DEFAULT_MODEL:-gemini-2.5-flash}

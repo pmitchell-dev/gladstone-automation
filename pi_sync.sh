@@ -6,10 +6,10 @@
 # PURPOSE: Pushes local script changes to GitHub.
 # ==========================================================
 
-SCRIPT_DIR="/home/pi/scripts"
+SCRIPT_DIR="$HOME/scripts"
 LOG_FILE="$SCRIPT_DIR/logs/last_sync.log"
 
-cd $SCRIPT_DIR || exit
+cd "$SCRIPT_DIR" || exit
 
 echo "?? Starting Cloud Sync to GitHub..."
 

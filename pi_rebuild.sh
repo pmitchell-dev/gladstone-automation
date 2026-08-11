@@ -1,20 +1,23 @@
 #!/bin/bash
 # ==========================================================
-# GLADSTONE MULTI-MODE REBUILD (v2.0 - Auto-Sync)
+# GLADSTONE MULTI-MODE REBUILD (v2.1 - Auto-Sync)
 # ==========================================================
 MODE=$1 
 if [ -z "$MODE" ] && [ -f "$HOME/.gladstone_mode" ]; then
     MODE="--$(cat $HOME/.gladstone_mode | xargs)"
 fi
-exec > >(tee -a /home/pi/scripts/logs/rebuild.log) 2>&1
+
+SCRIPT_DIR="$HOME/scripts"
+mkdir -p "$SCRIPT_DIR/logs"
+exec > >(tee -a "$SCRIPT_DIR/logs/rebuild.log") 2>&1
 
 echo "???  [$HOSTNAME] Rebuilding in $MODE mode..."
 
 # Ensure the scripts themselves are up to date
-if [ -d "/home/pi/scripts/.git" ]; then
+if [ -d "$SCRIPT_DIR/.git" ]; then
     echo "?? Updating scripts from GitHub..."
     SCRIPT_PATH=$(realpath "$0")
-    cd /home/pi/scripts || exit
+    cd "$SCRIPT_DIR" || exit
     BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
     git pull --rebase origin main
     AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
@@ -28,22 +31,22 @@ fi
 # --- 1. HUB MODE (Raspberry Pi Only) ---
 if [ "$MODE" == "--ntfy" ]; then
     echo "📝 Applying Hub Crontab..."
-    MASTER_CRON="0 0,8,12,16,20 * * * /home/pi/scripts/get_printer_status.sh
-1 0,8,12,16,20 * * * /home/pi/scripts/printer_alert.sh
-0 */6 * * * /home/pi/scripts/net_speed.sh
-0 0 * * * /home/pi/scripts/pi_backup.sh
-*/5 * * * * /home/pi/scripts/pi_services_manager.sh
-@reboot /bin/bash /home/pi/scripts/ntfy_listener.sh > /home/pi/scripts/logs/ntfy.log 2>&1 &"
+    MASTER_CRON="0 0,8,12,16,20 * * * $SCRIPT_DIR/get_printer_status.sh
+1 0,8,12,16,20 * * * $SCRIPT_DIR/printer_alert.sh
+0 */6 * * * $SCRIPT_DIR/net_speed.sh
+0 0 * * * $SCRIPT_DIR/pi_backup.sh
+*/5 * * * * $SCRIPT_DIR/pi_services_manager.sh
+@reboot /bin/bash $SCRIPT_DIR/ntfy_listener.sh > $SCRIPT_DIR/logs/ntfy.log 2>&1 &"
     echo "$MASTER_CRON" | crontab -
 
     # Dozzle Agent Stack Sync
-    if [ -d "/home/pi/dozzle" ]; then
+    if [ -d "$HOME/dozzle" ]; then
         echo "📊 Synchronizing Dozzle Agent..."
-        if [ -f "/home/pi/scripts/dozzle-agent-compose.yml" ]; then
-            cp "/home/pi/scripts/dozzle-agent-compose.yml" "/home/pi/dozzle/docker-compose.yml"
+        if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
+            cp "$SCRIPT_DIR/dozzle-agent-compose.yml" "$HOME/dozzle/docker-compose.yml"
         fi
-        mkdir -p /home/pi/scripts/logs
-        cd /home/pi/dozzle && sudo docker compose up -d
+        mkdir -p "$SCRIPT_DIR/logs"
+        cd "$HOME/dozzle" && sudo docker compose up -d
         echo "✅ Dozzle Agent synced on port 7007."
     fi
 
@@ -52,17 +55,17 @@ elif [ "$MODE" == "--webhost" ]; then
     echo "?? Synchronizing Webhost Services..."
     HOST_IP=$(hostname -I | awk '{print $1}')
     
-    if [ ! -d "/home/pi/homeasset" ]; then
+    if [ ! -d "$HOME/homeasset" ]; then
         echo "?? HomeAsset missing. Cloning repository..."
-        git clone https://github.com/legendary034/HomeAsset.git /home/pi/homeasset
-        if [ -f "/home/pi/scripts/homeasset-compose.yml" ]; then
-            cp "/home/pi/scripts/homeasset-compose.yml" "/home/pi/homeasset/docker-compose.yml"
+        git clone https://github.com/legendary034/HomeAsset.git "$HOME/homeasset"
+        if [ -f "$SCRIPT_DIR/homeasset-compose.yml" ]; then
+            cp "$SCRIPT_DIR/homeasset-compose.yml" "$HOME/homeasset/docker-compose.yml"
         fi
     fi
 
-    if [ -d "/home/pi/homeasset" ]; then
+    if [ -d "$HOME/homeasset" ]; then
         echo "?? Pulling latest HomeAsset code from GitHub..."
-        cd /home/pi/homeasset
+        cd "$HOME/homeasset"
         # Discard local changes to tracked files (like docker-compose.yml) to ensure git pull succeeds
         git checkout -- .
         git pull
@@ -72,134 +75,130 @@ elif [ "$MODE" == "--webhost" ]; then
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d --build
         else
-            echo "? Warning: No docker-compose.yml found in /home/pi/homeasset"
+            echo "? Warning: No docker-compose.yml found in $HOME/homeasset"
         fi
         echo "? Deployment Successful."
     fi
 
     # Invidious Stack Synchronization
-    if [ -d "/home/pi/invidious" ]; then
+    if [ -d "$HOME/invidious" ]; then
         echo "?? Synchronizing Invidious Stack..."
-        cd /home/pi/invidious
+        cd "$HOME/invidious"
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d
             echo "? Invidious Stack Deployment Check Complete."
         else
-            echo "? Warning: No docker-compose.yml found in /home/pi/invidious"
+            echo "? Warning: No docker-compose.yml found in $HOME/invidious"
         fi
     fi
 
     # RustDesk Stack Synchronization
-    if [ ! -d "/home/pi/rustdesk" ]; then
+    if [ ! -d "$HOME/rustdesk" ]; then
         echo "?? RustDesk missing. Provisioning stack..."
-        mkdir -p "/home/pi/rustdesk/data"
-        if [ -f "/home/pi/scripts/rustdesk-compose.yml" ]; then
-            cp "/home/pi/scripts/rustdesk-compose.yml" "/home/pi/rustdesk/docker-compose.yml"
+        mkdir -p "$HOME/rustdesk/data"
+        if [ -f "$SCRIPT_DIR/rustdesk-compose.yml" ]; then
+            cp "$SCRIPT_DIR/rustdesk-compose.yml" "$HOME/rustdesk/docker-compose.yml"
         fi
     fi
 
-    if [ -d "/home/pi/rustdesk" ]; then
+    if [ -d "$HOME/rustdesk" ]; then
         echo "?? Synchronizing RustDesk Stack..."
-        cd /home/pi/rustdesk
+        cd "$HOME/rustdesk"
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d
             echo "? RustDesk Stack Deployment Check Complete."
         else
-            echo "? Warning: No docker-compose.yml found in /home/pi/rustdesk"
+            echo "? Warning: No docker-compose.yml found in $HOME/rustdesk"
         fi
     fi
 
     # JobBoard Stack Synchronization
-    if [ ! -d "/home/pi/jobboard" ]; then
+    if [ ! -d "$HOME/jobboard" ]; then
         echo "📋 JobBoard missing. Cloning repository..."
-        git clone https://github.com/pmitchell-dev/JobBoard.git /home/pi/jobboard
-        mkdir -p /home/pi/jobboard/data/backups
-        mkdir -p /home/pi/jobboard/cache
-        # Ensure pi user owns these dirs so the container (user: 1000:1000) can write to them
-        chown -R 1000:1000 /home/pi/jobboard/data /home/pi/jobboard/cache
+        git clone https://github.com/pmitchell-dev/JobBoard.git "$HOME/jobboard"
+        mkdir -p "$HOME/jobboard/data/backups"
+        mkdir -p "$HOME/jobboard/cache"
+        # Ensure user 1000:1000 owns these dirs so the container can write to them
+        sudo chown -R 1000:1000 "$HOME/jobboard/data" "$HOME/jobboard/cache"
     fi
 
-    if [ -d "/home/pi/jobboard" ]; then
+    if [ -d "$HOME/jobboard" ]; then
         echo "📋 Pulling latest JobBoard code from GitHub..."
-        cd /home/pi/jobboard
+        cd "$HOME/jobboard"
 
         # Safe pull: preserve live jobs data across git operations.
-        # data/jobs.json may still be tracked in the remote repo, so we
-        # stash it, let git do the pull, then restore the real data.
         if [ -f "data/jobs.json" ]; then
             cp data/jobs.json /tmp/jobs.json.bak
             echo "📋 Stashed jobs.json to /tmp/jobs.json.bak"
         fi
-        # Discard local changes to tracked files (like docker-compose.yml) to ensure git pull succeeds
         git checkout -- .
 
-        # Also untrack from local index if git still has it (older clone migration)
+        # Also untrack from local index if git still has it
         git ls-files --error-unmatch data/jobs.json &>/dev/null 2>&1 && git rm --cached data/jobs.json
         rm -f data/jobs.json
 
         git pull origin master
 
-        # Restore live data — always prefer the real file over whatever git pulled
+        # Restore live data
         if [ -f "/tmp/jobs.json.bak" ]; then
             cp /tmp/jobs.json.bak data/jobs.json
             echo "📋 Restored jobs.json from stash"
         fi
-        # Re-assert ownership after cp/git ops (script may run as ntfy/cron user)
-        sudo chown -R 1000:1000 /home/pi/jobboard/data /home/pi/jobboard/cache
+        sudo chown -R 1000:1000 "$HOME/jobboard/data" "$HOME/jobboard/cache"
 
-        # Always restore our port-remapped compose (git pull may reset it)
-        if [ -f "/home/pi/scripts/jobboard-compose.yml" ]; then
-            cp "/home/pi/scripts/jobboard-compose.yml" "/home/pi/jobboard/docker-compose.yml"
+        # Always restore our port-remapped compose
+        if [ -f "$SCRIPT_DIR/jobboard-compose.yml" ]; then
+            cp "$SCRIPT_DIR/jobboard-compose.yml" "$HOME/jobboard/docker-compose.yml"
         fi
 
         # Clear and refresh the JobBoard cache
         echo "🧹 Clearing JobBoard cache..."
-        sudo rm -rf /home/pi/jobboard/cache/*
+        sudo rm -rf "$HOME/jobboard/cache/*"
 
         echo "🔨 Rebuilding local JobBoard image..."
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d --build --force-recreate
         else
-            echo "⚠ Warning: No docker-compose.yml found in /home/pi/jobboard"
+            echo "⚠ Warning: No docker-compose.yml found in $HOME/jobboard"
         fi
         echo "✅ JobBoard Deployment Complete. (http://$HOST_IP:3001)"
     fi
 
     # Open WebUI Stack Synchronization
-    if [ ! -d "/home/pi/open-webui" ]; then
+    if [ ! -d "$HOME/open-webui" ]; then
         echo "🐳 Open WebUI missing. Provisioning stack..."
-        mkdir -p "/home/pi/open-webui/data"
+        mkdir -p "$HOME/open-webui/data"
     fi
 
-    if [ -d "/home/pi/open-webui" ]; then
+    if [ -d "$HOME/open-webui" ]; then
         echo "🐳 Synchronizing Open WebUI Stack..."
-        cd /home/pi/open-webui
-        if [ -f "/home/pi/scripts/open-webui-compose.yml" ]; then
-            cp "/home/pi/scripts/open-webui-compose.yml" "/home/pi/open-webui/docker-compose.yml"
+        cd "$HOME/open-webui"
+        if [ -f "$SCRIPT_DIR/open-webui-compose.yml" ]; then
+            cp "$SCRIPT_DIR/open-webui-compose.yml" "$HOME/open-webui/docker-compose.yml"
         fi
-        sudo chown -R 1000:1000 /home/pi/open-webui/data
+        sudo chown -R 1000:1000 "$HOME/open-webui/data"
         if [ -f "docker-compose.yml" ]; then
             docker compose up -d
             echo "✅ Open WebUI Deployment Complete. (http://$HOST_IP:3002)"
         else
-            echo "⚠ Warning: No docker-compose.yml found in /home/pi/open-webui"
+            echo "⚠ Warning: No docker-compose.yml found in $HOME/open-webui"
         fi
     fi
 
     # LiteLLM Stack Synchronization
-    if [ ! -d "/home/pi/litellm" ]; then
+    if [ ! -d "$HOME/litellm" ]; then
         echo "🐳 LiteLLM missing. Provisioning stack..."
-        mkdir -p "/home/pi/litellm"
+        mkdir -p "$HOME/litellm"
     fi
 
-    if [ -d "/home/pi/litellm" ]; then
+    if [ -d "$HOME/litellm" ]; then
         echo "🐳 Synchronizing LiteLLM Stack..."
-        cd /home/pi/litellm
-        if [ -f "/home/pi/scripts/litellm-compose.yml" ]; then
-            cp "/home/pi/scripts/litellm-compose.yml" "/home/pi/litellm/docker-compose.yml"
+        cd "$HOME/litellm"
+        if [ -f "$SCRIPT_DIR/litellm-compose.yml" ]; then
+            cp "$SCRIPT_DIR/litellm-compose.yml" "$HOME/litellm/docker-compose.yml"
         fi
-        if [ -f "/home/pi/scripts/litellm-config.yaml" ]; then
-            cp "/home/pi/scripts/litellm-config.yaml" "config.yaml"
+        if [ -f "$SCRIPT_DIR/litellm-config.yaml" ]; then
+            cp "$SCRIPT_DIR/litellm-config.yaml" "config.yaml"
         fi
         if [ ! -f ".env" ]; then
             touch ".env"
@@ -209,47 +208,53 @@ elif [ "$MODE" == "--webhost" ]; then
             docker compose restart litellm
             echo "✅ LiteLLM Deployment Complete. (http://$HOST_IP:4000)"
         else
-            echo "⚠ Warning: No docker-compose.yml found in /home/pi/litellm"
+            echo "⚠ Warning: No docker-compose.yml found in $HOME/litellm"
         fi
     fi
 
-    # HiveMind Temporarily Disabled
-    #if [ ! -d "/home/pi/hivemind" ]; then
-    #    echo "?? HiveMind missing. Cloning repository..."
-    #    git clone https://github.com/legendary034/HiveMind.git /home/pi/hivemind
-    #    if [ -f "/home/pi/scripts/hivemind-compose.yml" ]; then
-    #        cp "/home/pi/scripts/hivemind-compose.yml" "/home/pi/hivemind/docker-compose.yml"
-    #    fi
-    #fi
-#
-    #if [ -d "/home/pi/hivemind" ]; then
-    #    echo "?? Pulling latest HiveMind code from GitHub..."
-    #    cd /home/pi/hivemind
-    #    git pull
-    #    
-    #    echo "?? Rebuilding local HiveMind image..."
-    #    # If a docker-compose.yml is present, it will build and run it
-    #    if [ -f "docker-compose.yml" ]; then
-    #        docker compose up -d --build
-    #    else
-    #        echo "? Warning: No docker-compose.yml found in /home/pi/hivemind"
-    #    fi
-    #    echo "? HiveMind Deployment Check Complete."
-    #fi
+    # Gemini API Stack Synchronization
+    if [ ! -d "$HOME/gemini-api" ]; then
+        echo "🤖 Gemini API Stack missing. Provisioning stack..."
+        mkdir -p "$HOME/gemini-api"
+    fi
+
+    if [ -d "$HOME/gemini-api" ]; then
+        echo "🤖 Synchronizing Gemini API Stack..."
+        cd "$HOME/gemini-api"
+        if [ -f "$SCRIPT_DIR/gemini-compose.yml" ]; then
+            cp "$SCRIPT_DIR/gemini-compose.yml" "$HOME/gemini-api/docker-compose.yml"
+        fi
+        if [ -f "$SCRIPT_DIR/gemini_api_server.py" ]; then
+            cp "$SCRIPT_DIR/gemini_api_server.py" "$HOME/gemini-api/gemini_api_server.py"
+        fi
+        if [ -f "$SCRIPT_DIR/Dockerfile.gemini" ]; then
+            cp "$SCRIPT_DIR/Dockerfile.gemini" "$HOME/gemini-api/Dockerfile.gemini"
+        fi
+        if [ ! -f ".env" ]; then
+            echo "GEMINI_API_KEY=your_gemini_api_key_here" > .env
+            echo "🔑 Created $HOME/gemini-api/.env (Add your real GEMINI_API_KEY)"
+        fi
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d --build
+            echo "✅ Gemini API Deployment Complete. (http://$HOST_IP:5050/api/query)"
+        else
+            echo "⚠ Warning: No docker-compose.yml found in $HOME/gemini-api"
+        fi
+    fi
 
     # Webhost Maintenance Crontab
-    WEB_CRON="0 0 * * * /home/pi/scripts/pi_backup.sh
-*/5 * * * * /home/pi/scripts/pi_services_manager.sh
+    WEB_CRON="0 0 * * * $SCRIPT_DIR/pi_backup.sh
+*/5 * * * * $SCRIPT_DIR/pi_services_manager.sh
 0 3 * * 0 docker system prune -af --volumes"
     echo "$WEB_CRON" | crontab -
 
     # Dozzle Log Viewer Stack Sync
-    if [ -d "/home/pi/dozzle" ]; then
+    if [ -d "$HOME/dozzle" ]; then
         echo "📊 Synchronizing Dozzle Log Viewer..."
-        if [ -f "/home/pi/scripts/dozzle-compose.yml" ]; then
-            cp "/home/pi/scripts/dozzle-compose.yml" "/home/pi/dozzle/docker-compose.yml"
+        if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
+            cp "$SCRIPT_DIR/dozzle-compose.yml" "$HOME/dozzle/docker-compose.yml"
         fi
-        cd /home/pi/dozzle && sudo docker compose up -d
+        cd "$HOME/dozzle" && sudo docker compose up -d
         echo "✅ Dozzle Log Viewer synced. (http://$HOST_IP:8888)"
     fi
 fi
