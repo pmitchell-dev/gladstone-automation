@@ -13,6 +13,7 @@ Payload:  {"prompt": "...", "model": "gemini-flash-latest", "system_instruction"
 """
 
 import os
+import time
 import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -30,6 +31,9 @@ DEFAULT_MODEL = os.environ.get("GEMINI_DEFAULT_MODEL", "gemini-flash-latest").st
 FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-flash-latest").strip()
 
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
+
+MAX_RETRIES = 5
+RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
 
 
 @app.route("/health", methods=["GET"])
@@ -127,59 +131,80 @@ def query_gemini():
         url = f"{GEMINI_BASE_URL}/{current_model}:generateContent?key={GEMINI_API_KEY}"
         headers = {"Content-Type": "application/json"}
 
-        try:
-            logging.info(f"=== PROMPT SENT TO GEMINI (model: {current_model}) ===")
-            if system_instruction:
-                logging.info(f"System Instruction: {system_instruction}")
-            logging.info(f"Prompt: {prompt}")
-            if image_base64:
-                logging.info(f"[IMAGE ATTACHED] mimeType: {mime_type}, base64 length: {len(image_base64)} chars")
-            else:
-                logging.info("[NO IMAGE ATTACHED]")
+        for attempt in range(1, MAX_RETRIES + 1):
+            try:
+                logging.info(f"=== PROMPT SENT TO GEMINI (model: {current_model}, attempt: {attempt}/{MAX_RETRIES}) ===")
+                if system_instruction:
+                    logging.info(f"System Instruction: {system_instruction}")
+                logging.info(f"Prompt: {prompt}")
+                if image_base64:
+                    logging.info(f"[IMAGE ATTACHED] mimeType: {mime_type}, base64 length: {len(image_base64)} chars")
+                else:
+                    logging.info("[NO IMAGE ATTACHED]")
 
-            response = requests.post(url, headers=headers, json=gemini_payload, timeout=30)
+                response = requests.post(url, headers=headers, json=gemini_payload, timeout=30)
 
-            if response.status_code == 200:
-                res_data = response.json()
-                result_text = ""
-                candidates = res_data.get("candidates", [])
-                if candidates:
-                    c_parts = candidates[0].get("content", {}).get("parts", [])
-                    if c_parts:
-                        result_text = c_parts[0].get("text", "")
+                if response.status_code == 200:
+                    res_data = response.json()
+                    result_text = ""
+                    candidates = res_data.get("candidates", [])
+                    if candidates:
+                        c_parts = candidates[0].get("content", {}).get("parts", [])
+                        if c_parts:
+                            result_text = c_parts[0].get("text", "")
 
-                logging.info(f"=== RESPONSE RETRIEVED FROM GEMINI (model: {current_model}) ===")
-                logging.info(f"Response: {result_text}")
+                    logging.info(f"=== RESPONSE RETRIEVED FROM GEMINI (model: {current_model}) ===")
+                    logging.info(f"Response: {result_text}")
 
-                return jsonify({
-                    "status": "success",
-                    "result": result_text,
-                    "model": current_model,
-                    "raw": res_data
-                }), 200
+                    return jsonify({
+                        "status": "success",
+                        "result": result_text,
+                        "model": current_model,
+                        "raw": res_data
+                    }), 200
 
-            err_msg = response.text
-            logging.warning(f"=== ERROR RESPONSE FROM GEMINI (model: {current_model}, status: {response.status_code}) ===")
-            logging.warning(f"Error Details: {err_msg}")
+                err_msg = response.text
+                logging.warning(f"=== ERROR RESPONSE FROM GEMINI (model: {current_model}, status: {response.status_code}, attempt: {attempt}/{MAX_RETRIES}) ===")
+                logging.warning(f"Error Details: {err_msg}")
 
-            last_error_response = (jsonify({
-                "status": "error",
-                "message": f"Gemini API error ({response.status_code}) on model '{current_model}'",
-                "details": response.json() if response.headers.get("content-type") == "application/json" else err_msg
-            }), response.status_code)
+                last_error_response = (jsonify({
+                    "status": "error",
+                    "message": f"Gemini API error ({response.status_code}) on model '{current_model}' after {attempt} attempt(s)",
+                    "details": response.json() if response.headers.get("content-type") == "application/json" else err_msg
+                }), response.status_code)
 
-        except requests.exceptions.Timeout:
-            logging.warning(f"Timeout connecting to Gemini API with model '{current_model}'.")
-            last_error_response = (jsonify({
-                "status": "error",
-                "message": f"Request to Gemini API timed out after 30 seconds for model '{current_model}'."
-            }), 504)
-        except Exception as e:
-            logging.exception(f"Unexpected error calling Gemini API with model '{current_model}'")
-            last_error_response = (jsonify({
-                "status": "error",
-                "message": f"Server error on model '{current_model}': {str(e)}"
-            }), 500)
+                if response.status_code in RETRYABLE_STATUS_CODES and attempt < MAX_RETRIES:
+                    sleep_seconds = 2 ** (attempt - 1)
+                    logging.warning(f"Retryable status code {response.status_code} encountered. Backing off for {sleep_seconds}s before attempt {attempt + 1}/{MAX_RETRIES}...")
+                    time.sleep(sleep_seconds)
+                    continue
+
+                break
+
+            except requests.exceptions.Timeout:
+                logging.warning(f"Timeout connecting to Gemini API with model '{current_model}' (attempt {attempt}/{MAX_RETRIES}).")
+                last_error_response = (jsonify({
+                    "status": "error",
+                    "message": f"Request to Gemini API timed out after 30 seconds for model '{current_model}'."
+                }), 504)
+                if attempt < MAX_RETRIES:
+                    sleep_seconds = 2 ** (attempt - 1)
+                    logging.warning(f"Backing off for {sleep_seconds}s before attempt {attempt + 1}/{MAX_RETRIES}...")
+                    time.sleep(sleep_seconds)
+                    continue
+                break
+            except Exception as e:
+                logging.exception(f"Unexpected error calling Gemini API with model '{current_model}' (attempt {attempt}/{MAX_RETRIES})")
+                last_error_response = (jsonify({
+                    "status": "error",
+                    "message": f"Server error on model '{current_model}': {str(e)}"
+                }), 500)
+                if attempt < MAX_RETRIES:
+                    sleep_seconds = 2 ** (attempt - 1)
+                    logging.warning(f"Backing off for {sleep_seconds}s before attempt {attempt + 1}/{MAX_RETRIES}...")
+                    time.sleep(sleep_seconds)
+                    continue
+                break
 
         # Log fallback attempt if there is a next model in the list
         if idx < len(models_to_try) - 1:

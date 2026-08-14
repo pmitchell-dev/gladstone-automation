@@ -12,6 +12,7 @@ This guide details how your local websites and applications can communicate with
 | **HTTP Method** | `POST` |
 | **Request Header** | `Content-Type: application/json` |
 | **API Key Security** | **Handled automatically by Webhost.** The frontend does NOT need an API key. (Key is stored in `~/gemini-api/.env`). |
+| **Retry & Resiliency** | **Automatic 5x Exponential Backoff.** Retries transient errors (HTTP 429, 500, 502, 503, 504, Timeouts) up to 5 times (1s, 2s, 4s, 8s, 16s backoff) per model attempt. |
 | **CORS Access** | **Enabled (`*`)**. Any local origin or port can fetch without cross-origin blocking. |
 | **Health Check** | `GET http://192.168.50.217:5050/health` |
 
