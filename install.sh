@@ -177,30 +177,7 @@ if [ "$MODE" == "webhost" ]; then
     # Fix ownership so container user (1000:1000) can write to mounted volumes
     sudo chown -R 1000:1000 "$HOME/jobboard/data" "$HOME/jobboard/cache"
 
-    # Open WebUI Stack Setup
-    OPEN_WEBUI_DIR="$HOME/open-webui"
-    mkdir -p "$OPEN_WEBUI_DIR/data"
-    sudo chown -R 1000:1000 "$OPEN_WEBUI_DIR/data"
-    if [ -f "$SCRIPT_DIR/open-webui-compose.yml" ]; then
-        cp "$SCRIPT_DIR/open-webui-compose.yml" "$OPEN_WEBUI_DIR/docker-compose.yml"
-        echo "🐳 Open WebUI Stack provisioned."
-    fi
 
-    # LiteLLM Stack Setup
-    LITELLM_DIR="$HOME/litellm"
-    mkdir -p "$LITELLM_DIR"
-    if [ -f "$SCRIPT_DIR/litellm-compose.yml" ]; then
-        cp "$SCRIPT_DIR/litellm-compose.yml" "$LITELLM_DIR/docker-compose.yml"
-        echo "🐳 LiteLLM Stack provisioned."
-    fi
-    if [ -f "$SCRIPT_DIR/litellm-config.yaml" ] && [ ! -f "$LITELLM_DIR/config.yaml" ]; then
-        cp "$SCRIPT_DIR/litellm-config.yaml" "$LITELLM_DIR/config.yaml"
-        echo "🐳 LiteLLM config.yaml provisioned."
-    fi
-    if [ ! -f "$LITELLM_DIR/.env" ]; then
-        touch "$LITELLM_DIR/.env"
-        echo "🐳 LiteLLM .env file initialized."
-    fi
 
     # Gemini API Backend Stack Setup
     GEMINI_DIR="$HOME/gemini-api"

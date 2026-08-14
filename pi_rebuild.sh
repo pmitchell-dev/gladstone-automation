@@ -217,53 +217,7 @@ elif [ "$MODE" == "--webhost" ]; then
         echo "✅ JobBoard Deployment Complete. (http://$HOST_IP:3001)"
     fi
 
-    # Open WebUI Stack Synchronization
-    if [ ! -d "$HOME/open-webui" ]; then
-        echo "🐳 Open WebUI missing. Provisioning stack..."
-        mkdir -p "$HOME/open-webui/data"
-    fi
 
-    if [ -d "$HOME/open-webui" ]; then
-        echo "🐳 Synchronizing Open WebUI Stack..."
-        cd "$HOME/open-webui"
-        if [ -f "$SCRIPT_DIR/open-webui-compose.yml" ]; then
-            cp "$SCRIPT_DIR/open-webui-compose.yml" "$HOME/open-webui/docker-compose.yml"
-        fi
-        sudo chown -R 1000:1000 "$HOME/open-webui/data"
-        if [ -f "docker-compose.yml" ]; then
-            docker compose up -d
-            echo "✅ Open WebUI Deployment Complete. (http://$HOST_IP:3002)"
-        else
-            echo "⚠ Warning: No docker-compose.yml found in $HOME/open-webui"
-        fi
-    fi
-
-    # LiteLLM Stack Synchronization
-    if [ ! -d "$HOME/litellm" ]; then
-        echo "🐳 LiteLLM missing. Provisioning stack..."
-        mkdir -p "$HOME/litellm"
-    fi
-
-    if [ -d "$HOME/litellm" ]; then
-        echo "🐳 Synchronizing LiteLLM Stack..."
-        cd "$HOME/litellm"
-        if [ -f "$SCRIPT_DIR/litellm-compose.yml" ]; then
-            cp "$SCRIPT_DIR/litellm-compose.yml" "$HOME/litellm/docker-compose.yml"
-        fi
-        if [ -f "$SCRIPT_DIR/litellm-config.yaml" ]; then
-            cp "$SCRIPT_DIR/litellm-config.yaml" "config.yaml"
-        fi
-        if [ ! -f ".env" ]; then
-            touch ".env"
-        fi
-        if [ -f "docker-compose.yml" ]; then
-            docker compose up -d
-            docker compose restart litellm
-            echo "✅ LiteLLM Deployment Complete. (http://$HOST_IP:4000)"
-        else
-            echo "⚠ Warning: No docker-compose.yml found in $HOME/litellm"
-        fi
-    fi
 
     # Gemini API Stack Synchronization
     if [ ! -d "$HOME/gemini-api" ]; then

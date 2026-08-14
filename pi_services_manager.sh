@@ -50,16 +50,10 @@ if [ "$MODE" == "webhost" ]; then
         cd /home/pi/rustdesk && docker compose up -d
     fi
 
-    # Open WebUI
-    if ! docker ps --format '{{.Names}}' | grep -q "^open-webui$"; then
-        echo "🐳 Recovering Open WebUI container..."
-        cd /home/pi/open-webui && docker compose up -d
-    fi
-
-    # LiteLLM
-    if ! docker ps --format '{{.Names}}' | grep -q "^litellm$"; then
-        echo "🐳 Recovering LiteLLM container..."
-        cd /home/pi/litellm && docker compose up -d
+    # Gemini API
+    if ! docker ps --format '{{.Names}}' | grep -q "^gemini-api$"; then
+        echo "🤖 Recovering Gemini API container..."
+        cd /home/pi/gemini-api && docker compose up -d
     fi
 
     # JobBoard
