@@ -85,16 +85,11 @@ generate_dashboard() {
     fi
 
     if [ -z "$LAST_BACKUP_INFO" ] && [ -f "$BACKUP_LOG" ]; then
-        LAST_SUCCESS_TS=$(grep -B 10 "BACKUP EXECUTION SUMMARY" "$BACKUP_LOG" | grep "Date & Time:" | tail -n 1 | awk -F'Date & Time: ' '{print $2}')
-        if [ -z "$LAST_SUCCESS_TS" ]; then
-            RAW_TS=$(grep -B 10 "BACKUP EXECUTION SUMMARY" "$BACKUP_LOG" | grep "Timestamp:" | tail -n 1 | awk -F'Timestamp: ' '{print $2}' | awk '{print $1}')
-            if [ -n "$RAW_TS" ]; then
-                LAST_SUCCESS_TS=$(echo "$RAW_TS" | sed -E 's/([0-9]{4})([0-9]{2})([0-9]{2})_([0-9]{2})([0-9]{2})([0-9]{2})/\1-\2-\3 \4:\5:\6/')
-            fi
-        fi
-
-        if [ -n "$LAST_SUCCESS_TS" ]; then
-            LAST_BACKUP_INFO="$LAST_SUCCESS_TS"
+        SUCCESS_LINE=$(grep "Main Archive:" "$BACKUP_LOG" 2>/dev/null | grep "(SUCCESS)" | tail -n 1)
+        if [ -n "$SUCCESS_LINE" ]; then
+            LOG_TIME=$(echo "$SUCCESS_LINE" | cut -d']' -f1 | tr -d '[')
+            FNAME=$(echo "$SUCCESS_LINE" | awk '{print $6}')
+            LAST_BACKUP_INFO="$LOG_TIME ($FNAME)"
         fi
     fi
 

@@ -27,18 +27,32 @@ generate_dashboard() {
     echo -e "🧠 ${YELLOW}Mem:${NC} $MEM    🚀 ${YELLOW}Uptime:${NC} $(uptime -p)"
 
     BACKUP_DIR="/mnt/backups/laptopwebhost"
+    BACKUP_LOG="/home/pi/scripts/logs/pi_backup.log"
+
+    LAST_BACKUP_INFO=""
     if [ -d "$BACKUP_DIR" ]; then
         LAST_FILE=$(ls -t "$BACKUP_DIR"/gladstone_backup_*.tar.gz 2>/dev/null | head -n 1)
         if [ -n "$LAST_FILE" ]; then
             LAST_TIME=$(date -r "$LAST_FILE" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || stat -c %y "$LAST_FILE" 2>/dev/null | cut -d. -f1)
             LAST_SIZE=$(du -sh "$LAST_FILE" 2>/dev/null | awk '{print $1}')
             FNAME=$(basename "$LAST_FILE")
-            echo -e "📦 ${YELLOW}Last Successful Backup:${NC} $LAST_TIME ($LAST_SIZE | $FNAME)"
-        else
-            echo -e "📦 ${YELLOW}Last Successful Backup:${NC} No backups found"
+            LAST_BACKUP_INFO="$LAST_TIME ($LAST_SIZE | $FNAME)"
         fi
+    fi
+
+    if [ -z "$LAST_BACKUP_INFO" ] && [ -f "$BACKUP_LOG" ]; then
+        SUCCESS_LINE=$(grep "Main Archive:" "$BACKUP_LOG" 2>/dev/null | grep "(SUCCESS)" | tail -n 1)
+        if [ -n "$SUCCESS_LINE" ]; then
+            LOG_TIME=$(echo "$SUCCESS_LINE" | cut -d']' -f1 | tr -d '[')
+            FNAME=$(echo "$SUCCESS_LINE" | awk '{print $6}')
+            LAST_BACKUP_INFO="$LOG_TIME ($FNAME)"
+        fi
+    fi
+
+    if [ -n "$LAST_BACKUP_INFO" ]; then
+        echo -e "📦 ${YELLOW}Last Successful Backup:${NC} $LAST_BACKUP_INFO"
     else
-        echo -e "📦 ${YELLOW}Last Successful Backup:${NC} Target path $BACKUP_DIR unavailable"
+        echo -e "📦 ${YELLOW}Last Successful Backup:${NC} Never / No Backups Found"
     fi
 
     echo -e "${CYAN}------------------------------------------------------------${NC}"
