@@ -285,9 +285,11 @@ elif [ "$MODE" == "--webhost" ]; then
             cp "$SCRIPT_DIR/relayit-compose.yml" "$HOME/relayit/docker-compose.yml"
         fi
 
-        echo -e "${BOLD_CYAN}🔨 Rebuilding local RelayIT image...${RESET}"
+        echo -e "${BOLD_CYAN}🔨 Rebuilding local RelayIT image (no cache)...${RESET}"
         if [ -f "docker-compose.yml" ]; then
-            docker compose up -d --build
+            docker compose down --remove-orphans 2>/dev/null || true
+            docker compose build --no-cache
+            docker compose up -d
         else
             echo -e "  ⚠ Warning: No docker-compose.yml found in $HOME/relayit"
         fi
