@@ -70,19 +70,38 @@ generate_dashboard() {
         echo -e "☁️  LAST CLOUD SYNC: Never"
     fi
 
+    BACKUP_DIR="/mnt/network_backups/CentralServer"
     BACKUP_LOG="/home/pi/scripts/logs/pi_backup.log"
-    if [ -f "$BACKUP_LOG" ]; then
-        LAST_BK_LINE=$(grep "Main Archive:" "$BACKUP_LOG" | tail -n 1)
-        LAST_BK_TIMESTAMP=$(grep "GLADSTONE BACKUP STARTED" "$BACKUP_LOG" | tail -n 1 | awk -F'Timestamp: ' '{print $2}')
-        if [ -n "$LAST_BK_LINE" ]; then
-            ARCHIVE_NAME=$(echo "$LAST_BK_LINE" | awk '{print $4}')
-            ARCHIVE_STATUS=$(echo "$LAST_BK_LINE" | awk '{print $5}')
-            echo -e "📦  LATEST BACKUP: $ARCHIVE_NAME $ARCHIVE_STATUS (${LAST_BK_TIMESTAMP:-Recent})"
-        else
-            echo -e "📦  LATEST BACKUP: No log records found"
+
+    LAST_BACKUP_INFO=""
+    if [ -d "$BACKUP_DIR" ]; then
+        LAST_FILE=$(ls -t "$BACKUP_DIR"/gladstone_backup_*.tar.gz 2>/dev/null | head -n 1)
+        if [ -n "$LAST_FILE" ]; then
+            LAST_TIME=$(date -r "$LAST_FILE" "+%Y-%m-%d %H:%M:%S" 2>/dev/null)
+            LAST_SIZE=$(du -sh "$LAST_FILE" 2>/dev/null | awk '{print $1}')
+            FNAME=$(basename "$LAST_FILE")
+            LAST_BACKUP_INFO="$LAST_TIME ($LAST_SIZE | $FNAME)"
         fi
+    fi
+
+    if [ -z "$LAST_BACKUP_INFO" ] && [ -f "$BACKUP_LOG" ]; then
+        LAST_SUCCESS_TS=$(grep -B 10 "BACKUP EXECUTION SUMMARY" "$BACKUP_LOG" | grep "Date & Time:" | tail -n 1 | awk -F'Date & Time: ' '{print $2}')
+        if [ -z "$LAST_SUCCESS_TS" ]; then
+            RAW_TS=$(grep -B 10 "BACKUP EXECUTION SUMMARY" "$BACKUP_LOG" | grep "Timestamp:" | tail -n 1 | awk -F'Timestamp: ' '{print $2}' | awk '{print $1}')
+            if [ -n "$RAW_TS" ]; then
+                LAST_SUCCESS_TS=$(echo "$RAW_TS" | sed -E 's/([0-9]{4})([0-9]{2})([0-9]{2})_([0-9]{2})([0-9]{2})([0-9]{2})/\1-\2-\3 \4:\5:\6/')
+            fi
+        fi
+
+        if [ -n "$LAST_SUCCESS_TS" ]; then
+            LAST_BACKUP_INFO="$LAST_SUCCESS_TS"
+        fi
+    fi
+
+    if [ -n "$LAST_BACKUP_INFO" ]; then
+        echo -e "📦  LAST SUCCESSFUL BACKUP: $LAST_BACKUP_INFO"
     else
-        echo -e "📦  LATEST BACKUP: Never"
+        echo -e "📦  LAST SUCCESSFUL BACKUP: Never / No Backups Found"
     fi
     echo "------------------------------------------------------------"
 

@@ -28,16 +28,17 @@ generate_dashboard() {
 
     BACKUP_DIR="/mnt/backups/laptopwebhost"
     if [ -d "$BACKUP_DIR" ]; then
-        LAST_FILE=$(ls -t "$BACKUP_DIR" 2>/dev/null | head -n 1)
+        LAST_FILE=$(ls -t "$BACKUP_DIR"/gladstone_backup_*.tar.gz 2>/dev/null | head -n 1)
         if [ -n "$LAST_FILE" ]; then
-            LAST_TIME=$(date -r "$BACKUP_DIR/$LAST_FILE" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || stat -c %y "$BACKUP_DIR/$LAST_FILE" 2>/dev/null | cut -d. -f1)
-            LAST_SIZE=$(du -sh "$BACKUP_DIR/$LAST_FILE" 2>/dev/null | awk '{print $1}')
-            echo -e "📦 ${YELLOW}Latest Backup:${NC} $LAST_FILE ($LAST_SIZE | $LAST_TIME)"
+            LAST_TIME=$(date -r "$LAST_FILE" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || stat -c %y "$LAST_FILE" 2>/dev/null | cut -d. -f1)
+            LAST_SIZE=$(du -sh "$LAST_FILE" 2>/dev/null | awk '{print $1}')
+            FNAME=$(basename "$LAST_FILE")
+            echo -e "📦 ${YELLOW}Last Successful Backup:${NC} $LAST_TIME ($LAST_SIZE | $FNAME)"
         else
-            echo -e "📦 ${YELLOW}Latest Backup:${NC} No backups found in $BACKUP_DIR"
+            echo -e "📦 ${YELLOW}Last Successful Backup:${NC} No backups found"
         fi
     else
-        echo -e "📦 ${YELLOW}Latest Backup:${NC} Target path $BACKUP_DIR unavailable"
+        echo -e "📦 ${YELLOW}Last Successful Backup:${NC} Target path $BACKUP_DIR unavailable"
     fi
 
     echo -e "${CYAN}------------------------------------------------------------${NC}"

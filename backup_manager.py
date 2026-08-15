@@ -3,8 +3,11 @@
 =============================================================================
 GLADSTONE SYSTEM BACKUP MANAGER (backup_manager.py)
 =============================================================================
-Role-aware, multi-target backup system with sophisticated logging, SHA256
+Role-aware, multi-target backup system with single-archive bundling, SHA256
 verification, disk space diagnostics, and retention rotation.
+
+Bundles all scripts and application stack data into a SINGLE compressed
+tar.gz file per backup execution.
 
 Targets:
   - Webhost (--mode webhost): Saves locally to /mnt/backups/laptopwebhost
@@ -44,12 +47,12 @@ DEFAULT_NTFY_TARGET_PATH = "/mnt/network_backups/CentralServer"
 
 RETENTION_COUNT = 7  # Keep top 7 daily backups
 
-# Data directories to include if present
+# Data directories to include if present: (path, target_subfolder_name, description)
 DATA_SOURCES = [
-    ("/home/pi/homeasset/data", "HomeAsset Data"),
-    ("/home/pi/jobboard/data", "JobBoard Data"),
-    ("/home/pi/relayit/data", "RelayIT Data"),
-    ("/home/pi/.config/terminalbuddy", "TerminalBuddy Config"),
+    ("/home/pi/homeasset/data", "data/homeasset", "HomeAsset Data"),
+    ("/home/pi/jobboard/data", "data/jobboard", "JobBoard Data"),
+    ("/home/pi/relayit/data", "data/relayit", "RelayIT Data"),
+    ("/home/pi/.config/terminalbuddy", "data/terminalbuddy", "TerminalBuddy Config"),
 ]
 
 # Exclude patterns when backing up scripts directory
@@ -211,53 +214,70 @@ def unmount_smb_share(logger, mount_point):
         logger.warning(f"⚠️ SMB unmount exception: {e}")
 
 
-def create_tar_gz(source_dir, output_file, exclude_list, logger):
-    """Creates a compressed tar.gz archive of source_dir with exclusions."""
-    def filter_function(tarinfo):
-        name = os.path.basename(tarinfo.name)
-        for pattern in exclude_list:
-            if pattern.startswith("*"):
-                if name.endswith(pattern[1:]):
-                    return None
-            elif name == pattern or pattern in tarinfo.name.split('/'):
-                return None
-        return tarinfo
+def stage_backup_contents(staging_dir, logger):
+    """Copies scripts and application stack data into staging directory structure."""
+    home_dir = os.path.expanduser("~")
+    source_scripts = os.path.join(home_dir, "scripts")
 
-    logger.info(f"📦 Archiving {source_dir} -> {output_file}...")
-    with tarfile.open(output_file, "w:gz") as tar:
-        tar.add(source_dir, arcname=os.path.basename(source_dir), filter=filter_function)
-    return os.path.exists(output_file) and os.path.getsize(output_file) > 0
+    # 1. Copy Scripts
+    if os.path.exists(source_scripts):
+        scripts_stage = os.path.join(staging_dir, "scripts")
+        try:
+            def ignore_func(dir_path, names):
+                ignored = set()
+                for n in names:
+                    for pat in SCRIPT_EXCLUDES:
+                        if pat.startswith("*") and n.endswith(pat[1:]):
+                            ignored.add(n)
+                        elif n == pat:
+                            ignored.add(n)
+                return ignored
 
+            shutil.copytree(source_scripts, scripts_stage, ignore=ignore_func, dirs_exist_ok=True)
+            logger.info("  └─ ✅ System Scripts: Staged -> scripts/")
+        except Exception as e:
+            logger.warning(f"  └─ ⚠️ Copying scripts warning: {e}")
 
-def copy_extra_data(dest_dir, logger):
-    """Copies application data paths into destination backup folder with elevated fallback for docker volumes."""
-    results = []
-    for path, description in DATA_SOURCES:
-        if os.path.exists(path):
-            basename = os.path.basename(path.rstrip('/'))
-            parent_name = os.path.basename(os.path.dirname(path.rstrip('/')))
-            dest_name = f"{parent_name}_{basename}_" + datetime.now().strftime("%Y%m%d_%H%M%S")
-            target_path = os.path.join(dest_dir, dest_name)
+    # 2. Copy App Data Sources
+    app_summary = []
+    for source_path, dest_rel_path, description in DATA_SOURCES:
+        if os.path.exists(source_path):
+            target_stage = os.path.join(staging_dir, dest_rel_path)
             try:
-                if os.path.isdir(path):
-                    shutil.copytree(path, target_path, dirs_exist_ok=True)
+                os.makedirs(os.path.dirname(target_stage), exist_ok=True)
+                if os.path.isdir(source_path):
+                    shutil.copytree(source_path, target_stage, dirs_exist_ok=True)
                 else:
-                    shutil.copy2(path, target_path)
-                logger.info(f"  └─ ✅ {description}: Backed up -> {dest_name}")
-                results.append((description, "SUCCESS"))
+                    shutil.copy2(source_path, target_stage)
+                logger.info(f"  └─ ✅ {description}: Staged -> {dest_rel_path}")
+                app_summary.append((description, "SUCCESS"))
             except (PermissionError, OSError) as e:
-                # Fallback to sudo cp -r for docker container volumes owned by root/other users
-                res = subprocess.run(["sudo", "cp", "-r", path, target_path], capture_output=True, text=True)
+                # Fallback elevated copy for docker volumes owned by root
+                os.makedirs(os.path.dirname(target_stage), exist_ok=True)
+                res = subprocess.run(["sudo", "cp", "-r", source_path, target_stage], capture_output=True, text=True)
                 if res.returncode == 0:
-                    logger.info(f"  └─ ✅ {description}: Backed up (elevated) -> {dest_name}")
-                    results.append((description, "SUCCESS"))
+                    # Fix permissions on staged files so user can tar them
+                    subprocess.run(["sudo", "chown", "-R", f"{os.getuid()}:{os.getgid()}", target_stage], capture_output=True)
+                    logger.info(f"  └─ ✅ {description}: Staged (elevated) -> {dest_rel_path}")
+                    app_summary.append((description, "SUCCESS"))
                 else:
                     err_msg = res.stderr.strip() or str(e)
-                    logger.error(f"  └─ ❌ {description} failed: {err_msg}")
-                    results.append((description, f"FAILED ({err_msg})"))
+                    logger.error(f"  └─ ❌ {description} failed to stage: {err_msg}")
+                    app_summary.append((description, f"FAILED ({err_msg})"))
         else:
-            results.append((description, "SKIPPED (Not Present)"))
-    return results
+            app_summary.append((description, "SKIPPED (Not Present)"))
+
+    return app_summary
+
+
+def create_single_tar_gz(staging_dir, output_file, logger):
+    """Compresses the staging directory into a single tar.gz file."""
+    logger.info(f"📦 Archiving all components into single bundle -> {output_file}...")
+    with tarfile.open(output_file, "w:gz") as tar:
+        for item in os.listdir(staging_dir):
+            full_path = os.path.join(staging_dir, item)
+            tar.add(full_path, arcname=item)
+    return os.path.exists(output_file) and os.path.getsize(output_file) > 0
 
 
 def rotate_backups(target_dir, prefix, keep_count, logger):
@@ -266,7 +286,7 @@ def rotate_backups(target_dir, prefix, keep_count, logger):
     try:
         files = [
             os.path.join(target_dir, f) for f in os.listdir(target_dir)
-            if f.startswith(prefix)
+            if f.startswith(prefix) and f.endswith(".tar.gz")
         ]
         files.sort(key=os.path.getmtime, reverse=True)
 
@@ -278,13 +298,12 @@ def rotate_backups(target_dir, prefix, keep_count, logger):
                         shutil.rmtree(old_file)
                     else:
                         os.remove(old_file)
-                    logger.info(f"  └─ 🗑️ Pruned old backup: {os.path.basename(old_file)}")
+                    logger.info(f"  └─ 🗑️ Pruned old backup archive: {os.path.basename(old_file)}")
                 except Exception as e:
-                    # Fallback to sudo rm for docker-created backup directories
                     subprocess.run(["sudo", "rm", "-rf", old_file], capture_output=True)
-                    logger.info(f"  └─ 🗑️ Pruned old backup (elevated): {os.path.basename(old_file)}")
+                    logger.info(f"  └─ 🗑️ Pruned old backup archive (elevated): {os.path.basename(old_file)}")
         else:
-            logger.info(f"  └─ Total backups ({len(files)}) within retention limit ({keep_count}).")
+            logger.info(f"  └─ Total backup archives ({len(files)}) within retention limit ({keep_count}).")
     except Exception as e:
         logger.error(f"❌ Rotation error: {e}")
 
@@ -311,9 +330,12 @@ def main():
     log_file_2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "pi_backup.log")
     logger = BackupLogger([log_file_1, log_file_2])
 
-    timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
+    now_dt = datetime.now()
+    timestamp = now_dt.strftime("%Y%m%d_%H%M%S")
+    formatted_date_str = now_dt.strftime("%Y-%m-%d %H:%M:%S")
+
     logger.info("==========================================================================")
-    logger.info(f"📦 GLADSTONE BACKUP STARTED | Mode: {mode.upper()} | Timestamp: {timestamp}")
+    logger.info(f"📦 GLADSTONE BACKUP STARTED | Mode: {mode.upper()} | Timestamp: {timestamp} ({formatted_date_str})")
     logger.info("==========================================================================")
 
     # Diagnostics
@@ -351,52 +373,57 @@ def main():
 
         logger.info(f"🌐 Target Directory (SMB Network): {DEFAULT_SMB_SHARE} -> {target_dir}")
 
-    # Step 1: Create Scripts Archive
-    source_scripts = os.path.join(home_dir, "scripts")
+    # Archive Filenames
     archive_name = f"gladstone_backup_{mode}_{timestamp}.tar.gz"
-    temp_archive = os.path.join("/tmp", archive_name) if mode == "ntfy" else os.path.join(target_dir, archive_name)
+    temp_archive = os.path.join("/tmp", archive_name)
     final_archive = os.path.join(target_dir, archive_name)
+    staging_dir = os.path.join("/tmp", f"gladstone_staging_{timestamp}")
 
     success = False
     checksum = "N/A"
     archive_size_mb = 0
+    app_results = []
 
     if not args.dry_run:
-        if os.path.exists(source_scripts):
-            if create_tar_gz(source_scripts, temp_archive, SCRIPT_EXCLUDES, logger):
+        try:
+            # Step 1: Stage files
+            os.makedirs(staging_dir, exist_ok=True)
+            logger.info(f"📁 Staging scripts and application data into temporary area...")
+            app_results = stage_backup_contents(staging_dir, logger)
+
+            # Step 2: Create single bundle archive
+            if create_single_tar_gz(staging_dir, temp_archive, logger):
                 archive_size_mb = round(os.path.getsize(temp_archive) / (1024 * 1024), 2)
                 checksum = calculate_sha256(temp_archive)
-                logger.info(f"✅ Archive created successfully ({archive_size_mb} MB | SHA256: {checksum[:12]}...)")
+                logger.info(f"✅ Single Archive Bundle created ({archive_size_mb} MB | SHA256: {checksum[:12]}...)")
 
-                if mode == "ntfy":
-                    logger.info(f"🚚 Transferring archive to SMB share -> {final_archive}...")
-                    shutil.copy2(temp_archive, final_archive)
-                    os.remove(temp_archive)
-                    dest_checksum = calculate_sha256(final_archive)
-                    if dest_checksum == checksum:
-                        logger.info("🔒 Checksum verified: Transfer integrity confirmed.")
-                        success = True
-                    else:
-                        logger.error("❌ Checksum mismatch after transfer!")
-                else:
+                # Move/Copy to target destination
+                logger.info(f"🚚 Saving archive bundle -> {final_archive}...")
+                shutil.copy2(temp_archive, final_archive)
+                os.remove(temp_archive)
+
+                dest_checksum = calculate_sha256(final_archive)
+                if dest_checksum == checksum:
+                    logger.info("🔒 Checksum verified: Archive bundle integrity confirmed.")
                     success = True
+                else:
+                    logger.error("❌ Checksum mismatch after writing to target directory!")
             else:
-                logger.error("❌ Failed to create tar archive.")
-        else:
-            logger.error(f"❌ Source scripts directory not found: {source_scripts}")
+                logger.error("❌ Failed to create single tar archive bundle.")
+        except Exception as e:
+            logger.error(f"❌ Backup execution error: {e}")
+        finally:
+            # Clean up staging directory
+            if os.path.exists(staging_dir):
+                shutil.rmtree(staging_dir, ignore_errors=True)
+                subprocess.run(["sudo", "rm", "-rf", staging_dir], capture_output=True)
     else:
-        logger.info(" DRY-RUN enabled: Skipping file creation.")
+        logger.info(" DRY-RUN enabled: Skipping archive bundle creation.")
         success = True
-
-    # Step 2: Application Data Backups
-    app_results = []
-    if success and not args.dry_run:
-        logger.info("📋 Backing up application stack data...")
-        app_results = copy_extra_data(target_dir, logger)
 
     # Step 3: Rotation
     if success and not args.dry_run:
-        rotate_backups(target_dir, "gladstone_backup_", args.retention, logger)
+        rotate_backups(target_dir, f"gladstone_backup_{mode}_", args.retention, logger)
 
     # Step 4: Cleanup Mount if applicable
     if mounted_smb:
@@ -405,6 +432,7 @@ def main():
     # Execution Summary
     logger.info("--------------------------------------------------------------------------")
     logger.info("📊 BACKUP EXECUTION SUMMARY")
+    logger.info(f"  • Date & Time:      {formatted_date_str}")
     logger.info(f"  • Mode:             {mode.upper()}")
     logger.info(f"  • Target:           {target_dir}")
     logger.info(f"  • Main Archive:     {archive_name} ({'SUCCESS' if success else 'FAILED'})")
