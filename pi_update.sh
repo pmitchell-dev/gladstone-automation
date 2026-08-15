@@ -21,11 +21,15 @@ echo -e "${BOLD_CYAN}🔄 [$HOSTNAME] Pulling script updates from GitHub...${RES
 # Ensure origin remote is set to pmitchell-dev repo
 git remote set-url origin https://github.com/pmitchell-dev/pi5-scripts.git 2>/dev/null || true
 
-# Auto-reset any local unstaged changes to ensure clean rebase
+# Abort any stuck rebase from prior failed updates
+git rebase --abort 2>/dev/null || true
+
+# Auto-reset any local unstaged changes to ensure clean update
 git checkout -- . 2>/dev/null
 
 BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
-git pull --rebase origin main 2>/dev/null || git pull --rebase origin master 2>/dev/null || git pull --rebase
+git fetch origin main 2>/dev/null || git fetch origin 2>/dev/null
+git reset --hard origin/main 2>/dev/null || git pull --rebase origin main 2>/dev/null
 AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
 
 if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
