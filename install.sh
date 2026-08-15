@@ -42,8 +42,8 @@ fi
 echo "$MODE" > "$ID_FILE"
 
 # 3. Base System Update
-echo "📦 Checking and installing system dependencies (jq, curl, git, bc, zip, cifs-utils, python3)..."
-sudo apt update && sudo apt install -y jq curl git bc zip cifs-utils python3
+echo "📦 Checking and installing system dependencies (jq, curl, git, bc, zip, cifs-utils, python3, smbclient)..."
+sudo apt update && sudo apt install -y jq curl git bc zip cifs-utils python3 smbclient
 
 # 3b. Docker Engine (required by both ntfy agent and webhost)
 if ! command -v docker &> /dev/null; then

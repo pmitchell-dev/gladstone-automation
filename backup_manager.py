@@ -8,8 +8,8 @@ verification, disk space diagnostics, and retention rotation.
 
 Targets:
   - Webhost (--mode webhost): Saves locally to /mnt/backups/laptopwebhost
-  - NTFY Hub (--mode ntfy):   Saves to //192.168.50.217/Backups/CentralServers
-                              via CIFS mount with credentials Pi:sambauser
+  - NTFY Hub (--mode ntfy):   Saves to //192.168.50.217/Backups/ -> /mnt/network_backups/CentralServer
+                              utilizing credentials from environment or ~/.smbcredentials
 =============================================================================
 """
 
@@ -38,10 +38,9 @@ if hasattr(sys.stderr, 'reconfigure'):
 
 # --- DEFAULT CONFIGURATION ---
 DEFAULT_WEBHOST_PATH = "/mnt/backups/laptopwebhost"
-DEFAULT_SMB_SHARE = "//192.168.50.217/Backups/CentralServers"
-DEFAULT_SMB_MOUNT = "/mnt/central_backups"
-SMB_USER = "Pi"
-SMB_PASS = "sambauser"
+DEFAULT_SMB_SHARE = "//192.168.50.217/Backups"
+DEFAULT_SMB_MOUNT = "/mnt/network_backups"
+DEFAULT_NTFY_TARGET_PATH = "/mnt/network_backups/CentralServer"
 
 RETENTION_COUNT = 7  # Keep top 7 daily backups
 
@@ -62,6 +61,26 @@ SCRIPT_EXCLUDES = [
     "__pycache__",
     "*.pyc"
 ]
+
+
+def get_smb_credentials():
+    """Loads SMB credentials securely from environment variables or ~/.smbcredentials file."""
+    user = os.getenv("SMB_USER", "pi")
+    password = os.getenv("SMB_PASS", "root")
+
+    cred_file = os.path.expanduser("~/.smbcredentials")
+    if os.path.exists(cred_file):
+        try:
+            with open(cred_file, "r") as f:
+                for line in f:
+                    line = line.strip()
+                    if line.startswith("username="):
+                        user = line.split("=", 1)[1].strip()
+                    elif line.startswith("password="):
+                        password = line.split("=", 1)[1].strip()
+        except Exception:
+            pass
+    return user, password
 
 
 class BackupLogger:
@@ -134,7 +153,7 @@ def get_system_diagnostics():
 
 
 def mount_smb_share(logger, smb_share, mount_point, user, password):
-    """Mounts SMB share via CIFS if not already mounted, testing compatible security/version flags."""
+    """Mounts SMB share via CIFS if not already mounted using credentials."""
     try:
         os.makedirs(mount_point, exist_ok=True)
     except PermissionError:
@@ -153,23 +172,22 @@ def mount_smb_share(logger, smb_share, mount_point, user, password):
 
     logger.info(f"🔌 Mounting SMB share {smb_share} -> {mount_point}...")
 
-    # Varied CIFS mount options to handle different Samba/Windows server security setups
+    uid = os.getuid() if hasattr(os, "getuid") else 1000
+    gid = os.getgid() if hasattr(os, "getgid") else 1000
+
     mount_options_list = [
-        f"username={user},password={password},vers=3.0,uid=1000,gid=1000,noperm",
-        f"username={user},password={password},sec=ntlmssp,vers=3.0,uid=1000,gid=1000",
-        f"username={user},password={password},vers=2.1,uid=1000,gid=1000",
-        f"username={user},password={password},vers=3.1.1,uid=1000,gid=1000",
-        f"username={user},password={password},sec=ntlmssp,uid=1000,gid=1000",
-        f"username={user},password={password},uid=1000,gid=1000",
+        f"username={user},password={password},uid={uid},gid={gid},vers=3.0",
+        f"username={user},password={password},uid={uid},gid={gid},vers=3.0,noperm",
+        f"username={user},password={password},sec=ntlmssp,uid={uid},gid={gid},vers=3.0",
     ]
 
     last_error = ""
     for opts in mount_options_list:
         mount_cmd = ["sudo", "mount", "-t", "cifs", smb_share, mount_point, "-o", opts]
         try:
-            res = subprocess.run(mount_cmd, capture_output=True, text=True, timeout=20)
+            res = subprocess.run(mount_cmd, capture_output=True, text=True, timeout=25)
             if res.returncode == 0:
-                logger.info(f"✅ SMB share mounted successfully.")
+                logger.info("✅ SMB share mounted successfully.")
                 return True
             else:
                 last_error = res.stderr.strip()
@@ -317,11 +335,20 @@ def main():
             logger.error(f"❌ Cannot access local target directory {target_dir}: {e}")
             sys.exit(1)
     else:  # ntfy mode
-        target_dir = DEFAULT_SMB_MOUNT
-        mounted_smb = mount_smb_share(logger, DEFAULT_SMB_SHARE, DEFAULT_SMB_MOUNT, SMB_USER, SMB_PASS)
+        smb_user, smb_pass = get_smb_credentials()
+        mounted_smb = mount_smb_share(logger, DEFAULT_SMB_SHARE, DEFAULT_SMB_MOUNT, smb_user, smb_pass)
         if not mounted_smb:
             logger.error("❌ Network SMB share unavailable. Aborting backup.")
             sys.exit(1)
+        
+        target_dir = DEFAULT_NTFY_TARGET_PATH
+        try:
+            os.makedirs(target_dir, exist_ok=True)
+        except PermissionError:
+            subprocess.run(["sudo", "mkdir", "-p", target_dir], capture_output=True)
+            if hasattr(os, "getuid"):
+                subprocess.run(["sudo", "chown", "-R", f"{os.getuid()}:{os.getgid()}", target_dir], capture_output=True)
+
         logger.info(f"🌐 Target Directory (SMB Network): {DEFAULT_SMB_SHARE} -> {target_dir}")
 
     # Step 1: Create Scripts Archive
