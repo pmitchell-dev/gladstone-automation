@@ -4,54 +4,68 @@
 # ==========================================================
 
 # 0. STEP OUT OF THE SPLASH ZONE
-# This moves the script's execution context to the home folder
-# so it doesn't try to delete the floor it's standing on.
-cd /home/pi || exit
+cd "$HOME" || exit
 
-echo "??  [$HOSTNAME] WARNING: Commencing Full System Purge..."
+echo "⚠️  [$HOSTNAME] WARNING: Commencing Full System Purge..."
 sleep 2
 
 # 1. Kill Persistent Services
-echo "?? Stopping ntfy_listener and background tasks..."
+echo "🛑 Stopping ntfy_listener and background tasks..."
 pkill -f ntfy_listener.sh 2>/dev/null
 pkill -f pi_services_manager.sh 2>/dev/null
+pkill -f nvr_syslog.py 2>/dev/null
 
-# 2. Wipe the Crontab
-echo "?? Clearing all Crontab entries..."
+# 2. Stop Docker Compose Stacks if Docker exists
+if command -v docker &> /dev/null; then
+    echo "🐳 Stopping active Docker container stacks..."
+    for app in relayit homeasset jobboard gemini-api invidious rustdesk dozzle hivemind; do
+        if [ -d "$HOME/$app" ]; then
+            (cd "$HOME/$app" && docker compose down --remove-orphans 2>/dev/null || true)
+        fi
+    done
+fi
+
+# 3. Wipe the Crontab
+echo "🧹 Clearing all Crontab entries..."
 crontab -r 2>/dev/null
 
-# 3. Remove the Identity "ID Card"
+# 4. Remove the Identity "ID Card"
 rm -f "$HOME/.gladstone_mode"
 
-# 4. Clear Temporary Files
+# 5. Clear Temporary Files & Retries
 rm -f /tmp/service_retries
+rm -f /tmp/gladstone_ntfy_mute
+rm -f /tmp/jobs.json.bak
 
-# 5. Remove Data & Logs
-rm -rf /home/pi/printer_data
-rm -rf /home/pi/homeasset
-rm -rf /home/pi/invidious
+# 6. Remove Data & Application Repositories/Directories
+echo "🗑️ Deleting application directories & data..."
+rm -rf "$HOME/printer_data"
+rm -rf "$HOME/relayit"
+rm -rf "$HOME/homeasset"
+rm -rf "$HOME/jobboard"
+rm -rf "$HOME/gemini-api"
+rm -rf "$HOME/invidious"
+rm -rf "$HOME/rustdesk"
+rm -rf "$HOME/dozzle"
+rm -rf "$HOME/hivemind"
 
-# 6. Delete the Script Tree
-# Now that we are in /home/pi, this will run cleanly.
+# 7. Delete the Script Tree
 if [ -d "$HOME/scripts" ]; then
-    echo "?? Deleting ~/scripts..."
+    echo "🗑️ Deleting ~/scripts..."
     rm -rf "$HOME/scripts"
 fi
 
-# 7. Clean up .bashrc
+# 8. Clean up .bashrc
 sed -i '/scripts\/aliases.sh/d' ~/.bashrc
 
 echo "-------------------------------------------------------"
-echo "? [$HOSTNAME] System is now NAKED."
+echo "✅ [$HOSTNAME] System cleanup complete."
 echo "-------------------------------------------------------"
 
-
-# Add this to the end of your cleanup_test.sh
 if command -v docker &> /dev/null; then
-    echo "?? Found Docker. Should I wipe all containers/volumes? (y/N)"
+    echo "🐳 Found Docker. Should I wipe all unused containers, volumes, and prune docker system? (y/N)"
     read -r response
     if [[ "$response" =~ ^([yY][eE][sS]|[yY])$ ]]; then
         docker system prune -af --volumes
-        sudo apt-get purge -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
     fi
 fi
