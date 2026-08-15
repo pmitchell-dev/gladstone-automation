@@ -45,7 +45,7 @@ SMB_PASS = "sambauser"
 
 RETENTION_COUNT = 7  # Keep top 7 daily backups
 
-# Data directories to include if present (Invidious removed per user request)
+# Data directories to include if present
 DATA_SOURCES = [
     ("/home/pi/homeasset/data", "HomeAsset Data"),
     ("/home/pi/jobboard/data", "JobBoard Data"),
@@ -135,7 +135,12 @@ def get_system_diagnostics():
 
 def mount_smb_share(logger, smb_share, mount_point, user, password):
     """Mounts SMB share via CIFS if not already mounted."""
-    os.makedirs(mount_point, exist_ok=True)
+    try:
+        os.makedirs(mount_point, exist_ok=True)
+    except PermissionError:
+        subprocess.run(["sudo", "mkdir", "-p", mount_point], capture_output=True)
+        if hasattr(os, "getuid"):
+            subprocess.run(["sudo", "chown", "-R", f"{os.getuid()}:{os.getgid()}", mount_point], capture_output=True)
 
     # Check if already mounted
     try:
@@ -292,6 +297,11 @@ def main():
         target_dir = DEFAULT_WEBHOST_PATH
         try:
             os.makedirs(target_dir, exist_ok=True)
+            logger.info(f"📂 Target Directory (Local): {target_dir}")
+        except PermissionError:
+            subprocess.run(["sudo", "mkdir", "-p", target_dir], capture_output=True)
+            if hasattr(os, "getuid"):
+                subprocess.run(["sudo", "chown", "-R", f"{os.getuid()}:{os.getgid()}", target_dir], capture_output=True)
             logger.info(f"📂 Target Directory (Local): {target_dir}")
         except Exception as e:
             logger.error(f"❌ Cannot access local target directory {target_dir}: {e}")
