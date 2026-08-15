@@ -65,9 +65,24 @@ generate_dashboard() {
 
     SYNC_LOG="/home/pi/scripts/logs/last_sync.log"
     if [ -f "$SYNC_LOG" ]; then
-        echo -e "??  LAST CLOUD SYNC: $(cat $SYNC_LOG)"
+        echo -e "☁️  LAST CLOUD SYNC: $(cat $SYNC_LOG)"
     else
-        echo -e "??  LAST CLOUD SYNC: Never"
+        echo -e "☁️  LAST CLOUD SYNC: Never"
+    fi
+
+    BACKUP_LOG="/home/pi/scripts/logs/pi_backup.log"
+    if [ -f "$BACKUP_LOG" ]; then
+        LAST_BK_LINE=$(grep "Main Archive:" "$BACKUP_LOG" | tail -n 1)
+        LAST_BK_TIMESTAMP=$(grep "GLADSTONE BACKUP STARTED" "$BACKUP_LOG" | tail -n 1 | awk -F'Timestamp: ' '{print $2}')
+        if [ -n "$LAST_BK_LINE" ]; then
+            ARCHIVE_NAME=$(echo "$LAST_BK_LINE" | awk '{print $4}')
+            ARCHIVE_STATUS=$(echo "$LAST_BK_LINE" | awk '{print $5}')
+            echo -e "📦  LATEST BACKUP: $ARCHIVE_NAME $ARCHIVE_STATUS (${LAST_BK_TIMESTAMP:-Recent})"
+        else
+            echo -e "📦  LATEST BACKUP: No log records found"
+        fi
+    else
+        echo -e "📦  LATEST BACKUP: Never"
     fi
     echo "------------------------------------------------------------"
 

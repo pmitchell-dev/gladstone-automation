@@ -26,6 +26,20 @@ generate_dashboard() {
     echo -e "🌐 ${YELLOW}IP:${NC} $IP    💾 ${YELLOW}Disk:${NC} $DISK"
     echo -e "🧠 ${YELLOW}Mem:${NC} $MEM    🚀 ${YELLOW}Uptime:${NC} $(uptime -p)"
 
+    BACKUP_DIR="/mnt/backups/laptopwebhost"
+    if [ -d "$BACKUP_DIR" ]; then
+        LAST_FILE=$(ls -t "$BACKUP_DIR" 2>/dev/null | head -n 1)
+        if [ -n "$LAST_FILE" ]; then
+            LAST_TIME=$(date -r "$BACKUP_DIR/$LAST_FILE" "+%Y-%m-%d %H:%M:%S" 2>/dev/null || stat -c %y "$BACKUP_DIR/$LAST_FILE" 2>/dev/null | cut -d. -f1)
+            LAST_SIZE=$(du -sh "$BACKUP_DIR/$LAST_FILE" 2>/dev/null | awk '{print $1}')
+            echo -e "📦 ${YELLOW}Latest Backup:${NC} $LAST_FILE ($LAST_SIZE | $LAST_TIME)"
+        else
+            echo -e "📦 ${YELLOW}Latest Backup:${NC} No backups found in $BACKUP_DIR"
+        fi
+    else
+        echo -e "📦 ${YELLOW}Latest Backup:${NC} Target path $BACKUP_DIR unavailable"
+    fi
+
     echo -e "${CYAN}------------------------------------------------------------${NC}"
     echo -e "${BLUE}[ DOCKER CONTAINERS ]${NC}"
     if command -v docker &> /dev/null; then
