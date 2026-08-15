@@ -22,7 +22,10 @@ services:
     image: relayit-web:latest
     container_name: relayit-web
     restart: unless-stopped
+    ports:
+      - "8000:8000"
     environment:
+      PYTHONPATH: /app
       DATABASE_URL: postgresql://${POSTGRES_USER:-postgres}:${POSTGRES_PASSWORD:-postgres}@db:5432/${POSTGRES_DB:-relayit}
       SECRET_KEY: ${SECRET_KEY:-change_this_to_a_secure_random_string}
     depends_on:
