@@ -262,10 +262,10 @@ elif [ "$MODE" == "--webhost" ]; then
         echo -e "${BOLD_CYAN}🎟️ Checking & pulling latest RelayIT code from GitHub...${RESET}"
         cd "$HOME/relayit"
         git remote set-url origin https://github.com/pmitchell-dev/RelayIT.git 2>/dev/null || true
-        git checkout -- . 2>/dev/null || true
 
         BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
-        git pull origin main 2>/dev/null || git pull origin master 2>/dev/null || git pull
+        git fetch origin 2>/dev/null
+        git reset --hard origin/main 2>/dev/null || git reset --hard origin/master 2>/dev/null || git pull origin main 2>/dev/null || git pull
         AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
 
         if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
@@ -285,11 +285,14 @@ elif [ "$MODE" == "--webhost" ]; then
             cp "$SCRIPT_DIR/relayit-compose.yml" "$HOME/relayit/docker-compose.yml"
         fi
 
+        echo -e "${BOLD_CYAN}🧹 Wiping Python bytecode caches (__pycache__)...${RESET}"
+        find . -type d -name "__pycache__" -exec rm -rf {} + 2>/dev/null || true
+
         echo -e "${BOLD_CYAN}🔨 Rebuilding local RelayIT image (no cache)...${RESET}"
         if [ -f "docker-compose.yml" ]; then
             docker compose down --remove-orphans 2>/dev/null || true
             docker compose build --no-cache
-            docker compose up -d
+            docker compose up -d --force-recreate
         else
             echo -e "  ⚠ Warning: No docker-compose.yml found in $HOME/relayit"
         fi

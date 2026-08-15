@@ -54,8 +54,8 @@ if [ "$MODE" == "ntfy" ]; then
     nohup /bin/bash "$SCRIPT_DIR/ntfy_listener.sh" > "$SCRIPT_DIR/logs/ntfy.log" 2>&1 &
     bash "$SCRIPT_DIR/pi_services_manager.sh"
     
-elif [ "$MODE" == "webhost" ]; then
-    echo "🖥️  Refreshing Webhost Node..."
+elif [ "$MODE" == "webhost" ] || [ -d "$HOME/relayit" ]; then
+    echo "🖥️  Refreshing Webhost Node & Application Stacks..."
     # Trigger a rebuild to apply any stack changes
     bash "$SCRIPT_DIR/pi_rebuild.sh" --webhost
 fi
