@@ -134,7 +134,7 @@ def get_system_diagnostics():
 
 
 def mount_smb_share(logger, smb_share, mount_point, user, password):
-    """Mounts SMB share via CIFS if not already mounted."""
+    """Mounts SMB share via CIFS if not already mounted, testing compatible security/version flags."""
     try:
         os.makedirs(mount_point, exist_ok=True)
     except PermissionError:
@@ -152,22 +152,32 @@ def mount_smb_share(logger, smb_share, mount_point, user, password):
         pass
 
     logger.info(f"🔌 Mounting SMB share {smb_share} -> {mount_point}...")
-    mount_cmd = [
-        "sudo", "mount", "-t", "cifs", smb_share, mount_point,
-        "-o", f"username={user},password={password},vers=3.0,uid=1000,gid=1000,noperm"
+
+    # Varied CIFS mount options to handle different Samba/Windows server security setups
+    mount_options_list = [
+        f"username={user},password={password},vers=3.0,uid=1000,gid=1000,noperm",
+        f"username={user},password={password},sec=ntlmssp,vers=3.0,uid=1000,gid=1000",
+        f"username={user},password={password},vers=2.1,uid=1000,gid=1000",
+        f"username={user},password={password},vers=3.1.1,uid=1000,gid=1000",
+        f"username={user},password={password},sec=ntlmssp,uid=1000,gid=1000",
+        f"username={user},password={password},uid=1000,gid=1000",
     ]
-    
-    try:
-        res = subprocess.run(mount_cmd, capture_output=True, text=True, timeout=30)
-        if res.returncode == 0:
-            logger.info("✅ SMB share mounted successfully.")
-            return True
-        else:
-            logger.error(f"❌ SMB mount failed (Exit {res.returncode}): {res.stderr.strip()}")
-            return False
-    except Exception as e:
-        logger.error(f"❌ Exception mounting SMB share: {e}")
-        return False
+
+    last_error = ""
+    for opts in mount_options_list:
+        mount_cmd = ["sudo", "mount", "-t", "cifs", smb_share, mount_point, "-o", opts]
+        try:
+            res = subprocess.run(mount_cmd, capture_output=True, text=True, timeout=20)
+            if res.returncode == 0:
+                logger.info(f"✅ SMB share mounted successfully.")
+                return True
+            else:
+                last_error = res.stderr.strip()
+        except Exception as e:
+            last_error = str(e)
+
+    logger.error(f"❌ SMB mount failed: {last_error}")
+    return False
 
 
 def unmount_smb_share(logger, mount_point):
