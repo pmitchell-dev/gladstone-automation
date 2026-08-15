@@ -89,5 +89,5 @@ bash ~/scripts/cleanup_test.sh
 ## 📂 Directory Structure
 * `~/scripts/`: Core automation logic & docker compose specifications.
 * `~/scripts/logs/`: Runtime telemetry & error logs (Excluded from git).
-* `~/scripts/backup/`: Daily local ZIP backup rotations (Keeps last 2).
+* `~/scripts/backup/`: Backup location. Webhost targets `/mnt/backups/laptopwebhost` and NTFY Hub targets `//192.168.50.217/Backups/CentralServers` via SMB (`Pi:sambauser`). Retains top 7 daily backups with SHA256 integrity verification.
 * `~/printer_data/`: Scraped HTML telemetry from Brother printer.

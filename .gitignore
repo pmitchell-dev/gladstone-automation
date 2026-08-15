@@ -5,3 +5,7 @@ logs/
 # Ignore local zip backups
 backup/
 *.zip
+
+# Ignore python artifacts
+__pycache__/
+*.pyc

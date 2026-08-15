@@ -16,10 +16,12 @@
 
 ---
 
-## ⏱ Central Hub Schedule
+## ⏱ Central Hub & Webhost Schedule
 * **Printer Scrape:** 4-hour intervals.
 * **Network Audit:** 6-hour intervals.
-* **Self-Backup:** Daily at midnight.
+* **Self-Backup:** Daily at midnight via `pi_backup.sh` / `backup_manager.py`.
+  * **Webhost Target:** Local path `/mnt/backups/laptopwebhost`
+  * **NTFY Hub Target:** Network SMB `//192.168.50.217/Backups/CentralServers` (CIFS mount, credentials `Pi:sambauser`)
 * **Watchdog:** 5-minute check with 5-strike retry logic.
 
 ---

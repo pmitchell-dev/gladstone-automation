@@ -53,7 +53,7 @@ if [ "$MODE" == "--ntfy" ]; then
     MASTER_CRON="0 0,8,12,16,20 * * * $SCRIPT_DIR/get_printer_status.sh
 1 0,8,12,16,20 * * * $SCRIPT_DIR/printer_alert.sh
 0 */6 * * * $SCRIPT_DIR/net_speed.sh
-0 0 * * * $SCRIPT_DIR/pi_backup.sh
+0 0 * * * $SCRIPT_DIR/pi_backup.sh --mode ntfy
 */5 * * * * $SCRIPT_DIR/pi_services_manager.sh
 @reboot /bin/bash $SCRIPT_DIR/ntfy_listener.sh > $SCRIPT_DIR/logs/ntfy.log 2>&1 &"
     echo "$MASTER_CRON" | crontab -
@@ -300,7 +300,7 @@ elif [ "$MODE" == "--webhost" ]; then
     fi
 
     # Webhost Maintenance Crontab
-    WEB_CRON="0 0 * * * $SCRIPT_DIR/pi_backup.sh
+    WEB_CRON="0 0 * * * $SCRIPT_DIR/pi_backup.sh --mode webhost
 */5 * * * * $SCRIPT_DIR/pi_services_manager.sh
 0 3 * * 0 docker system prune -af --volumes"
     echo "$WEB_CRON" | crontab -
