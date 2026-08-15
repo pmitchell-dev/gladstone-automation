@@ -1,12 +1,12 @@
 # 🖥️ Gladstone Master System Context
-**Last Updated:** August 10, 2026  
+**Last Updated:** August 15, 2026  
 **Architecture:** Hub & Spoke (Communication Hub Model)
 
 ---
 
 ## 🖥️ Server Roles
 * **Hub (RPi5):** The primary entry point. Manages printer logs, network speedtests, and relays commands to other nodes via `--ntfy`.
-* **Spoke (Webhost):** Specialized nodes (like the Ubuntu Laptop) that run specific web services (Invidious, RustDesk, JobBoard, Gemini API) via `--webhost`.
+* **Spoke (Webhost):** Specialized nodes (like the Ubuntu Laptop) that run specific web services (Invidious, RustDesk, JobBoard, Gemini API, RelayIT) via `--webhost`.
 
 ---
 

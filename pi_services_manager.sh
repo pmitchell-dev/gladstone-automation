@@ -61,6 +61,12 @@ if [ "$MODE" == "webhost" ]; then
         echo "📋 Recovering JobBoard container..."
         cd /home/pi/jobboard && docker compose up -d
     fi
+
+    # RelayIT
+    if ! docker ps --format '{{.Names}}' | grep -q "^relayit"; then
+        echo "🎟️ Recovering RelayIT container..."
+        cd /home/pi/relayit && docker compose up -d
+    fi
 fi
 
 # REGISTRY MONITOR (Shared)

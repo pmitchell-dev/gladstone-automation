@@ -196,6 +196,19 @@ if [ "$MODE" == "webhost" ]; then
         echo "🔑 Created $GEMINI_DIR/.env file (Add your GEMINI_API_KEY here)."
     fi
     echo "🤖 Gemini API Stack provisioned."
+
+    # RelayIT Stack Setup
+    if [ ! -d "$HOME/relayit" ]; then
+        echo "🎟️ Initial Clone of RelayIT..."
+        git clone https://github.com/pmitchell-dev/RelayIT.git "$HOME/relayit"
+        if [ -f "$SCRIPT_DIR/relayit-compose.yml" ]; then
+            cp "$SCRIPT_DIR/relayit-compose.yml" "$HOME/relayit/docker-compose.yml"
+        fi
+    fi
+    mkdir -p "$HOME/relayit/data/pgdata"
+    mkdir -p "$HOME/relayit/data/caddy_data"
+    mkdir -p "$HOME/relayit/data/caddy_config"
+    echo "🎟️ RelayIT Stack provisioned."
 fi
 
 # 4b. Webhost — Dozzle Log Viewer Stack

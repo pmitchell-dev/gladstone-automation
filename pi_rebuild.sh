@@ -249,6 +249,51 @@ elif [ "$MODE" == "--webhost" ]; then
         fi
     fi
 
+    # RelayIT Stack Synchronization
+    if [ ! -d "$HOME/relayit" ]; then
+        echo -e "${BOLD_CYAN}🎟️ RelayIT missing. Cloning repository...${RESET}"
+        git clone https://github.com/pmitchell-dev/RelayIT.git "$HOME/relayit"
+        if [ -f "$SCRIPT_DIR/relayit-compose.yml" ]; then
+            cp "$SCRIPT_DIR/relayit-compose.yml" "$HOME/relayit/docker-compose.yml"
+        fi
+    fi
+
+    if [ -d "$HOME/relayit" ]; then
+        echo -e "${BOLD_CYAN}🎟️ Checking & pulling latest RelayIT code from GitHub...${RESET}"
+        cd "$HOME/relayit"
+        git remote set-url origin https://github.com/pmitchell-dev/RelayIT.git 2>/dev/null || true
+        git checkout -- . 2>/dev/null || true
+
+        BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
+        git pull origin main 2>/dev/null || git pull origin master 2>/dev/null || git pull
+        AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
+
+        if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+            echo -e "${BOLD_YELLOW}🚀 NEW UPDATES DETECTED & PULLED [RelayIT]${RESET}"
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+            echo -e "${CYAN} Repository:${RESET}   https://github.com/pmitchell-dev/RelayIT"
+            echo -e "${CYAN} Commit Range:${RESET} ${BEFORE_PULL:~0:7}..${AFTER_PULL:~0:7}"
+            echo -e "${CYAN} New Commits:${RESET}"
+            git log --oneline -n 5 "$BEFORE_PULL..$AFTER_PULL" | sed 's/^/   • /'
+            echo -e "${BOLD_GREEN}========================================================================${RESET}"
+        else
+            echo -e "  ${CYAN}[RelayIT]${RESET} Already up to date (no new changes found)."
+        fi
+
+        if [ -f "$SCRIPT_DIR/relayit-compose.yml" ]; then
+            cp "$SCRIPT_DIR/relayit-compose.yml" "$HOME/relayit/docker-compose.yml"
+        fi
+
+        echo -e "${BOLD_CYAN}🔨 Rebuilding local RelayIT image...${RESET}"
+        if [ -f "docker-compose.yml" ]; then
+            docker compose up -d --build
+        else
+            echo -e "  ⚠ Warning: No docker-compose.yml found in $HOME/relayit"
+        fi
+        echo "✅ RelayIT Deployment Complete. (http://$HOST_IP)"
+    fi
+
     # Webhost Maintenance Crontab
     WEB_CRON="0 0 * * * $SCRIPT_DIR/pi_backup.sh
 */5 * * * * $SCRIPT_DIR/pi_services_manager.sh

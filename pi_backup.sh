@@ -44,6 +44,11 @@ if [ -d "/home/pi/jobboard/data" ]; then
     cp -r /home/pi/jobboard/data /home/pi/scripts/backup/jobboard_data_$(date +%F)
 fi
 
+if [ -d "/home/pi/relayit/data" ]; then
+    echo "🎟️ Backing up RelayIT Data..."
+    cp -r /home/pi/relayit/data /home/pi/scripts/backup/relayit_data_$(date +%F)
+fi
+
 
 # 3. Rotation Logic: Keep only the 2 most recent files
 # ls -t lists by time (newest first). tail -n +3 selects everything after the 2nd file.
