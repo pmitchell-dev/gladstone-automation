@@ -117,18 +117,6 @@ elif [ "$MODE" == "--webhost" ]; then
         echo -e "  ✅ HomeAsset Deployment Check Complete."
     fi
 
-    # Invidious Stack Synchronization
-    if [ -d "$HOME/invidious" ]; then
-        echo "?? Synchronizing Invidious Stack..."
-        cd "$HOME/invidious"
-        if [ -f "docker-compose.yml" ]; then
-            docker compose up -d
-            echo "? Invidious Stack Deployment Check Complete."
-        else
-            echo "? Warning: No docker-compose.yml found in $HOME/invidious"
-        fi
-    fi
-
     # RustDesk Stack Synchronization
     if [ ! -d "$HOME/rustdesk" ]; then
         echo "?? RustDesk missing. Provisioning stack..."

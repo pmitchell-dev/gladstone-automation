@@ -45,10 +45,9 @@ SMB_PASS = "sambauser"
 
 RETENTION_COUNT = 7  # Keep top 7 daily backups
 
-# Data directories to include if present
+# Data directories to include if present (Invidious removed per user request)
 DATA_SOURCES = [
     ("/home/pi/homeasset/data", "HomeAsset Data"),
-    ("/home/pi/invidious", "Invidious Config & Data"),
     ("/home/pi/jobboard/data", "JobBoard Data"),
     ("/home/pi/relayit/data", "RelayIT Data"),
     ("/home/pi/.config/terminalbuddy", "TerminalBuddy Config"),
@@ -198,7 +197,7 @@ def create_tar_gz(source_dir, output_file, exclude_list, logger):
 
 
 def copy_extra_data(dest_dir, logger):
-    """Copies application data paths into destination backup folder."""
+    """Copies application data paths into destination backup folder with elevated fallback for docker volumes."""
     results = []
     for path, description in DATA_SOURCES:
         if os.path.exists(path):
@@ -208,14 +207,21 @@ def copy_extra_data(dest_dir, logger):
             target_path = os.path.join(dest_dir, dest_name)
             try:
                 if os.path.isdir(path):
-                    shutil.copytree(path, target_path)
+                    shutil.copytree(path, target_path, dirs_exist_ok=True)
                 else:
                     shutil.copy2(path, target_path)
                 logger.info(f"  └─ ✅ {description}: Backed up -> {dest_name}")
                 results.append((description, "SUCCESS"))
-            except Exception as e:
-                logger.error(f"  └─ ❌ {description} failed: {e}")
-                results.append((description, f"FAILED ({e})"))
+            except (PermissionError, OSError) as e:
+                # Fallback to sudo cp -r for docker container volumes owned by root/other users
+                res = subprocess.run(["sudo", "cp", "-r", path, target_path], capture_output=True, text=True)
+                if res.returncode == 0:
+                    logger.info(f"  └─ ✅ {description}: Backed up (elevated) -> {dest_name}")
+                    results.append((description, "SUCCESS"))
+                else:
+                    err_msg = res.stderr.strip() or str(e)
+                    logger.error(f"  └─ ❌ {description} failed: {err_msg}")
+                    results.append((description, f"FAILED ({err_msg})"))
         else:
             results.append((description, "SKIPPED (Not Present)"))
     return results
@@ -241,7 +247,9 @@ def rotate_backups(target_dir, prefix, keep_count, logger):
                         os.remove(old_file)
                     logger.info(f"  └─ 🗑️ Pruned old backup: {os.path.basename(old_file)}")
                 except Exception as e:
-                    logger.warning(f"  └─ ⚠️ Failed to prune {os.path.basename(old_file)}: {e}")
+                    # Fallback to sudo rm for docker-created backup directories
+                    subprocess.run(["sudo", "rm", "-rf", old_file], capture_output=True)
+                    logger.info(f"  └─ 🗑️ Pruned old backup (elevated): {os.path.basename(old_file)}")
         else:
             logger.info(f"  └─ Total backups ({len(files)}) within retention limit ({keep_count}).")
     except Exception as e:

@@ -34,12 +34,6 @@ if [ "$MODE" == "webhost" ]; then
         sed -i "/^homeasset:/d" "$RETRY_FILE"; echo "homeasset:0" >> "$RETRY_FILE"
     fi
 
-    # Invidious
-    if ! docker ps --format '{{.Names}}' | grep -q "^invidious$"; then
-        echo "?? Recovering Invidious container..."
-        cd /home/pi/invidious && docker compose up -d
-    fi
-
     # RustDesk
     if ! docker ps --format '{{.Names}}' | grep -q "^hbbs$"; then
         echo "?? Recovering RustDesk ID server (hbbs)..."

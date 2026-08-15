@@ -18,7 +18,7 @@ pkill -f nvr_syslog.py 2>/dev/null
 # 2. Stop Docker Compose Stacks if Docker exists
 if command -v docker &> /dev/null; then
     echo "🐳 Stopping active Docker container stacks..."
-    for app in relayit homeasset jobboard gemini-api invidious rustdesk dozzle hivemind; do
+    for app in relayit homeasset jobboard gemini-api rustdesk dozzle hivemind; do
         if [ -d "$HOME/$app" ]; then
             (cd "$HOME/$app" && docker compose down --remove-orphans 2>/dev/null || true)
         fi
