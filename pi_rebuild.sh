@@ -71,8 +71,19 @@ if [ "$MODE" == "--ntfy" ]; then
 
 # --- 2. WEBHOST MODE (Laptop Only) ---
 elif [ "$MODE" == "--webhost" ]; then
-    echo "?? Synchronizing Webhost Services..."
+    echo "🔄 Synchronizing Webhost Services..."
     HOST_IP=$(hostname -I | awk '{print $1}')
+    
+    # Purge legacy Invidious containers & files if present
+    INVIDIOUS_CONTAINERS=$(docker ps -a --filter "name=invidious" -q 2>/dev/null)
+    if [ -n "$INVIDIOUS_CONTAINERS" ]; then
+        echo -e "${BOLD_CYAN}🧹 Stopping and purging legacy Invidious containers...${RESET}"
+        docker stop $INVIDIOUS_CONTAINERS 2>/dev/null || true
+        docker rm -f $INVIDIOUS_CONTAINERS 2>/dev/null || true
+    fi
+    if [ -d "$HOME/invidious" ]; then
+        rm -rf "$HOME/invidious"
+    fi
     
     if [ ! -d "$HOME/homeasset" ]; then
         echo -e "${BOLD_CYAN}🔄 HomeAsset missing. Cloning repository...${RESET}"

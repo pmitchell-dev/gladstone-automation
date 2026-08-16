@@ -40,9 +40,6 @@
   * `jobboard`: Next.js Job Aggregator & Dashboard (Port 3001)
 * **Gemini API Stack** (`gemini-compose.yml`):
   * `gemini-api`: Python Gemini AI Endpoint (Port 5050)
-* **Invidious Stack** (`invidious-compose.yml`):
-  * `invidious`: YouTube Privacy Frontend (Port 3000)
-  * `invidious-db`: PostgreSQL DB (Port 5432 internal)
 * **RustDesk Stack** (`rustdesk-compose.yml`):
   * `hbbs`: RustDesk ID Signaling Server (Port 21115 / 21116)
   * `hbbr`: RustDesk Relay Server (Port 21117)

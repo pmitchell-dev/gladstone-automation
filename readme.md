@@ -44,7 +44,6 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | **HomeAsset Database** (`homeasset-db`) | `homeasset-compose.yml` | Webhost | 5432 (Internal) | PostgreSQL 16 DB for HomeAsset | **Active** |
 | **JobBoard** (`jobboard`) | `jobboard-compose.yml` | Webhost | 3001 | Next.js Job Aggregator & Dashboard | **Active** |
 | **Gemini API** (`gemini-api`) | `gemini-compose.yml` | Webhost | 5050 | Gemini AI Server Endpoint | **Active** |
-| **Invidious** (`invidious`) | `invidious-compose.yml` | Webhost | 3000 | Invidious YouTube Privacy Frontend | **Active** |
 | **RustDesk ID Server** (`hbbs`) | `rustdesk-compose.yml` | Webhost | 21115 / 21116 | RustDesk Remote Desktop ID Signaling | **Active** |
 | **RustDesk Relay** (`hbbr`) | `rustdesk-compose.yml` | Webhost | 21117 | RustDesk Remote Desktop Relay Server | **Active** |
 | **Dozzle Log Viewer** (`dozzle`) | `dozzle-compose.yml` | Webhost | 8888 | Centralized Docker Log Dashboard | **Active** |
@@ -57,6 +56,7 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | Service / Container | Compose File | Reason for Removal | Status |
 | :--- | :--- | :--- | :--- |
 | **Hivemind** (`hivemind`) | `hivemind-compose.yml` | Deprecated; functionality migrated to RelayIT and Gemini API stacks | **Removed** |
+| **Invidious** (`invidious`) | `invidious-compose.yml` | Removed from Webhost stack | **Removed** |
 
 ---
 

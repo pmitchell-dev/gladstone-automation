@@ -58,7 +58,11 @@ generate_dashboard() {
     echo -e "${CYAN}------------------------------------------------------------${NC}"
     echo -e "${BLUE}[ DOCKER CONTAINERS ]${NC}"
     if command -v docker &> /dev/null; then
-        docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+        if [ -n "$(docker ps -q 2>/dev/null)" ]; then
+            docker ps --format "table {{.Names}}\t{{.Status}}\t{{.Ports}}"
+        else
+            echo -e "   ${YELLOW}No running Docker containers.${NC}"
+        fi
     else
         echo -e "   ${YELLOW}Docker is not installed.${NC}"
     fi
