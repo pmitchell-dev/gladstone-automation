@@ -8,6 +8,12 @@ RETRY_FILE="/tmp/service_retries"
 ID_FILE="$HOME/.gladstone_mode"
 TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
+RESTORE_LOCK="/tmp/gladstone_restore_in_progress"
+if [ -f "$RESTORE_LOCK" ]; then
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ⏸️ Gladstone service watchdog paused during system restoration."
+    exit 0
+fi
+
 MODE=$(cat "$ID_FILE" 2>/dev/null || echo "ntfy")
 touch "$RETRY_FILE"
 

@@ -20,7 +20,9 @@ alias sync="bash $SCRIPT_DIR/pi_sync.sh"
 alias rebuild="bash $SCRIPT_DIR/pi_rebuild.sh"
 alias update="bash $SCRIPT_DIR/pi_update.sh"
 alias reinstall="bash $SCRIPT_DIR/install.sh"
-alias refresh='source ~/.bashrc && echo "? Environment refreshed."'
+alias backup="bash $SCRIPT_DIR/pi_backup.sh"
+alias restore="bash $SCRIPT_DIR/pi_restore.sh"
+alias refresh='source ~/.bashrc && echo "🔄 Environment refreshed."'
 
 # --- COMMUNICATION & SERVICES ---
 # Shorthand for the relay script
