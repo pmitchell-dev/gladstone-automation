@@ -20,5 +20,6 @@ services:
     environment:
       - PYTHONUNBUFFERED=1
       - GEMINI_API_KEY=${GEMINI_API_KEY}
-      - GEMINI_DEFAULT_MODEL=${GEMINI_DEFAULT_MODEL:-gemini-flash-latest}
-      - GEMINI_FALLBACK_MODEL=${GEMINI_FALLBACK_MODEL:-gemini-flash-latest}
+      - GEMINI_DEFAULT_MODEL=${GEMINI_DEFAULT_MODEL:-gemini-3.7-flash}
+      - GEMINI_FALLBACK_MODEL=${GEMINI_FALLBACK_MODEL:-gemini-3.6-flash}
+      - GEMINI_MAX_RETRIES=${GEMINI_MAX_RETRIES:-5}

@@ -3,17 +3,20 @@
 ==========================================================
 GLADSTONE GEMINI API BACKEND SERVICE (gemini_api_server.py)
 ==========================================================
-Version: 1.1.0
+Version: 1.2.0
 Purpose: Provides a lightweight CORS-enabled HTTP proxy for local websites
          to send prompts to Google Gemini API without exposing the API key.
-         Attempts gemini-flash-latest first, with fallback to gemini-flash-latest.
+         Features exponential backoff with full jitter, Retry-After parsing,
+         and multi-tier model fallback across Gemini 3.7 Flash, 3.6 Flash,
+         3.5 Flash-Lite, and 2.5 Flash.
 Endpoint: POST /api/query
-Payload:  {"prompt": "...", "model": "gemini-flash-latest", "system_instruction": "..."}
+Payload:  {"prompt": "...", "model": "gemini-3.7-flash", "system_instruction": "..."}
 ==========================================================
 """
 
 import os
 import time
+import random
 import logging
 from flask import Flask, request, jsonify
 from flask_cors import CORS
@@ -27,13 +30,17 @@ app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-DEFAULT_MODEL = os.environ.get("GEMINI_DEFAULT_MODEL", "gemini-flash-latest").strip()
-FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-flash-latest").strip()
+DEFAULT_MODEL = os.environ.get("GEMINI_DEFAULT_MODEL", "gemini-3.7-flash").strip()
+FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-3.6-flash").strip()
 
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
-MAX_RETRIES = 5
-RETRYABLE_STATUS_CODES = {429, 500, 502, 503, 504}
+MAX_RETRIES = int(os.environ.get("GEMINI_MAX_RETRIES", "5"))
+RETRYABLE_STATUS_CODES = {408, 428, 429, 500, 502, 503, 504}
+RETRYABLE_ERROR_KEYWORDS = {"resource_exhausted", "unavailable", "overloaded", "busy", "capacity_exceeded", "rate limit"}
+
+# Canonical model hierarchy pool for fallback cascade
+MODEL_HIERARCHY = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"]
 
 
 @app.route("/health", methods=["GET"])
@@ -45,17 +52,37 @@ def health_check():
         "service": "gemini-api-backend",
         "api_key_configured": has_key,
         "default_model": DEFAULT_MODEL,
-        "fallback_model": FALLBACK_MODEL
+        "fallback_model": FALLBACK_MODEL,
+        "max_retries": MAX_RETRIES,
+        "model_hierarchy": MODEL_HIERARCHY
     }), 200
+
+
+def calculate_backoff(attempt: int, response_headers: dict = None) -> float:
+    """Calculate exponential backoff delay with full jitter and Retry-After header support."""
+    base_delay = min(2 ** (attempt - 1), 20)
+    jitter_delay = random.uniform(0.5, 1.5) * base_delay
+
+    if response_headers:
+        retry_after_hdr = response_headers.get("Retry-After") or response_headers.get("retry-after")
+        if retry_after_hdr:
+            try:
+                retry_after_sec = float(retry_after_hdr)
+                if retry_after_sec > 0:
+                    return max(jitter_delay, retry_after_sec + random.uniform(0.1, 0.5))
+            except ValueError:
+                pass
+
+    return jitter_delay
 
 
 @app.route("/api/query", methods=["POST"])
 def query_gemini():
     """
-    Query Gemini API endpoint with automatic fallback.
+    Query Gemini API endpoint with automatic multi-tier fallback.
     JSON Body:
       - prompt (required): string text prompt
-      - model (optional): string model name (default: gemini-flash-latest)
+      - model (optional): string model name (default: gemini-3.7-flash)
       - system_instruction (optional): string system instruction
       - image_base64 (optional): base64 encoded image string
     """
@@ -81,6 +108,9 @@ def query_gemini():
         }), 400
 
     primary_model = data.get("model", DEFAULT_MODEL).strip()
+    if primary_model == "gemini-flash-latest":
+        primary_model = "gemini-3.7-flash"
+
     system_instruction = data.get("system_instruction", "").strip()
     image_base64 = data.get("image_base64", "").strip()
 
@@ -120,10 +150,15 @@ def query_gemini():
             ]
         }
 
-    # Build sequence of models to attempt (primary model -> fallback model)
+    # Build sequence of models to attempt (primary model -> fallback pool)
     models_to_try = [primary_model]
-    if FALLBACK_MODEL and primary_model != FALLBACK_MODEL:
+
+    if FALLBACK_MODEL and FALLBACK_MODEL not in models_to_try:
         models_to_try.append(FALLBACK_MODEL)
+
+    for tier_model in MODEL_HIERARCHY:
+        if tier_model not in models_to_try:
+            models_to_try.append(tier_model)
 
     last_error_response = None
 
@@ -173,9 +208,16 @@ def query_gemini():
                     "details": response.json() if response.headers.get("content-type") == "application/json" else err_msg
                 }), response.status_code)
 
-                if response.status_code in RETRYABLE_STATUS_CODES and attempt < MAX_RETRIES:
-                    sleep_seconds = 2 ** (attempt - 1)
-                    logging.warning(f"Retryable status code {response.status_code} encountered. Backing off for {sleep_seconds}s before attempt {attempt + 1}/{MAX_RETRIES}...")
+                # Check if response status code or error payload indicates retryable capacity/rate error
+                is_retryable = response.status_code in RETRYABLE_STATUS_CODES
+                if not is_retryable and err_msg:
+                    err_msg_lower = err_msg.lower()
+                    if any(kw in err_msg_lower for kw in RETRYABLE_ERROR_KEYWORDS):
+                        is_retryable = True
+
+                if is_retryable and attempt < MAX_RETRIES:
+                    sleep_seconds = calculate_backoff(attempt, response.headers)
+                    logging.warning(f"Retryable error status {response.status_code} encountered. Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES}...")
                     time.sleep(sleep_seconds)
                     continue
 
@@ -188,8 +230,8 @@ def query_gemini():
                     "message": f"Request to Gemini API timed out after 30 seconds for model '{current_model}'."
                 }), 504)
                 if attempt < MAX_RETRIES:
-                    sleep_seconds = 2 ** (attempt - 1)
-                    logging.warning(f"Backing off for {sleep_seconds}s before attempt {attempt + 1}/{MAX_RETRIES}...")
+                    sleep_seconds = calculate_backoff(attempt)
+                    logging.warning(f"Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES}...")
                     time.sleep(sleep_seconds)
                     continue
                 break
@@ -200,16 +242,16 @@ def query_gemini():
                     "message": f"Server error on model '{current_model}': {str(e)}"
                 }), 500)
                 if attempt < MAX_RETRIES:
-                    sleep_seconds = 2 ** (attempt - 1)
-                    logging.warning(f"Backing off for {sleep_seconds}s before attempt {attempt + 1}/{MAX_RETRIES}...")
+                    sleep_seconds = calculate_backoff(attempt)
+                    logging.warning(f"Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES}...")
                     time.sleep(sleep_seconds)
                     continue
                 break
 
-        # Log fallback attempt if there is a next model in the list
+        # Log fallback attempt if there is a next model in the tier list
         if idx < len(models_to_try) - 1:
             next_model = models_to_try[idx + 1]
-            logging.warning(f"Attempting fallback from model '{current_model}' to '{next_model}'...")
+            logging.warning(f"Model '{current_model}' exhausted. Cascading fallback to next model tier '{next_model}'...")
 
     return last_error_response
 
@@ -217,3 +259,4 @@ def query_gemini():
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     app.run(host="0.0.0.0", port=port, debug=False)
+
