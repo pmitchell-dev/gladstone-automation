@@ -3,11 +3,12 @@
 ==========================================================
 GLADSTONE GEMINI API BACKEND SERVICE (gemini_api_server.py)
 ==========================================================
-Version: 1.2.0
+Version: 1.3.0
 Purpose: Provides a lightweight CORS-enabled HTTP proxy for local websites
          to send prompts to Google Gemini API without exposing the API key.
-         Features exponential backoff with full jitter, Retry-After parsing,
-         and multi-tier model fallback across Gemini 3.7 Flash, 3.6 Flash,
+         Features global request time budgeting (prevents Gunicorn worker timeouts),
+         exponential backoff with full jitter, Retry-After parsing,
+         and rapid multi-tier model fallback across Gemini 3.7 Flash, 3.6 Flash,
          3.5 Flash-Lite, and 2.5 Flash.
 Endpoint: POST /api/query
 Payload:  {"prompt": "...", "model": "gemini-3.7-flash", "system_instruction": "..."}
@@ -35,7 +36,10 @@ FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-3.6-flash").str
 
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
-MAX_RETRIES = int(os.environ.get("GEMINI_MAX_RETRIES", "5"))
+MAX_RETRIES_PER_MODEL = int(os.environ.get("GEMINI_MAX_RETRIES", "2"))
+MAX_TOTAL_REQUEST_TIMEOUT = int(os.environ.get("GEMINI_MAX_REQUEST_TIMEOUT", "45"))
+PER_REQUEST_HTTP_TIMEOUT = int(os.environ.get("GEMINI_HTTP_TIMEOUT", "12"))
+
 RETRYABLE_STATUS_CODES = {408, 428, 429, 500, 502, 503, 504}
 RETRYABLE_ERROR_KEYWORDS = {"resource_exhausted", "unavailable", "overloaded", "busy", "capacity_exceeded", "rate limit"}
 
@@ -53,14 +57,15 @@ def health_check():
         "api_key_configured": has_key,
         "default_model": DEFAULT_MODEL,
         "fallback_model": FALLBACK_MODEL,
-        "max_retries": MAX_RETRIES,
+        "max_retries_per_model": MAX_RETRIES_PER_MODEL,
+        "max_global_timeout": MAX_TOTAL_REQUEST_TIMEOUT,
         "model_hierarchy": MODEL_HIERARCHY
     }), 200
 
 
 def calculate_backoff(attempt: int, response_headers: dict = None) -> float:
     """Calculate exponential backoff delay with full jitter and Retry-After header support."""
-    base_delay = min(2 ** (attempt - 1), 20)
+    base_delay = min(2 ** (attempt - 1), 4)
     jitter_delay = random.uniform(0.5, 1.5) * base_delay
 
     if response_headers:
@@ -68,7 +73,7 @@ def calculate_backoff(attempt: int, response_headers: dict = None) -> float:
         if retry_after_hdr:
             try:
                 retry_after_sec = float(retry_after_hdr)
-                if retry_after_sec > 0:
+                if 0 < retry_after_sec <= 10:
                     return max(jitter_delay, retry_after_sec + random.uniform(0.1, 0.5))
             except ValueError:
                 pass
@@ -79,13 +84,15 @@ def calculate_backoff(attempt: int, response_headers: dict = None) -> float:
 @app.route("/api/query", methods=["POST"])
 def query_gemini():
     """
-    Query Gemini API endpoint with automatic multi-tier fallback.
+    Query Gemini API endpoint with automatic multi-tier fallback and request time budgeting.
     JSON Body:
       - prompt (required): string text prompt
       - model (optional): string model name (default: gemini-3.7-flash)
       - system_instruction (optional): string system instruction
       - image_base64 (optional): base64 encoded image string
     """
+    start_time = time.time()
+
     if not GEMINI_API_KEY or GEMINI_API_KEY == "your_gemini_api_key_here":
         logging.error("GEMINI_API_KEY is not set or holds placeholder value.")
         return jsonify({
@@ -166,9 +173,18 @@ def query_gemini():
         url = f"{GEMINI_BASE_URL}/{current_model}:generateContent?key={GEMINI_API_KEY}"
         headers = {"Content-Type": "application/json"}
 
-        for attempt in range(1, MAX_RETRIES + 1):
+        for attempt in range(1, MAX_RETRIES_PER_MODEL + 1):
+            elapsed = time.time() - start_time
+            remaining_budget = MAX_TOTAL_REQUEST_TIMEOUT - elapsed
+
+            if remaining_budget <= 3:
+                logging.warning(f"Global request time budget ({MAX_TOTAL_REQUEST_TIMEOUT}s) nearly exhausted ({elapsed:.1f}s elapsed). Stopping retries.")
+                break
+
+            req_timeout = max(3, min(PER_REQUEST_HTTP_TIMEOUT, int(remaining_budget - 1)))
+
             try:
-                logging.info(f"=== PROMPT SENT TO GEMINI (model: {current_model}, attempt: {attempt}/{MAX_RETRIES}) ===")
+                logging.info(f"=== PROMPT SENT TO GEMINI (model: {current_model}, attempt: {attempt}/{MAX_RETRIES_PER_MODEL}, timeout: {req_timeout}s) ===")
                 if system_instruction:
                     logging.info(f"System Instruction: {system_instruction}")
                 logging.info(f"Prompt: {prompt}")
@@ -177,7 +193,7 @@ def query_gemini():
                 else:
                     logging.info("[NO IMAGE ATTACHED]")
 
-                response = requests.post(url, headers=headers, json=gemini_payload, timeout=30)
+                response = requests.post(url, headers=headers, json=gemini_payload, timeout=req_timeout)
 
                 if response.status_code == 200:
                     res_data = response.json()
@@ -188,7 +204,7 @@ def query_gemini():
                         if c_parts:
                             result_text = c_parts[0].get("text", "")
 
-                    logging.info(f"=== RESPONSE RETRIEVED FROM GEMINI (model: {current_model}) ===")
+                    logging.info(f"=== RESPONSE RETRIEVED FROM GEMINI (model: {current_model}) in {time.time() - start_time:.2f}s ===")
                     logging.info(f"Response: {result_text}")
 
                     return jsonify({
@@ -199,7 +215,7 @@ def query_gemini():
                     }), 200
 
                 err_msg = response.text
-                logging.warning(f"=== ERROR RESPONSE FROM GEMINI (model: {current_model}, status: {response.status_code}, attempt: {attempt}/{MAX_RETRIES}) ===")
+                logging.warning(f"=== ERROR RESPONSE FROM GEMINI (model: {current_model}, status: {response.status_code}, attempt: {attempt}/{MAX_RETRIES_PER_MODEL}) ===")
                 logging.warning(f"Error Details: {err_msg}")
 
                 last_error_response = (jsonify({
@@ -215,48 +231,63 @@ def query_gemini():
                     if any(kw in err_msg_lower for kw in RETRYABLE_ERROR_KEYWORDS):
                         is_retryable = True
 
-                if is_retryable and attempt < MAX_RETRIES:
+                if is_retryable and attempt < MAX_RETRIES_PER_MODEL:
                     sleep_seconds = calculate_backoff(attempt, response.headers)
-                    logging.warning(f"Retryable error status {response.status_code} encountered. Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES}...")
-                    time.sleep(sleep_seconds)
-                    continue
+                    if time.time() - start_time + sleep_seconds < MAX_TOTAL_REQUEST_TIMEOUT - 2:
+                        logging.warning(f"Retryable error status {response.status_code} encountered. Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES_PER_MODEL}...")
+                        time.sleep(sleep_seconds)
+                        continue
 
                 break
 
             except requests.exceptions.Timeout:
-                logging.warning(f"Timeout connecting to Gemini API with model '{current_model}' (attempt {attempt}/{MAX_RETRIES}).")
+                logging.warning(f"Timeout ({req_timeout}s) connecting to Gemini API with model '{current_model}' (attempt {attempt}/{MAX_RETRIES_PER_MODEL}).")
                 last_error_response = (jsonify({
                     "status": "error",
-                    "message": f"Request to Gemini API timed out after 30 seconds for model '{current_model}'."
+                    "message": f"Request to Gemini API timed out after {req_timeout} seconds for model '{current_model}'."
                 }), 504)
-                if attempt < MAX_RETRIES:
+                if attempt < MAX_RETRIES_PER_MODEL:
                     sleep_seconds = calculate_backoff(attempt)
-                    logging.warning(f"Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES}...")
-                    time.sleep(sleep_seconds)
-                    continue
+                    if time.time() - start_time + sleep_seconds < MAX_TOTAL_REQUEST_TIMEOUT - 2:
+                        logging.warning(f"Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES_PER_MODEL}...")
+                        time.sleep(sleep_seconds)
+                        continue
                 break
             except Exception as e:
-                logging.exception(f"Unexpected error calling Gemini API with model '{current_model}' (attempt {attempt}/{MAX_RETRIES})")
+                logging.exception(f"Unexpected error calling Gemini API with model '{current_model}' (attempt {attempt}/{MAX_RETRIES_PER_MODEL})")
                 last_error_response = (jsonify({
                     "status": "error",
                     "message": f"Server error on model '{current_model}': {str(e)}"
                 }), 500)
-                if attempt < MAX_RETRIES:
+                if attempt < MAX_RETRIES_PER_MODEL:
                     sleep_seconds = calculate_backoff(attempt)
-                    logging.warning(f"Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES}...")
-                    time.sleep(sleep_seconds)
-                    continue
+                    if time.time() - start_time + sleep_seconds < MAX_TOTAL_REQUEST_TIMEOUT - 2:
+                        logging.warning(f"Backing off (full jitter) for {sleep_seconds:.2f}s before attempt {attempt + 1}/{MAX_RETRIES_PER_MODEL}...")
+                        time.sleep(sleep_seconds)
+                        continue
                 break
+
+        # Check budget before proceeding to next model in hierarchy
+        if time.time() - start_time >= MAX_TOTAL_REQUEST_TIMEOUT - 3:
+            logging.warning(f"Stopping model tier fallback due to time budget exhaustion ({time.time() - start_time:.1f}s elapsed).")
+            break
 
         # Log fallback attempt if there is a next model in the tier list
         if idx < len(models_to_try) - 1:
             next_model = models_to_try[idx + 1]
             logging.warning(f"Model '{current_model}' exhausted. Cascading fallback to next model tier '{next_model}'...")
 
-    return last_error_response
+    if last_error_response:
+        return last_error_response
+
+    return jsonify({
+        "status": "error",
+        "message": f"Gemini API query failed or timed out after {time.time() - start_time:.1f}s across all model tiers."
+    }), 503
 
 
 if __name__ == "__main__":
     port = int(os.environ.get("PORT", 5050))
     app.run(host="0.0.0.0", port=port, debug=False)
+
 
