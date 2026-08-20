@@ -1,0 +1,827 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gladstone Hub & Spoke Infrastructure Showcase</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Fira+Code:wght@400;500;600&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-main: #0f172a;
+            --bg-card: #1e293b;
+            --bg-card-hover: #334155;
+            --text-primary: #f8fafc;
+            --text-secondary: #94a3b8;
+            --text-muted: #64748b;
+            --border-color: #334155;
+            --accent-hub: #38bdf8;
+            --accent-spoke: #818cf8;
+            --accent-ext: #f59e0b;
+            --accent-success: #10b981;
+            --accent-danger: #ef4444;
+            --accent-warning: #f59e0b;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Inter', system-ui, -apple-system, sans-serif;
+            background-color: var(--bg-main);
+            color: var(--text-primary);
+            line-height: 1.5;
+            padding: 2rem;
+            -webkit-print-color-adjust: exact;
+            print-color-adjust: exact;
+        }
+
+        /* Printable Container */
+        .showcase-container {
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+
+        /* Controls Header */
+        .controls-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            background: rgba(30, 41, 59, 0.8);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--border-color);
+            padding: 1rem 1.5rem;
+            border-radius: 12px;
+            margin-bottom: 2rem;
+            position: sticky;
+            top: 1rem;
+            z-index: 100;
+        }
+
+        .controls-title {
+            font-size: 1.1rem;
+            font-weight: 600;
+            color: var(--accent-hub);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #0284c7, #2563eb);
+            color: #ffffff;
+            border: none;
+            padding: 0.6rem 1.2rem;
+            font-size: 0.9rem;
+            font-weight: 600;
+            border-radius: 8px;
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            gap: 0.5rem;
+            transition: all 0.2s ease;
+            box-shadow: 0 4px 12px rgba(2, 132, 199, 0.3);
+        }
+
+        .btn:hover {
+            transform: translateY(-1px);
+            box-shadow: 0 6px 16px rgba(2, 132, 199, 0.4);
+        }
+
+        /* Header Banner */
+        .header-banner {
+            text-align: center;
+            padding: 2.5rem 2rem;
+            background: linear-gradient(135deg, #1e293b 0%, #0f172a 100%);
+            border: 1px solid var(--border-color);
+            border-radius: 16px;
+            margin-bottom: 2rem;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .header-banner::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 4px;
+            background: linear-gradient(90deg, var(--accent-hub), var(--accent-spoke), var(--accent-ext));
+        }
+
+        .header-title {
+            font-size: 2.4rem;
+            font-weight: 800;
+            letter-spacing: -0.02em;
+            margin-bottom: 0.5rem;
+            background: linear-gradient(90deg, #38bdf8, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+
+        .header-subtitle {
+            font-size: 1.1rem;
+            color: var(--text-secondary);
+            max-width: 800px;
+            margin: 0 auto 1.5rem auto;
+        }
+
+        .meta-pills {
+            display: flex;
+            justify-content: center;
+            gap: 1rem;
+            flex-wrap: wrap;
+        }
+
+        .pill {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border-color);
+            padding: 0.4rem 0.9rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+            display: flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .pill-hub { border-color: var(--accent-hub); color: var(--accent-hub); }
+        .pill-spoke { border-color: var(--accent-spoke); color: var(--accent-spoke); }
+
+        /* Section Headings */
+        .section-header {
+            display: flex;
+            align-items: center;
+            gap: 0.75rem;
+            margin: 2.5rem 0 1.25rem 0;
+            padding-bottom: 0.5rem;
+            border-bottom: 2px solid var(--border-color);
+        }
+
+        .section-header h2 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            color: var(--text-primary);
+        }
+
+        .section-icon {
+            font-size: 1.5rem;
+        }
+
+        /* SVG Architecture Map */
+        .topology-card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 14px;
+            padding: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .topology-svg {
+            width: 100%;
+            height: auto;
+        }
+
+        /* Grid Layouts */
+        .grid-2 {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        .grid-3 {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(320px, 1fr));
+            gap: 1.5rem;
+            margin-bottom: 2rem;
+        }
+
+        /* Node Cards */
+        .card {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-radius: 12px;
+            padding: 1.25rem;
+            transition: transform 0.2s ease, border-color 0.2s ease;
+            break-inside: avoid;
+            page-break-inside: avoid;
+        }
+
+        .card-hub { border-top: 4px solid var(--accent-hub); }
+        .card-spoke { border-top: 4px solid var(--accent-spoke); }
+        .card-ext { border-top: 4px solid var(--accent-ext); }
+
+        .card-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 0.75rem;
+        }
+
+        .card-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--text-primary);
+            display: flex;
+            align-items: center;
+            gap: 0.5rem;
+        }
+
+        .badge {
+            font-size: 0.75rem;
+            font-weight: 600;
+            padding: 0.2rem 0.5rem;
+            border-radius: 4px;
+            text-transform: uppercase;
+        }
+
+        .badge-hub { background: rgba(56, 189, 248, 0.15); color: var(--accent-hub); }
+        .badge-spoke { background: rgba(129, 140, 248, 0.15); color: var(--accent-spoke); }
+        .badge-active { background: rgba(16, 185, 129, 0.15); color: var(--accent-success); }
+        .badge-cron { background: rgba(245, 158, 11, 0.15); color: var(--accent-warning); }
+
+        .card-desc {
+            font-size: 0.9rem;
+            color: var(--text-secondary);
+            margin-bottom: 1rem;
+        }
+
+        .card-meta {
+            font-family: 'Fira Code', monospace;
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            background: rgba(15, 23, 42, 0.6);
+            padding: 0.5rem 0.75rem;
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            gap: 0.25rem;
+        }
+
+        /* Tables */
+        .table-responsive {
+            overflow-x: auto;
+            margin-bottom: 2rem;
+            border-radius: 12px;
+            border: 1px solid var(--border-color);
+            break-inside: avoid;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            text-align: left;
+            font-size: 0.9rem;
+            background: var(--bg-card);
+        }
+
+        th {
+            background: #0f172a;
+            color: var(--text-secondary);
+            font-weight: 600;
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            text-transform: uppercase;
+            font-size: 0.75rem;
+            letter-spacing: 0.05em;
+        }
+
+        td {
+            padding: 0.85rem 1rem;
+            border-bottom: 1px solid var(--border-color);
+            color: var(--text-primary);
+        }
+
+        tr:last-child td {
+            border-bottom: none;
+        }
+
+        tr:hover td {
+            background: var(--bg-card-hover);
+        }
+
+        code {
+            font-family: 'Fira Code', monospace;
+            background: rgba(15, 23, 42, 0.8);
+            color: var(--accent-hub);
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        /* Cron Timeline */
+        .timeline {
+            display: flex;
+            flex-direction: column;
+            gap: 1rem;
+            margin-bottom: 2rem;
+        }
+
+        .timeline-item {
+            background: var(--bg-card);
+            border: 1px solid var(--border-color);
+            border-left: 4px solid var(--accent-hub);
+            border-radius: 8px;
+            padding: 1rem 1.25rem;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .timeline-time {
+            font-family: 'Fira Code', monospace;
+            font-weight: 700;
+            color: var(--accent-warning);
+            font-size: 0.95rem;
+            min-width: 120px;
+        }
+
+        .timeline-body {
+            flex-grow: 1;
+        }
+
+        .timeline-title {
+            font-weight: 600;
+            color: var(--text-primary);
+        }
+
+        .timeline-desc {
+            font-size: 0.85rem;
+            color: var(--text-secondary);
+        }
+
+        /* Footer */
+        footer {
+            text-align: center;
+            padding: 2rem;
+            color: var(--text-muted);
+            font-size: 0.85rem;
+            border-top: 1px solid var(--border-color);
+            margin-top: 3rem;
+        }
+
+        /* PRINT STYLESHEET */
+        @media print {
+            body {
+                background-color: #ffffff !important;
+                color: #0f172a !important;
+                padding: 0 !important;
+                font-size: 11pt;
+            }
+
+            .no-print {
+                display: none !important;
+            }
+
+            .showcase-container {
+                max-width: 100% !important;
+            }
+
+            .header-banner {
+                background: #f8fafc !important;
+                border: 2px solid #cbd5e1 !important;
+                color: #0f172a !important;
+                padding: 1.5rem !important;
+            }
+
+            .header-title {
+                background: none !important;
+                -webkit-text-fill-color: initial !important;
+                color: #0284c7 !important;
+                font-size: 22pt !important;
+            }
+
+            .header-subtitle {
+                color: #334155 !important;
+            }
+
+            .card, .topology-card, .table-responsive, .timeline-item {
+                background: #ffffff !important;
+                border: 1px solid #cbd5e1 !important;
+                color: #0f172a !important;
+                box-shadow: none !important;
+                break-inside: avoid !important;
+                page-break-inside: avoid !important;
+            }
+
+            .card-meta, code {
+                background: #f1f5f9 !important;
+                color: #0f172a !important;
+                border: 1px solid #e2e8f0 !important;
+            }
+
+            th {
+                background: #e2e8f0 !important;
+                color: #0f172a !important;
+            }
+
+            td {
+                color: #0f172a !important;
+                border-bottom: 1px solid #e2e8f0 !important;
+            }
+
+            .badge-hub { background: #e0f2fe !important; color: #0369a1 !important; }
+            .badge-spoke { background: #e0e7ff !important; color: #4338ca !important; }
+            .badge-active { background: #dcfce7 !important; color: #15803d !important; }
+            .badge-cron { background: #fef3c7 !important; color: #b45309 !important; }
+
+            .section-header {
+                border-bottom-color: #cbd5e1 !important;
+                page-break-after: avoid !important;
+            }
+
+            .section-header h2 {
+                color: #0f172a !important;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="showcase-container">
+        
+        <!-- Controls Bar (Hidden during printing) -->
+        <div class="controls-bar no-print">
+            <div class="controls-title">
+                <span>🏛️</span> Gladstone Showcase Control Panel
+            </div>
+            <button class="btn" onclick="window.print()">
+                <span>🖨️</span> Print Showcase / Save as PDF
+            </button>
+        </div>
+
+        <!-- Header Banner -->
+        <div class="header-banner">
+            <h1 class="header-title">Gladstone Infrastructure Showcase</h1>
+            <p class="header-subtitle">Comprehensive Architectural Map & Component Catalog for the Gladstone Hub & Spoke Ecosystem</p>
+            <div class="meta-pills">
+                <div class="pill pill-hub"><span>🧠 Hub:</span> RPi5 (192.168.50.138)</div>
+                <div class="pill pill-spoke"><span>💻 Spoke:</span> Webhost (192.168.50.217)</div>
+                <div class="pill"><span>📦 Components:</span> 44 Scripts • 12 Containers</div>
+                <div class="pill"><span>📡 Protocols:</span> ntfy PubSub • Dozzle gRPC • SMB/CIFS</div>
+            </div>
+        </div>
+
+        <!-- System Topology SVG Diagram -->
+        <div class="section-header">
+            <span class="section-icon">📐</span>
+            <h2>System Topology & Interaction Network</h2>
+        </div>
+        <div class="topology-card">
+            <svg class="topology-svg" viewBox="0 0 1000 420" xmlns="http://www.w3.org/2000/svg">
+                <!-- Background Grid styling -->
+                <defs>
+                    <linearGradient id="hubGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#1e293b"/>
+                        <stop offset="100%" stop-color="#0f172a"/>
+                    </linearGradient>
+                    <linearGradient id="spokeGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+                        <stop offset="0%" stop-color="#1e293b"/>
+                        <stop offset="100%" stop-color="#1e1b4b"/>
+                    </linearGradient>
+                </defs>
+
+                <!-- Connection Lines -->
+                <line x1="320" y1="120" x2="680" y2="120" stroke="#38bdf8" stroke-width="3" stroke-dasharray="6 4" />
+                <line x1="320" y1="260" x2="680" y2="260" stroke="#818cf8" stroke-width="3" />
+                <line x1="200" y1="310" x2="200" y2="360" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 4"/>
+                <line x1="800" y1="310" x2="800" y2="360" stroke="#f59e0b" stroke-width="2" stroke-dasharray="4 4"/>
+
+                <!-- Hub Box -->
+                <rect x="50" y="40" width="300" height="270" rx="12" fill="url(#hubGrad)" stroke="#38bdf8" stroke-width="2"/>
+                <text x="70" y="70" fill="#38bdf8" font-weight="bold" font-size="16">🧠 Central Hub (RPi5)</text>
+                <text x="70" y="90" fill="#64748b" font-size="12">IP: 192.168.50.138 | Flag: --ntfy</text>
+                
+                <rect x="70" y="110" width="260" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+                <text x="80" y="132" fill="#f8fafc" font-size="12">🖨️ Printer Scraper & Alerting</text>
+                
+                <rect x="70" y="155" width="260" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+                <text x="80" y="177" fill="#f8fafc" font-size="12">👂 NTFY Remote Command Listener</text>
+
+                <rect x="70" y="200" width="260" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+                <text x="80" y="222" fill="#f8fafc" font-size="12">🛡️ Watchdog & Network Speed Audit</text>
+
+                <rect x="70" y="245" width="260" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+                <text x="80" y="267" fill="#f8fafc" font-size="12">🐳 Dozzle Agent (Streamer :7007)</text>
+
+                <!-- Spoke Box -->
+                <rect x="650" y="40" width="300" height="270" rx="12" fill="url(#spokeGrad)" stroke="#818cf8" stroke-width="2"/>
+                <text x="670" y="70" fill="#818cf8" font-weight="bold" font-size="16">💻 Webhost Node (Laptop)</text>
+                <text x="670" y="90" fill="#64748b" font-size="12">IP: 192.168.50.217 | Flag: --webhost</text>
+
+                <rect x="670" y="110" width="260" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+                <text x="680" y="132" fill="#f8fafc" font-size="12">🌐 Caddy Proxy Gateway (:80)</text>
+
+                <rect x="670" y="155" width="260" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+                <text x="680" y="177" fill="#f8fafc" font-size="12">🎟️ RelayIT & 🏠 HomeAsset Stacks</text>
+
+                <rect x="670" y="200" width="260" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+                <text x="680" y="222" fill="#f8fafc" font-size="12">🤖 Gemini API (:5050) & 📋 JobBoard</text>
+
+                <rect x="670" y="245" width="260" height="35" rx="6" fill="#1e293b" stroke="#334155"/>
+                <text x="680" y="267" fill="#f8fafc" font-size="12">👁️ Dozzle Dashboard (:8888)</text>
+
+                <!-- Labels on Lines -->
+                <rect x="420" y="105" width="160" height="25" rx="4" fill="#0f172a" stroke="#38bdf8"/>
+                <text x="430" y="122" fill="#38bdf8" font-size="11" font-weight="bold">gRPC Log Stream :7007</text>
+
+                <rect x="420" y="245" width="160" height="25" rx="4" fill="#0f172a" stroke="#818cf8"/>
+                <text x="435" y="262" fill="#818cf8" font-size="11" font-weight="bold">SMB Backup Sync</text>
+
+                <!-- External Devices Bottom -->
+                <rect x="100" y="350" width="200" height="40" rx="8" fill="#334155" stroke="#f59e0b"/>
+                <text x="120" y="375" fill="#f59e0b" font-size="12" font-weight="bold">🖨️ Brother Printer (LAN)</text>
+
+                <rect x="700" y="350" width="200" height="40" rx="8" fill="#334155" stroke="#f59e0b"/>
+                <text x="720" y="375" fill="#f59e0b" font-size="12" font-weight="bold">📹 ANNKE NVR Syslog</text>
+            </svg>
+        </div>
+
+        <!-- Node Infrastructure Overview -->
+        <div class="section-header">
+            <span class="section-icon">🖥️</span>
+            <h2>Node Roles & Responsibilities</h2>
+        </div>
+        <div class="grid-2">
+            <div class="card card-hub">
+                <div class="card-header">
+                    <div class="card-title">🧠 Raspberry Pi 5 (Communication Hub)</div>
+                    <span class="badge badge-hub">Node Flag: --ntfy</span>
+                </div>
+                <div class="card-desc">
+                    The central command and telemetry hub. Handles automated network scanning, Brother printer diagnostics, SMB backup generation, ntfy cloud command listeners, and remote log streaming.
+                </div>
+                <div class="card-meta">
+                    <div><strong>IP Address:</strong> 192.168.50.138</div>
+                    <div><strong>Core Services:</strong> ntfy_listener, Dozzle Agent, Printer Monitor</div>
+                    <div><strong>Identity File:</strong> ~/.gladstone_mode ("ntfy")</div>
+                </div>
+            </div>
+
+            <div class="card card-spoke">
+                <div class="card-header">
+                    <div class="card-title">💻 Ubuntu Laptop (Webhost Node)</div>
+                    <span class="badge badge-spoke">Node Flag: --webhost</span>
+                </div>
+                <div class="card-desc">
+                    The specialized application server node hosting user-facing web applications, relational PostgreSQL databases, Caddy SSL reverse proxy, Gemini AI microservice, and centralized Dozzle log hub.
+                </div>
+                <div class="card-meta">
+                    <div><strong>IP Address:</strong> 192.168.50.217</div>
+                    <div><strong>Core Services:</strong> RelayIT, HomeAsset, JobBoard, Gemini API, Dozzle</div>
+                    <div><strong>Identity File:</strong> ~/.gladstone_mode ("webhost")</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Active Docker Container Catalog -->
+        <div class="section-header">
+            <span class="section-icon">🐳</span>
+            <h2>Active Docker Container Stacks</h2>
+        </div>
+        <div class="table-responsive">
+            <table>
+                <thead>
+                    <tr>
+                        <th>Container / Service</th>
+                        <th>Compose Specification</th>
+                        <th>Host Node</th>
+                        <th>Port(s)</th>
+                        <th>Purpose & Description</th>
+                        <th>Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td><strong>RelayIT Caddy</strong> (<code>relayit-caddy</code>)</td>
+                        <td><code>relayit-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>80</code></td>
+                        <td>Caddy Reverse Proxy Gateway & SSL HTTP entrypoint</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>RelayIT Web</strong> (<code>relayit-web</code>)</td>
+                        <td><code>relayit-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>8000</code> (Internal)</td>
+                        <td>FastAPI Tech Support & IT Ticketing Application</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>RelayIT DB</strong> (<code>relayit-db</code>)</td>
+                        <td><code>relayit-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>5432</code> (Internal)</td>
+                        <td>PostgreSQL 16 Relational Database for RelayIT</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HomeAsset App</strong> (<code>homeasset</code>)</td>
+                        <td><code>homeasset-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>8080</code></td>
+                        <td>FastAPI Home Asset & Hardware Inventory Manager</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>HomeAsset DB</strong> (<code>homeasset-db</code>)</td>
+                        <td><code>homeasset-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>5432</code> (Internal)</td>
+                        <td>PostgreSQL 16 Relational Database for HomeAsset</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>JobBoard App</strong> (<code>jobboard</code>)</td>
+                        <td><code>jobboard-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>3001</code></td>
+                        <td>Next.js Kanban Job Application Tracker & Resume Cache</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Gemini API</strong> (<code>gemini-api</code>)</td>
+                        <td><code>gemini-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>5050</code></td>
+                        <td>FastAPI AI Server Endpoint wrapping Google Gemini API</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>RustDesk ID</strong> (<code>hbbs</code>)</td>
+                        <td><code>rustdesk-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>21115 / 21116</code></td>
+                        <td>RustDesk Remote Desktop Signaling & NAT Punching</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>RustDesk Relay</strong> (<code>hbbr</code>)</td>
+                        <td><code>rustdesk-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>21117</code></td>
+                        <td>RustDesk Remote Desktop Data Relay Server</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dozzle Dashboard</strong> (<code>dozzle</code>)</td>
+                        <td><code>dozzle-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>8888</code></td>
+                        <td>Centralized Docker Log Dashboard & Telemetry Hub</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>NVR Syslog</strong> (<code>nvr-syslog</code>)</td>
+                        <td><code>dozzle-compose.yml</code></td>
+                        <td>Webhost</td>
+                        <td><code>514 UDP</code></td>
+                        <td>ANNKE NVR Camera Syslog Event Ingestion Collector</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                    <tr>
+                        <td><strong>Dozzle Agent</strong> (<code>dozzle-agent</code>)</td>
+                        <td><code>dozzle-agent-compose.yml</code></td>
+                        <td>RPi5 Hub</td>
+                        <td><code>7007</code></td>
+                        <td>Remote Log Streamer Agent running on Pi5 Hub</td>
+                        <td><span class="badge badge-active">Active</span></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+
+        <!-- Master Automation Script Index -->
+        <div class="section-header">
+            <span class="section-icon">📜</span>
+            <h2>Master Script & Automation Index</h2>
+        </div>
+        <div class="grid-3">
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>install.sh</code></div>
+                    <span class="badge badge-hub">Setup</span>
+                </div>
+                <div class="card-desc">Universal bootstrap installer. Configures node role, installs dependencies & Docker, sets crontabs, and registers aliases.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>backup_manager.py</code></div>
+                    <span class="badge badge-cron">Backup</span>
+                </div>
+                <div class="card-desc">Master Python backup engine. Generates compressed archives, computes SHA256 hashes, syncs to SMB share, and enforces 7-day retention.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>pi_services_manager.sh</code></div>
+                    <span class="badge badge-cron">Watchdog</span>
+                </div>
+                <div class="card-desc">5-Strike Watchdog script. Checks process health every 5 minutes, performs 4 silent restarts, and dispatches Priority 5 ntfy alerts on 5th strike.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>ntfy_listener.sh</code></div>
+                    <span class="badge badge-hub">Listener</span>
+                </div>
+                <div class="card-desc">Background daemon on Hub listening for remote commands from ntfy pub/sub topics to trigger local automation routines.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>get_printer_status.sh</code></div>
+                    <span class="badge badge-cron">Scraper</span>
+                </div>
+                <div class="card-desc">Scrapes HTML telemetry from local Brother Network Printer every 4 hours, logging toner levels and page counts to ~/printer_data/.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>net_speed.sh</code></div>
+                    <span class="badge badge-cron">Network</span>
+                </div>
+                <div class="card-desc">Audits network download/upload speeds and ping latency every 6 hours via speedtest-cli, sending warnings if bandwidth drops.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>nvr_syslog.py</code></div>
+                    <span class="badge badge-spoke">Syslog</span>
+                </div>
+                <div class="card-desc">Python UDP server on port 514 capturing camera events from ANNKE NVR system and streaming alerts into Dozzle.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>gemini_api_server.py</code></div>
+                    <span class="badge badge-spoke">AI API</span>
+                </div>
+                <div class="card-desc">FastAPI microservice offering AI endpoints on port 5050 powered by Google Gemini model integration.</div>
+            </div>
+
+            <div class="card">
+                <div class="card-header">
+                    <div class="card-title"><code>pi-dashboard.sh</code></div>
+                    <span class="badge badge-hub">CLI UI</span>
+                </div>
+                <div class="card-desc">Rich terminal dashboard ('db') displaying RPi5 vitals, printer toner levels, speedtest history, and active log streams.</div>
+            </div>
+        </div>
+
+        <!-- Automated Cron Lifecycle -->
+        <div class="section-header">
+            <span class="section-icon">⏱️</span>
+            <h2>Automated Cron Lifecycle Timeline</h2>
+        </div>
+        <div class="timeline">
+            <div class="timeline-item">
+                <div class="timeline-time">Daily @ 00:00</div>
+                <div class="timeline-body">
+                    <div class="timeline-title">💾 Full System Backup Pipeline (<code>pi_backup.sh</code>)</div>
+                    <div class="timeline-desc">Executes backup_manager.py, compresses system files, verifies SHA256 checksums, updates SMB //192.168.50.217/Backups, and notifies ntfy.</div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">Every 5 Min</div>
+                <div class="timeline-body">
+                    <div class="timeline-title">🛡️ 5-Strike Container Watchdog (<code>pi_services_manager.sh</code>)</div>
+                    <div class="timeline-desc">Monitors Docker containers and daemons. Performs auto-restarts on failure strikes 1-4 and escalates to Priority 5 alert on strike 5.</div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">Every 4 Hours</div>
+                <div class="timeline-body">
+                    <div class="timeline-title">🖨️ Brother Printer Status Scrape (<code>get_printer_status.sh</code>)</div>
+                    <div class="timeline-desc">Extracts printer HTML status page, evaluates black toner capacity, and triggers printer_alert.sh if replacement is required.</div>
+                </div>
+            </div>
+
+            <div class="timeline-item">
+                <div class="timeline-time">Every 6 Hours</div>
+                <div class="timeline-body">
+                    <div class="timeline-title">🚀 Network Bandwidth & Latency Audit (<code>net_speed.sh</code>)</div>
+                    <div class="timeline-desc">Runs speedtest-cli, logs download/upload bandwidth and ping latency history, alerting if speeds drop below SLA.</div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <footer>
+            Gladstone Master System Architecture • Hub & Spoke Infrastructure Showcase • Generated for Printed Documentation & Portfolio Display
+        </footer>
+
+    </div>
+
+</body>
+</html>
