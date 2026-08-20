@@ -9,3 +9,8 @@ backup/
 # Ignore python artifacts
 __pycache__/
 *.pyc
+
+# Ignore showcase files
+SHOWCASE_ARCHITECTURAL_MAP.md
+showcase_printable.html
+
