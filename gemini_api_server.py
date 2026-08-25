@@ -3,15 +3,15 @@
 ==========================================================
 GLADSTONE GEMINI API BACKEND SERVICE (gemini_api_server.py)
 ==========================================================
-Version: 1.3.0
+Version: 1.4.0
 Purpose: Provides a lightweight CORS-enabled HTTP proxy for local websites
          to send prompts to Google Gemini API without exposing the API key.
          Features global request time budgeting (prevents Gunicorn worker timeouts),
          exponential backoff with full jitter, Retry-After parsing,
-         and rapid multi-tier model fallback across Gemini 3.7 Flash, 3.6 Flash,
-         3.5 Flash-Lite, and 2.5 Flash.
+         and rapid multi-tier cost-ordered model fallback across Gemini 3.1 Flash-Lite,
+         2.5 Flash, 3.5 Flash, 3.6 Flash, and 3.7 Flash.
 Endpoint: POST /api/query
-Payload:  {"prompt": "...", "model": "gemini-3.7-flash", "system_instruction": "..."}
+Payload:  {"prompt": "...", "model": "gemini-3.1-flash-lite", "system_instruction": "..."}
 ==========================================================
 """
 
@@ -31,8 +31,8 @@ app = Flask(__name__)
 CORS(app, resources={r"/api/*": {"origins": "*"}})
 
 GEMINI_API_KEY = os.environ.get("GEMINI_API_KEY", "").strip()
-DEFAULT_MODEL = os.environ.get("GEMINI_DEFAULT_MODEL", "gemini-3.7-flash").strip()
-FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-3.6-flash").strip()
+DEFAULT_MODEL = os.environ.get("GEMINI_DEFAULT_MODEL", "gemini-3.1-flash-lite").strip()
+FALLBACK_MODEL = os.environ.get("GEMINI_FALLBACK_MODEL", "gemini-2.5-flash").strip()
 
 GEMINI_BASE_URL = "https://generativelanguage.googleapis.com/v1beta/models"
 
@@ -43,8 +43,8 @@ PER_REQUEST_HTTP_TIMEOUT = int(os.environ.get("GEMINI_HTTP_TIMEOUT", "12"))
 RETRYABLE_STATUS_CODES = {408, 428, 429, 500, 502, 503, 504}
 RETRYABLE_ERROR_KEYWORDS = {"resource_exhausted", "unavailable", "overloaded", "busy", "capacity_exceeded", "rate limit"}
 
-# Canonical model hierarchy pool for fallback cascade
-MODEL_HIERARCHY = ["gemini-3.7-flash", "gemini-3.6-flash", "gemini-3.5-flash-lite", "gemini-2.5-flash"]
+# Canonical cost-ascending model hierarchy pool for fallback cascade (cheapest first, most expensive last)
+MODEL_HIERARCHY = ["gemini-3.1-flash-lite", "gemini-2.5-flash", "gemini-3.5-flash", "gemini-3.6-flash", "gemini-3.7-flash"]
 
 
 @app.route("/health", methods=["GET"])
@@ -87,7 +87,7 @@ def query_gemini():
     Query Gemini API endpoint with automatic multi-tier fallback and request time budgeting.
     JSON Body:
       - prompt (required): string text prompt
-      - model (optional): string model name (default: gemini-3.7-flash)
+      - model (optional): string model name (default: gemini-3.1-flash-lite)
       - system_instruction (optional): string system instruction
       - image_base64 (optional): base64 encoded image string
     """
@@ -116,7 +116,7 @@ def query_gemini():
 
     primary_model = data.get("model", DEFAULT_MODEL).strip()
     if primary_model == "gemini-flash-latest":
-        primary_model = "gemini-3.7-flash"
+        primary_model = DEFAULT_MODEL
 
     system_instruction = data.get("system_instruction", "").strip()
     image_base64 = data.get("image_base64", "").strip()

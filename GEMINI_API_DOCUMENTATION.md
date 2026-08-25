@@ -12,7 +12,7 @@ This guide details how your local websites and applications can communicate with
 | **HTTP Method** | `POST` |
 | **Request Header** | `Content-Type: application/json` |
 | **API Key Security** | **Handled automatically by Webhost.** The frontend does NOT need an API key. (Key is stored in `~/gemini-api/.env`). |
-| **Retry & Resiliency** | **Automatic Full Jitter Exponential Backoff.** Parses `Retry-After` headers and retries transient errors (HTTP 408, 429, 500, 502, 503, 504, Timeouts, capacity exhausted) up to 5 times per model tier, cascading across model tiers (`gemini-3.7-flash` -> `gemini-3.6-flash` -> `gemini-3.5-flash-lite` -> `gemini-2.5-flash`). |
+| **Retry & Resiliency** | **Automatic Full Jitter Exponential Backoff.** Parses `Retry-After` headers and retries transient errors (HTTP 408, 429, 500, 502, 503, 504, Timeouts, capacity exhausted) up to 5 times per model tier, cascading across model tiers (`gemini-3.1-flash-lite` -> `gemini-2.5-flash` -> `gemini-3.5-flash` -> `gemini-3.6-flash` -> `gemini-3.7-flash`). |
 | **CORS Access** | **Enabled (`*`)**. Any local origin or port can fetch without cross-origin blocking. |
 | **Health Check** | `GET http://192.168.50.217:5050/health` |
 
@@ -25,7 +25,7 @@ Send an HTTP `POST` request with a JSON body containing the following fields:
 ```json
 {
   "prompt": "What are 3 quick tips for optimizing web performance?",
-  "model": "gemini-3.7-flash",
+  "model": "gemini-3.1-flash-lite",
   "system_instruction": "Respond concisely using markdown bullet points."
 }
 ```
@@ -34,8 +34,8 @@ Send an HTTP `POST` request with a JSON body containing the following fields:
 
 - `prompt` *(Required, string)*: The prompt text or question you want Gemini to analyze/answer.
 - `model` *(Optional, string)*: The Gemini model name.
-  - Default: `"gemini-3.7-flash"` (automatically falls back through `"gemini-3.6-flash"` -> `"gemini-3.5-flash-lite"` -> `"gemini-2.5-flash"` if unavailable)
-  - Options: `"gemini-3.7-flash"`, `"gemini-3.6-flash"`, `"gemini-3.5-flash-lite"`, `"gemini-2.5-flash"`, `"gemini-flash-latest"`
+  - Default: `"gemini-3.1-flash-lite"` (automatically falls back through `"gemini-2.5-flash"` -> `"gemini-3.5-flash"` -> `"gemini-3.6-flash"` -> `"gemini-3.7-flash"` if unavailable)
+  - Options: `"gemini-3.1-flash-lite"`, `"gemini-2.5-flash"`, `"gemini-3.5-flash"`, `"gemini-3.6-flash"`, `"gemini-3.7-flash"`, `"gemini-flash-latest"`
 - `system_instruction` *(Optional, string)*: Persona or system guidance for Gemini (e.g. `"Act as an expert software engineer"`).
 
 ---
