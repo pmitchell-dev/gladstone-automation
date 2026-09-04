@@ -52,11 +52,11 @@ chmod +x *.sh
 
 # MODE-SPECIFIC REFRESH
 if [ "$MODE" == "ntfy" ]; then
-    echo "⚙️  Refreshing Communication Hub Services..."
-    # Only the Hub needs to cycle the listener and watchdog
+    echo "⚙️  Refreshing Communication Hub Services & Stacks..."
+    # Cycle the command listener, watchdog, and sync container stacks
     pkill -f ntfy_listener.sh
     nohup /bin/bash "$SCRIPT_DIR/ntfy_listener.sh" > "$SCRIPT_DIR/logs/ntfy.log" 2>&1 &
-    bash "$SCRIPT_DIR/pi_services_manager.sh"
+    bash "$SCRIPT_DIR/pi_rebuild.sh" --ntfy
     
 elif [ "$MODE" == "webhost" ] || [ -d "$HOME/relayit" ]; then
     echo "🖥️  Refreshing Webhost Node & Application Stacks..."
