@@ -10,30 +10,28 @@
 services:
 
   # ── SimpleLogin Multi-Arch Application Engine ─────────────
-  sl-app:
+  simplelogin-app:
     image: ghcr.io/infinityofspace/simplelogin-docker-aio:latest
     container_name: simplelogin-app
     restart: unless-stopped
     ports:
-      - "7777:80"
+      - "7777:7777"
       - "25:25"
     environment:
       - URL=http://simplelogin.localrepo.net:7777
       - EMAIL_DOMAIN=localrepo.net
-      - DB_URI=postgresql://simplelogin:sl_password_secret@sl-db:5432/simplelogin
+      - DB_URI=postgresql://simplelogin:sl_password_secret@db:5432/simplelogin
       - FLASK_SECRET=sl_flask_secret_key_change_in_prod
       - SUPPORT_EMAIL=support@localrepo.net
       - ADMIN_EMAIL=admin@localrepo.net
-      - POSTFIX_FQDN=mail.localrepo.net
-      - ALIASES_DEFAULT_DOMAIN=localrepo.net
-      - HTTP_PORT=7777
-    volumes:
-      - ./data/simplelogin:/data
+      - POSTGRES_USER=simplelogin
+      - POSTGRES_PASSWORD=sl_password_secret
+      - POSTGRES_DB=simplelogin
     depends_on:
-      - sl-db
+      - db
 
   # ── SimpleLogin PostgreSQL Database ───────────────────────
-  sl-db:
+  db:
     image: postgres:16-alpine
     container_name: simplelogin-db
     restart: unless-stopped
