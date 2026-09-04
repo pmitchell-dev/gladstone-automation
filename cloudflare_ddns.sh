@@ -15,12 +15,11 @@ mkdir -p "$SCRIPT_DIR/logs"
 if [ ! -f "$CONFIG_FILE" ]; then
     cat > "$CONFIG_FILE" << 'EOF'
 # Cloudflare DDNS Configuration
-CF_API_TOKEN=""
-CF_ZONE_ID=""
+CF_API_TOKEN="cfat_23TbRjWF08Dl33drYPP16E8UbO6QUAn1E5RTCe0l4d26dac6"
+CF_ZONE_ID="5923158ae66e495746c3474e4e87dadc"
 CF_RECORD_NAME="localrepo.net"
 EOF
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ⚠️ Config file created at $CONFIG_FILE. Please add your CF_API_TOKEN and CF_ZONE_ID." >> "$LOG_FILE"
-    exit 0
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔑 Config file created at $CONFIG_FILE with pre-configured Cloudflare credentials." >> "$LOG_FILE"
 fi
 
 source "$CONFIG_FILE"
