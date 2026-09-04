@@ -1,5 +1,6 @@
 # ==========================================================
 # GLADSTONE SIMPLELOGIN STACK (Pi5 Hub — 192.168.50.138:7777)
+# ARM64 / AMD64 Multi-Arch Self-Hosted Stack
 # ==========================================================
 # Deploy:  cd ~/simplelogin && docker compose up -d --remove-orphans
 # Endpoint: http://192.168.50.138:7777
@@ -7,13 +8,14 @@
 
 services:
 
-  # ── SimpleLogin Web Application & API Server ─────────────
+  # ── SimpleLogin Multi-Arch Application Engine ─────────────
   sl-app:
-    image: simplelogin/app-ci:latest
+    image: ghcr.io/infinityofspace/simplelogin-docker-aio:latest
     container_name: simplelogin-app
     restart: unless-stopped
     ports:
       - "7777:7777"
+      - "25:25"
     environment:
       - URL=http://192.168.50.138:7777
       - EMAIL_DOMAIN=simplelogin.local
@@ -21,7 +23,9 @@ services:
       - FLASK_SECRET=sl_flask_secret_key_change_in_prod
       - SUPPORT_EMAIL=support@simplelogin.local
       - ADMIN_EMAIL=admin@simplelogin.local
-      - POSTFIX_SERVER=sl-postfix
+      - HTTP_PORT=7777
+    volumes:
+      - ./data/simplelogin:/data
     depends_on:
       - sl-db
 
@@ -36,20 +40,3 @@ services:
       - POSTGRES_DB=simplelogin
     volumes:
       - ./data/pgdata:/var/lib/postgresql/data
-
-  # ── SimpleLogin Postfix Mail Server Engine ────────────────
-  sl-postfix:
-    image: simplelogin/postfix:latest
-    container_name: simplelogin-postfix
-    restart: unless-stopped
-    environment:
-      - DB_HOST=sl-db
-      - DB_USER=simplelogin
-      - DB_PASSWORD=sl_password_secret
-      - DB_NAME=simplelogin
-      - POSTFIX_FQDN=mail.simplelogin.local
-      - ALIASES_DEFAULT_DOMAIN=simplelogin.local
-    ports:
-      - "25:25"
-    depends_on:
-      - sl-db
