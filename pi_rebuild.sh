@@ -74,7 +74,7 @@ if [ "$MODE" == "--ntfy" ]; then
     if [ -d "$HOME/simplelogin" ] || [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
         echo "📧 Synchronizing Simple Login Stack..."
         SIMPLELOGIN_DIR="$HOME/simplelogin"
-        mkdir -p "$SIMPLELOGIN_DIR/data/pgdata"
+        mkdir -p "$SIMPLELOGIN_DIR/data/pgdata" "$SIMPLELOGIN_DIR/data/sl" "$SIMPLELOGIN_DIR/data/upload"
         if [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
             cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
         fi

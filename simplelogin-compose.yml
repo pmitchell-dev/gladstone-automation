@@ -18,15 +18,21 @@ services:
       - "7777:7777"
       - "25:25"
     environment:
-      - URL=http://simplelogin.localrepo.net:7777
+      - POSTGRES_HOST=db
+      - POSTGRES_PORT=5432
+      - POSTGRES_USER=simplelogin
+      - POSTGRES_PASSWORD=sl_password_secret
+      - POSTGRES_DB=simplelogin
+      - HOSTNAME=simplelogin.localrepo.net
       - EMAIL_DOMAIN=localrepo.net
+      - URL=http://simplelogin.localrepo.net:7777
       - DB_URI=postgresql://simplelogin:sl_password_secret@db:5432/simplelogin
       - FLASK_SECRET=sl_flask_secret_key_change_in_prod
       - SUPPORT_EMAIL=support@localrepo.net
       - ADMIN_EMAIL=admin@localrepo.net
-      - POSTGRES_USER=simplelogin
-      - POSTGRES_PASSWORD=sl_password_secret
-      - POSTGRES_DB=simplelogin
+    volumes:
+      - ./data/sl:/sl
+      - ./data/upload:/code/static/upload
     depends_on:
       - db
 

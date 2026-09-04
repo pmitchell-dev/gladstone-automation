@@ -167,7 +167,7 @@ fi
 if [ "$MODE" == "ntfy" ]; then
     echo "📧 Deploying Simple Login Stack (Pi5 hub)..."
     SIMPLELOGIN_DIR="$HOME/simplelogin"
-    mkdir -p "$SIMPLELOGIN_DIR/data/pgdata"
+    mkdir -p "$SIMPLELOGIN_DIR/data/pgdata" "$SIMPLELOGIN_DIR/data/sl" "$SIMPLELOGIN_DIR/data/upload"
 
     if [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
         cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
