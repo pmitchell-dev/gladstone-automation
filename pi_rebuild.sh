@@ -78,7 +78,9 @@ if [ "$MODE" == "--ntfy" ]; then
         if [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
             cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
         fi
-        cd "$SIMPLELOGIN_DIR" && sudo docker compose up -d --remove-orphans
+        cd "$SIMPLELOGIN_DIR"
+        sudo docker compose down --remove-orphans 2>/dev/null || true
+        sudo docker compose up -d --remove-orphans
         echo "✅ Simple Login synced at http://simplelogin.localrepo.net:7777 (localrepo.net)"
     fi
 

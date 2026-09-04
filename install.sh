@@ -174,6 +174,7 @@ if [ "$MODE" == "ntfy" ]; then
     fi
 
     cd "$SIMPLELOGIN_DIR"
+    sudo docker compose down --remove-orphans 2>/dev/null || true
     sudo docker compose up -d --remove-orphans
     echo "✅ Simple Login running at http://simplelogin.localrepo.net:7777 (localrepo.net)"
 fi
