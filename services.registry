@@ -7,3 +7,4 @@ dozzle|8888|Centralized real-time log viewer (Webhost main — http://192.168.50
 dozzle-agent|7007|Dozzle log agent (Pi5 hub — streams Docker + script logs to Webhost)
 gemini-api|5050|Gemini API Backend Server (Webhost — http://192.168.50.217:5050)
 relayit|80|IT Ticket System (Webhost main — http://192.168.50.217)
+simplelogin|7777|Simple Login email alias manager (Pi5 Hub — http://192.168.50.138:7777)

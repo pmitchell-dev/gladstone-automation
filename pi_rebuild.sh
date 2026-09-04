@@ -69,6 +69,18 @@ if [ "$MODE" == "--ntfy" ]; then
         echo "✅ Dozzle Agent synced on port 7007."
     fi
 
+    # Simple Login Stack Sync
+    if [ -d "$HOME/simplelogin" ] || [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
+        echo "📧 Synchronizing Simple Login Stack..."
+        SIMPLELOGIN_DIR="$HOME/simplelogin"
+        mkdir -p "$SIMPLELOGIN_DIR/data/pgdata"
+        if [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
+            cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
+        fi
+        cd "$SIMPLELOGIN_DIR" && sudo docker compose up -d --remove-orphans
+        echo "✅ Simple Login synced at http://192.168.50.138:7777"
+    fi
+
 # --- 2. WEBHOST MODE (Laptop Only) ---
 elif [ "$MODE" == "--webhost" ]; then
     echo "🔄 Synchronizing Webhost Services..."

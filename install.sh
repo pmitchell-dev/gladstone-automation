@@ -163,6 +163,21 @@ if [ "$MODE" == "ntfy" ]; then
     echo "✅ Dozzle Agent running on port 7007 (connected to Webhost)"
 fi
 
+# 4d. Pi5 Hub — Simple Login Stack
+if [ "$MODE" == "ntfy" ]; then
+    echo "📧 Deploying Simple Login Stack (Pi5 hub)..."
+    SIMPLELOGIN_DIR="$HOME/simplelogin"
+    mkdir -p "$SIMPLELOGIN_DIR/data/pgdata"
+
+    if [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
+        cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
+    fi
+
+    cd "$SIMPLELOGIN_DIR"
+    sudo docker compose up -d --remove-orphans
+    echo "✅ Simple Login running at http://192.168.50.138:7777"
+fi
+
 # 5. TerminalBuddy Setup (embedded — no internet required)
 # ──────────────────────────────────────────────
 echo "→ Setting up TerminalBuddy..."

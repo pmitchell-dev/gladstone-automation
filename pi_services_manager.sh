@@ -69,6 +69,16 @@ if [ "$MODE" == "webhost" ]; then
     fi
 fi
 
+# DOCKER MONITOR (Pi5 Hub Mode)
+if [ "$MODE" == "ntfy" ]; then
+    # Simple Login
+    if ! docker ps --format '{{.Names}}' | grep -q "^simplelogin-app$"; then
+        echo "📧 Recovering Simple Login container..."
+        cd /home/pi/simplelogin 2>/dev/null || cd "$HOME/simplelogin" 2>/dev/null
+        docker compose up -d
+    fi
+fi
+
 # REGISTRY MONITOR (Shared)
 grep '|' "$REGISTRY" | grep -v '^[[:space:]]*#' | while IFS='|' read -r service port desc; do
     if ! pgrep -fo "$service" > /dev/null; then

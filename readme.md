@@ -50,6 +50,9 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | **NVR Syslog** (`nvr-syslog`) | `dozzle-compose.yml` | Webhost | 514 (UDP) | ANNKE NVR Camera Syslog Collector | **Active** |
 | **Gladstone Logs** (`gladstone-scripts-log`) | `dozzle-compose.yml` | Webhost | N/A | Streamer for Gladstone Script Telemetry | **Active** |
 | **Dozzle Agent** (`dozzle-agent`) | `dozzle-agent-compose.yml` | Pi5 Hub | 7007 | Remote Log Agent on Hub | **Active** |
+| **Simple Login Web** (`simplelogin-app`) | `simplelogin-compose.yml` | Pi5 Hub | 7777 | Self-Hosted Email Alias Manager UI & API | **Active (Added)** |
+| **Simple Login Database** (`simplelogin-db`) | `simplelogin-compose.yml` | Pi5 Hub | 5432 (Internal) | PostgreSQL 16 DB for Simple Login | **Active (Added)** |
+| **Simple Login Postfix** (`simplelogin-postfix`) | `simplelogin-compose.yml` | Pi5 Hub | 25 | Postfix Mail Engine for Simple Login | **Active (Added)** |
 
 ### Removed / Deprecated Containers
 

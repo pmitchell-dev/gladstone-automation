@@ -47,7 +47,10 @@
   * `dozzle`: Centralized Log Dashboard on Webhost (Port 8888)
   * `dozzle-agent`: Remote Log Agent on Pi5 Hub (Port 7007)
   * `nvr-syslog`: ANNKE NVR Syslog Collector (Port 514 UDP)
-  * `gladstone-scripts-log`: Gladstone Script Log Streamer
+* **Simple Login Stack** (`simplelogin-compose.yml`):
+  * `simplelogin-app`: Self-Hosted Email Alias Manager UI & API on Pi5 Hub (Port 7777)
+  * `simplelogin-db`: PostgreSQL 16 DB (Port 5432 internal)
+  * `simplelogin-postfix`: Postfix Mail Server Engine (Port 25)
 
 ### Removed / Deprecated Containers
 * **Hivemind Stack** (`hivemind-compose.yml`):
