@@ -32,6 +32,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${HOME:-/home/pi}/scripts/logs:/logs
-    entrypoint: ["bash", "-c", "mkdir -p /logs && touch /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/pi_services_manager.log /logs/pi_backup.log && echo '📋 [Gladstone] Script log stream starting...' && tail -f /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/pi_services_manager.log /logs/pi_backup.log"]
+    entrypoint: ["bash", "-c", "mkdir -p /logs && touch /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/pi_services_manager.log /logs/pi_backup.log /logs/cloudflare_ddns.log && echo '📋 [Gladstone] Script log stream starting...' && tail -f /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/pi_services_manager.log /logs/pi_backup.log /logs/cloudflare_ddns.log"]
     labels:
       dozzle.name: "Gladstone Pi5 Scripts"

@@ -55,6 +55,7 @@ if [ "$MODE" == "--ntfy" ]; then
 0 */6 * * * $SCRIPT_DIR/net_speed.sh
 0 0 * * * $SCRIPT_DIR/pi_backup.sh --mode ntfy
 */5 * * * * $SCRIPT_DIR/pi_services_manager.sh
+*/15 * * * * $SCRIPT_DIR/cloudflare_ddns.sh
 @reboot /bin/bash $SCRIPT_DIR/ntfy_listener.sh > $SCRIPT_DIR/logs/ntfy.log 2>&1 &"
     echo "$MASTER_CRON" | crontab -
 
