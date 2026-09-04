@@ -48,7 +48,7 @@
   * `dozzle-agent`: Remote Log Agent on Pi5 Hub (Port 7007)
   * `nvr-syslog`: ANNKE NVR Syslog Collector (Port 514 UDP)
 * **Simple Login Stack** (`simplelogin-compose.yml`):
-  * `simplelogin-app`: Self-Hosted Email Alias Manager UI & API on Pi5 Hub (Port 7777)
+  * `simplelogin-app`: Self-Hosted Email Alias Manager UI & API on Pi5 Hub (`http://simplelogin.localrepo.net:7777` / domain: `localrepo.net`)
   * `simplelogin-db`: PostgreSQL 16 DB (Port 5432 internal)
   * `simplelogin-postfix`: Postfix Mail Server Engine (Port 25)
 

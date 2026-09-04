@@ -1,9 +1,10 @@
 # ==========================================================
-# GLADSTONE SIMPLELOGIN STACK (Pi5 Hub — 192.168.50.138:7777)
+# GLADSTONE SIMPLELOGIN STACK (Pi5 Hub — localrepo.net)
 # ARM64 / AMD64 Multi-Arch Self-Hosted Stack
 # ==========================================================
 # Deploy:  cd ~/simplelogin && docker compose up -d --remove-orphans
-# Endpoint: http://192.168.50.138:7777
+# Endpoint: http://simplelogin.localrepo.net:7777 (or http://192.168.50.138:7777)
+# Domain:   localrepo.net
 # ==========================================================
 
 services:
@@ -17,12 +18,14 @@ services:
       - "7777:7777"
       - "25:25"
     environment:
-      - URL=http://192.168.50.138:7777
-      - EMAIL_DOMAIN=simplelogin.local
+      - URL=http://simplelogin.localrepo.net:7777
+      - EMAIL_DOMAIN=localrepo.net
       - DB_URI=postgresql://simplelogin:sl_password_secret@sl-db:5432/simplelogin
       - FLASK_SECRET=sl_flask_secret_key_change_in_prod
-      - SUPPORT_EMAIL=support@simplelogin.local
-      - ADMIN_EMAIL=admin@simplelogin.local
+      - SUPPORT_EMAIL=support@localrepo.net
+      - ADMIN_EMAIL=admin@localrepo.net
+      - POSTFIX_FQDN=mail.localrepo.net
+      - ALIASES_DEFAULT_DOMAIN=localrepo.net
       - HTTP_PORT=7777
     volumes:
       - ./data/simplelogin:/data

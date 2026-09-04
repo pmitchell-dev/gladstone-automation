@@ -175,7 +175,7 @@ if [ "$MODE" == "ntfy" ]; then
 
     cd "$SIMPLELOGIN_DIR"
     sudo docker compose up -d --remove-orphans
-    echo "✅ Simple Login running at http://192.168.50.138:7777"
+    echo "✅ Simple Login running at http://simplelogin.localrepo.net:7777 (localrepo.net)"
 fi
 
 # 5. TerminalBuddy Setup (embedded — no internet required)

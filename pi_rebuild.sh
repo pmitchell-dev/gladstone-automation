@@ -78,7 +78,7 @@ if [ "$MODE" == "--ntfy" ]; then
             cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
         fi
         cd "$SIMPLELOGIN_DIR" && sudo docker compose up -d --remove-orphans
-        echo "✅ Simple Login synced at http://192.168.50.138:7777"
+        echo "✅ Simple Login synced at http://simplelogin.localrepo.net:7777 (localrepo.net)"
     fi
 
 # --- 2. WEBHOST MODE (Laptop Only) ---
