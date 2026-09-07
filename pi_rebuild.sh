@@ -67,38 +67,10 @@ if [ "$MODE" == "--ntfy" ]; then
 1 0,8,12,16,20 * * * $SCRIPT_DIR/printer_alert.sh
 0 */6 * * * $SCRIPT_DIR/net_speed.sh
 0 0 * * * $SCRIPT_DIR/pi_backup.sh --mode ntfy
-0 2 * * * $SCRIPT_DIR/rclone_gdrive_photos.sh
 */5 * * * * $SCRIPT_DIR/pi_services_manager.sh
 */15 * * * * $SCRIPT_DIR/cloudflare_ddns.sh
 @reboot /bin/bash $SCRIPT_DIR/ntfy_listener.sh > $SCRIPT_DIR/logs/ntfy.log 2>&1 &"
     echo "$MASTER_CRON" | crontab -
-
-    # RClone Google Drive Infrastructure Provisioning
-    mkdir -p "$HOME/.config/rclone"
-    if [ ! -f "$HOME/.config/rclone/rclone.conf" ] && [ ! -f "$HOME/.config/rclone/rclone.conf.example" ]; then
-        cat << 'EOF' > "$HOME/.config/rclone/rclone.conf.example"
-# Gladstone RClone Google Drive Configuration Template
-# Run 'rclone config' on your Pi or populate this file with valid credentials.
-#
-# Example:
-# [gdrive]
-# type = drive
-# scope = drive.readonly
-# token = {"access_token":"...","token_type":"Bearer","refresh_token":"...","expiry":"..."}
-EOF
-        echo "📸 RClone example config template created at ~/.config/rclone/rclone.conf.example"
-    fi
-
-    if [ ! -f "$HOME/.config/rclone/rclone_photos.env" ]; then
-        cat << 'EOF' > "$HOME/.config/rclone/rclone_photos.env"
-# Gladstone RClone Family Photos Sync Configuration
-# PLEASE UPDATE THESE VALUES FOR YOUR SYNC TO WORK:
-
-GDRIVE_REMOTE="gdrive:YOUR_REMOTE_FOLDER_NAME"
-BACKUP_TARGET_DIR="/mnt/YOUR_BACKUP_DRIVE/family_photos"
-EOF
-        echo "📸 RClone photos sample env created at ~/.config/rclone/rclone_photos.env"
-    fi
 
     # Dozzle Agent Stack Sync
     if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
@@ -372,9 +344,37 @@ elif [ "$MODE" == "--webhost" ]; then
 
     # Webhost Maintenance Crontab
     WEB_CRON="0 0 * * * $SCRIPT_DIR/pi_backup.sh --mode webhost
+0 2 * * * $SCRIPT_DIR/rclone_gdrive_photos.sh
 */5 * * * * $SCRIPT_DIR/pi_services_manager.sh
 0 3 * * 0 docker system prune -af --volumes"
     echo "$WEB_CRON" | crontab -
+
+    # RClone Google Drive Infrastructure Provisioning
+    mkdir -p "$HOME/.config/rclone"
+    if [ ! -f "$HOME/.config/rclone/rclone.conf" ] && [ ! -f "$HOME/.config/rclone/rclone.conf.example" ]; then
+        cat << 'EOF' > "$HOME/.config/rclone/rclone.conf.example"
+# Gladstone RClone Google Drive Configuration Template
+# Run 'rclone config' on your server or populate this file with valid credentials.
+#
+# Example:
+# [gdrive]
+# type = drive
+# scope = drive.readonly
+# token = {"access_token":"...","token_type":"Bearer","refresh_token":"...","expiry":"..."}
+EOF
+        echo "📸 RClone example config template created at ~/.config/rclone/rclone.conf.example"
+    fi
+
+    if [ ! -f "$HOME/.config/rclone/rclone_photos.env" ]; then
+        cat << 'EOF' > "$HOME/.config/rclone/rclone_photos.env"
+# Gladstone RClone Family Photos Sync Configuration
+# PLEASE UPDATE THESE VALUES FOR YOUR SYNC TO WORK:
+
+GDRIVE_REMOTE="gdrive:YOUR_REMOTE_FOLDER_NAME"
+BACKUP_TARGET_DIR="/mnt/YOUR_BACKUP_DRIVE/family_photos"
+EOF
+        echo "📸 RClone photos sample env created at ~/.config/rclone/rclone_photos.env"
+    fi
 
     # Dozzle Log Viewer Stack Sync
     if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle" 2>/dev/null; then
@@ -520,11 +520,11 @@ mkdir -p ~/dashboard
 echo "✓ TerminalBuddy setup complete"
 # ──────────────────────────────────────────────
 
-if [ "$MODE" == "--ntfy" ] || [ "$MODE" == "ntfy" ]; then
+if [ "$MODE" == "--webhost" ] || [ "$MODE" == "webhost" ]; then
     if [ ! -f "$HOME/.config/rclone/rclone.conf" ]; then
         echo -e "${BOLD_YELLOW}⚠️  RCLONE AUTHENTICATION REQUIRED:${RESET}"
         echo -e "   File ${BOLD_CYAN}~/.config/rclone/rclone.conf${RESET} was not found."
-        echo -e "   Run '${BOLD_CYAN}rclone config${RESET}' on the Pi to pair your Google Drive."
+        echo -e "   Run '${BOLD_CYAN}rclone config${RESET}' on the server to pair your Google Drive."
     fi
     if [ -f "$HOME/.config/rclone/rclone_photos.env" ] && grep -q "YOUR_REMOTE_FOLDER" "$HOME/.config/rclone/rclone_photos.env" 2>/dev/null; then
         echo -e "${BOLD_YELLOW}⚠️  RCLONE FOLDER SETUP REQUIRED:${RESET}"

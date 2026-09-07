@@ -11,8 +11,8 @@
 ---
 
 ## 🚩 Deployment Flags
-* `--ntfy`: Installs the full communication suite (speedtest, printer monitoring, Google Drive rclone photo mirror, master listener, Dozzle agent).
-* `--webhost`: Installs web application container stacks and heartbeat watchdog monitoring.
+* `--ntfy`: Installs the full communication suite (speedtest, printer monitoring, master listener, Dozzle agent).
+* `--webhost`: Installs web application container stacks (RelayIT, HomeAsset, JobBoard, Gemini API, RustDesk, Dozzle, Immich), Google Drive rclone photo sync, and heartbeat watchdog monitoring.
 
 ---
 

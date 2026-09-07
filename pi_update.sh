@@ -64,7 +64,7 @@ elif [ "$MODE" == "webhost" ] || [ -d "$HOME/relayit" ]; then
     bash "$SCRIPT_DIR/pi_rebuild.sh" --webhost
 fi
 
-if [ "$MODE" == "ntfy" ]; then
+if [ "$MODE" == "webhost" ]; then
     if [ ! -f "$HOME/.config/rclone/rclone.conf" ]; then
         echo -e "${BOLD_YELLOW}⚠️  RCLONE AUTHENTICATION REQUIRED:${RESET}"
         echo -e "   File ${BOLD_CYAN}~/.config/rclone/rclone.conf${RESET} was not found."
