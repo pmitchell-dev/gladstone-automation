@@ -82,6 +82,6 @@ When you modify a compose file (e.g., dozzle-agent-compose.yml, jobboard-compose
 7. Google Drive RClone Media Sync Setup
   Script:  ~/scripts/rclone_gdrive_photos.sh
   Config:  ~/.config/rclone/rclone.conf (Run 'rclone config' or copy config file)
-  Remote:  gdrive:Family Photos -> Target: /mnt/network_backups/Family Photos
+  Remote:  gdrive:family_photos -> Target: /mnt/network_backups/family_photos
   Notice:  rebuild & update auto-generate ~/.config/rclone/rclone.conf.example if unconfigured.
   Aliases: sync-photos | photos-sync

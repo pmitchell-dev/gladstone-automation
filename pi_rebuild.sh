@@ -487,7 +487,7 @@ if [ "$MODE" == "--ntfy" ] || [ "$MODE" == "ntfy" ]; then
     if [ ! -f "$HOME/.config/rclone/rclone.conf" ]; then
         echo -e "${BOLD_YELLOW}⚠️  RCLONE CONFIGURATION REQUIRED:${RESET}"
         echo -e "   File ${BOLD_CYAN}~/.config/rclone/rclone.conf${RESET} was not found."
-        echo -e "   Run '${BOLD_CYAN}rclone config${RESET}' on the Pi to pair your Google Drive ('gdrive:Family Photos')."
+        echo -e "   Run '${BOLD_CYAN}rclone config${RESET}' on the Pi to pair your Google Drive ('gdrive:family_photos')."
     fi
 fi
 
