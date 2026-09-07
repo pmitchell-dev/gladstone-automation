@@ -14,3 +14,8 @@ __pycache__/
 SHOWCASE_ARCHITECTURAL_MAP.md
 showcase_printable.html
 
+# Ignore AI Agent rules & configurations
+.agents/
+.antigravity/
+
+
