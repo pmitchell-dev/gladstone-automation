@@ -77,6 +77,7 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | `sync-photos` | `photos-sync` | Mirror Google Drive "Family Photos" to external backup drive (`rclone_gdrive_photos.sh`). |
 | `restore` | `restore` | Launch interactive system restoration tool (`pi_restore.sh`). |
 | `reinstall` | `reinstall` | Run Gladstone bootstrap installer to fix permissions or apply updates. |
+| `fresh-install` | `git-install` | Fresh clone from GitHub and launch bootstrap installer. |
 
 ---
 
