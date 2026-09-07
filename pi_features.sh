@@ -255,7 +255,7 @@ interactive_menu() {
 
         local choices
         choices=$(whiptail --title "Gladstone Feature Manager ($MODE)" \
-            --checklist "Select features to enable on this system (Space to toggle, Enter to save):" \
+            --checklist "Select features to enable on this system (Space to toggle, Enter to save, ESC/Cancel to abort):" \
             20 75 10 "${w_args[@]}" 3>&1 1>&2 2>&3)
         local exit_code=$?
 
