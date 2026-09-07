@@ -58,28 +58,42 @@ while [[ $# -gt 0 ]]; do
     esac
 done
 
-# Default Google Drive remote source
-REMOTE_SRC="${CUSTOM_REMOTE:-gdrive:Family Pictures}"
+# --- LOCAL CONFIGURATION LOAD ---
+ENV_FILE="$CONFIG_DIR/rclone_photos.env"
+if [ ! -f "$ENV_FILE" ]; then
+    cat << 'EOF' > "$ENV_FILE"
+# Gladstone RClone Family Photos Sync Configuration
+# Customize your rclone remote source path and local backup target directory below.
 
-# Auto-detect external drive location
+GDRIVE_REMOTE="gdrive:Family Pictures"
+BACKUP_TARGET_DIR="/mnt/Central_Backups/family_photos"
+EOF
+    log_msg "INFO" "Created local configuration file at $ENV_FILE"
+fi
+
+if [ -f "$ENV_FILE" ]; then
+    source "$ENV_FILE"
+fi
+
+# Remote source resolution (CLI flag > local rclone_photos.env > generic fallback)
+REMOTE_SRC="${CUSTOM_REMOTE:-${GDRIVE_REMOTE:-gdrive:photos}}"
+
+# Target directory resolution (CLI flag > local rclone_photos.env > auto-detect fallback)
 get_external_drive_dir() {
     if [ -n "$CUSTOM_TARGET" ]; then
         echo "$CUSTOM_TARGET"
         return
     fi
-    if [ -d "/mnt/Central_Backups" ]; then
-        echo "/mnt/Central_Backups/family_photos"
-    elif [ -d "/mnt/network_backups" ]; then
+    if [ -n "$BACKUP_TARGET_DIR" ]; then
+        echo "$BACKUP_TARGET_DIR"
+        return
+    fi
+    if [ -d "/mnt/network_backups" ]; then
         echo "/mnt/network_backups/family_photos"
     elif [ -d "/mnt/backups" ]; then
         echo "/mnt/backups/family_photos"
     else
-        local media_mount=$(ls -d /media/$USER/* 2>/dev/null | head -n 1)
-        if [ -n "$media_mount" ] && [ -d "$media_mount" ]; then
-            echo "$media_mount/family_photos"
-        else
-            echo "$HOME/.gladstone_disabled_archive/family_photos"
-        fi
+        echo "$HOME/.gladstone_disabled_archive/family_photos"
     fi
 }
 

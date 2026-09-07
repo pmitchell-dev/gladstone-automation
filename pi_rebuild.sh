@@ -89,6 +89,17 @@ EOF
         echo "📸 RClone example config template created at ~/.config/rclone/rclone.conf.example"
     fi
 
+    if [ ! -f "$HOME/.config/rclone/rclone_photos.env" ]; then
+        cat << 'EOF' > "$HOME/.config/rclone/rclone_photos.env"
+# Gladstone RClone Family Photos Sync Configuration
+# Customize your rclone remote source path and local backup target directory below.
+
+GDRIVE_REMOTE="gdrive:Family Pictures"
+BACKUP_TARGET_DIR="/mnt/Central_Backups/family_photos"
+EOF
+        echo "📸 RClone photos env config created at ~/.config/rclone/rclone_photos.env"
+    fi
+
     # Dozzle Agent Stack Sync
     if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
         echo "📊 Synchronizing Dozzle Agent..."
