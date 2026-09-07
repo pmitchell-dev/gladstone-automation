@@ -182,6 +182,64 @@ list_features() {
     echo -e "${BOLD_CYAN}==========================================================${RESET}"
 }
 
+confirm_and_apply_changes() {
+    local to_enable=($1)
+    local to_disable=($2)
+
+    local msg="Please review and confirm feature changes for [$MODE]:\n\n"
+    if [ ${#to_enable[@]} -gt 0 ]; then
+        msg+="[TO BE ENABLED]:\n"
+        for f in "${to_enable[@]}"; do
+            msg+="  • $f ($(get_feature_label "$f"))\n"
+        done
+        msg+="\n"
+    fi
+
+    if [ ${#to_disable[@]} -gt 0 ]; then
+        msg+="[TO BE DISABLED & ARCHIVED]:\n"
+        for f in "${to_disable[@]}"; do
+            msg+="  ⚠️ $f (Containers stopped & files moved to external drive)\n"
+        done
+        msg+="\n"
+    fi
+
+    msg+="Are you sure you want to apply these changes?"
+
+    local confirmed=1
+
+    if command -v whiptail &>/dev/null && [ -t 0 ]; then
+        if whiptail --title "Confirm Feature Changes ($MODE)" --yesno "$(echo -e "$msg")" 20 75; then
+            confirmed=0
+        fi
+    else
+        echo -e "${BOLD_YELLOW}==========================================================${RESET}"
+        echo -e "${BOLD_YELLOW} ⚠️ CONFIRM FEATURE CHANGES [Mode: $MODE]${RESET}"
+        echo -e "${BOLD_YELLOW}==========================================================${RESET}"
+        echo -e "$msg"
+        echo -e "${BOLD_YELLOW}==========================================================${RESET}"
+        read -p "Apply changes? (y/N): " choice
+        case "$choice" in
+            [yY]|[yY][eE][sS]) confirmed=0 ;;
+            *) confirmed=1 ;;
+        esac
+    fi
+
+    if [ $confirmed -eq 0 ]; then
+        for f in "${to_enable[@]}"; do
+            enable_feature "$f"
+        done
+        for f in "${to_disable[@]}"; do
+            disable_feature "$f"
+        done
+        echo -e "${BOLD_GREEN}✅ Feature selection saved.${RESET}"
+        cleanup_disabled_features
+        return 0
+    else
+        echo -e "${BOLD_YELLOW}❌ Changes cancelled. Feature configuration unchanged.${RESET}"
+        return 1
+    fi
+}
+
 interactive_menu() {
     init_config
     local features=($(get_mode_features))
@@ -200,29 +258,41 @@ interactive_menu() {
             20 75 10 "${w_args[@]}" 3>&1 1>&2 2>&3)
 
         if [ $? -eq 0 ]; then
+            local enable_list=""
+            local disable_list=""
             for feat in "${features[@]}"; do
                 if echo "$choices" | grep -q "\"$feat\""; then
-                    enable_feature "$feat"
+                    enable_list="$enable_list $feat"
                 else
-                    disable_feature "$feat"
+                    disable_list="$disable_list $feat"
                 fi
             done
-            echo -e "${BOLD_GREEN}✅ Feature selection saved.${RESET}"
-            cleanup_disabled_features
+
+            confirm_and_apply_changes "$enable_list" "$disable_list"
             return
         fi
     fi
 
-    # Terminal Fallback Menu
+    # Terminal Fallback Menu with Draft State
+    local temp_state=()
+    for feat in "${features[@]}"; do
+        if is_feature_enabled "$feat"; then
+            temp_state+=(1)
+        else
+            temp_state+=(0)
+        fi
+    done
+
     while true; do
         clear
         echo -e "${BOLD_CYAN}==========================================================${RESET}"
         echo -e "${BOLD_CYAN} 🛠️ GLADSTONE FEATURE MANAGER [Mode: $MODE]${RESET}"
         echo -e "${BOLD_CYAN}==========================================================${RESET}"
         local i=1
-        for feat in "${features[@]}"; do
+        for idx in "${!features[@]}"; do
+            local feat="${features[$idx]}"
             local label=$(get_feature_label "$feat")
-            if is_feature_enabled "$feat"; then
+            if [ "${temp_state[$idx]}" -eq 1 ]; then
                 echo -e "  $i) [${BOLD_GREEN}ENABLED${RESET}]  $feat ($label)"
             else
                 echo -e "  $i) [${BOLD_RED}DISABLED${RESET}] $feat ($label)"
@@ -236,9 +306,19 @@ interactive_menu() {
 
         case "$choice" in
             [sS])
-                echo -e "${BOLD_GREEN}✅ Configuration saved.${RESET}"
-                cleanup_disabled_features
-                break
+                local enable_list=""
+                local disable_list=""
+                for idx in "${!features[@]}"; do
+                    local feat="${features[$idx]}"
+                    if [ "${temp_state[$idx]}" -eq 1 ]; then
+                        enable_list="$enable_list $feat"
+                    else
+                        disable_list="$disable_list $feat"
+                    fi
+                done
+                if confirm_and_apply_changes "$enable_list" "$disable_list"; then
+                    break
+                fi
                 ;;
             [qQ])
                 echo "Exiting without applying changes."
@@ -247,11 +327,10 @@ interactive_menu() {
             *)
                 if [[ "$choice" =~ ^[0-9]+$ ]] && [ "$choice" -ge 1 ] && [ "$choice" -le "${#features[@]}" ]; then
                     local idx=$((choice - 1))
-                    local selected_feat="${features[$idx]}"
-                    if is_feature_enabled "$selected_feat"; then
-                        disable_feature "$selected_feat"
+                    if [ "${temp_state[$idx]}" -eq 1 ]; then
+                        temp_state[$idx]=0
                     else
-                        enable_feature "$selected_feat"
+                        temp_state[$idx]=1
                     fi
                 fi
                 ;;
@@ -277,6 +356,13 @@ case "$1" in
             echo "Usage: pi_features.sh --enable <feature_name>"
             exit 1
         fi
+        if [ "$3" != "-y" ] && [ -t 0 ]; then
+            read -p "Confirm enabling feature '$2'? (y/N): " conf
+            case "$conf" in
+                [yY]|[yY][eE][sS]) ;;
+                *) echo "Cancelled."; exit 0 ;;
+            esac
+        fi
         enable_feature "$2"
         cleanup_disabled_features
         ;;
@@ -284,6 +370,14 @@ case "$1" in
         if [ -z "$2" ]; then
             echo "Usage: pi_features.sh --disable <feature_name>"
             exit 1
+        fi
+        if [ "$3" != "-y" ] && [ -t 0 ]; then
+            echo -e "${BOLD_YELLOW}⚠️ Disabling '$2' will stop its containers and transfer data/config files to external drive.${RESET}"
+            read -p "Confirm disabling feature '$2'? (y/N): " conf
+            case "$conf" in
+                [yY]|[yY][eE][sS]) ;;
+                *) echo "Cancelled."; exit 0 ;;
+            esac
         fi
         disable_feature "$2"
         cleanup_disabled_features
