@@ -147,13 +147,16 @@ cleanup_disabled_features() {
                 if [ -d "$app_dir" ]; then
                     local archive_target="$ext_drive/disabled/$feat"
                     echo "  -> Archiving files to external drive: $archive_target"
-                    mkdir -p "$archive_target"
-                    cp -r "$app_dir"/* "$archive_target/" 2>/dev/null || true
-                    # Copy hidden files like .env if present
-                    cp -r "$app_dir"/.* "$archive_target/" 2>/dev/null || true
+                    if ! sudo mkdir -p "$archive_target" 2>/dev/null; then
+                        archive_target="$HOME/.gladstone_disabled_archive/$feat"
+                        echo "  -> External mount write-protected. Archiving to: $archive_target"
+                        mkdir -p "$archive_target"
+                    fi
+                    sudo cp -r "$app_dir"/* "$archive_target/" 2>/dev/null || true
+                    sudo cp -r "$app_dir"/.* "$archive_target/" 2>/dev/null || true
 
-                    # 3. Remove local workspace directory
-                    rm -rf "$app_dir"
+                    # 3. Remove local workspace directory (sudo required for container data like pgdata)
+                    sudo rm -rf "$app_dir"
                     echo -e "${BOLD_GREEN}  ✅ Feature '$feat' removed locally and content transferred to '$archive_target'.${RESET}"
                 fi
             fi

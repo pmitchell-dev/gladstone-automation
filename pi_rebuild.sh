@@ -66,15 +66,14 @@ if [ "$MODE" == "--ntfy" ]; then
 
     # Dozzle Agent Stack Sync
     if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
-        if [ -d "$HOME/dozzle" ]; then
-            echo "📊 Synchronizing Dozzle Agent..."
-            if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
-                cp "$SCRIPT_DIR/dozzle-agent-compose.yml" "$HOME/dozzle/docker-compose.yml"
-            fi
-            mkdir -p "$SCRIPT_DIR/logs"
-            cd "$HOME/dozzle" && sudo docker compose up -d --remove-orphans
-            echo "✅ Dozzle Agent synced on port 7007."
+        echo "📊 Synchronizing Dozzle Agent..."
+        mkdir -p "$HOME/dozzle"
+        if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
+            cp "$SCRIPT_DIR/dozzle-agent-compose.yml" "$HOME/dozzle/docker-compose.yml"
         fi
+        mkdir -p "$SCRIPT_DIR/logs"
+        cd "$HOME/dozzle" && sudo docker compose up -d --remove-orphans
+        echo "✅ Dozzle Agent synced on port 7007."
     else
         echo "⏩ Skipping Dozzle Agent (Feature disabled)."
     fi
@@ -344,14 +343,13 @@ elif [ "$MODE" == "--webhost" ]; then
 
     # Dozzle Log Viewer Stack Sync
     if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle" 2>/dev/null; then
-        if [ -d "$HOME/dozzle" ]; then
-            echo "📊 Synchronizing Dozzle Log Viewer..."
-            if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
-                cp "$SCRIPT_DIR/dozzle-compose.yml" "$HOME/dozzle/docker-compose.yml"
-            fi
-            cd "$HOME/dozzle" && sudo docker compose up -d --remove-orphans
-            echo "✅ Dozzle Log Viewer synced. (http://$HOST_IP:8888)"
+        echo "📊 Synchronizing Dozzle Log Viewer..."
+        mkdir -p "$HOME/dozzle"
+        if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
+            cp "$SCRIPT_DIR/dozzle-compose.yml" "$HOME/dozzle/docker-compose.yml"
         fi
+        cd "$HOME/dozzle" && sudo docker compose up -d --remove-orphans
+        echo "✅ Dozzle Log Viewer synced. (http://$HOST_IP:8888)"
     else
         echo -e "  ${CYAN}[Dozzle Log Viewer]${RESET} Skipped (Feature is disabled)."
     fi
