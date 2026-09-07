@@ -73,17 +73,23 @@ init_config() {
 is_feature_enabled() {
     local feat="$1"
     init_config
-    if grep -q "^${feat}=enabled" "$CONFIG_FILE" 2>/dev/null; then
+    if [ ! -f "$CONFIG_FILE" ]; then
         return 0
-    else
+    fi
+    # If explicitly marked as disabled in config, feature is disabled
+    if grep -iq "^${feat}=disabled" "$CONFIG_FILE" 2>/dev/null; then
         return 1
     fi
+    if grep -iq "^${feat}=enabled" "$CONFIG_FILE" 2>/dev/null; then
+        return 0
+    fi
+    return 0
 }
 
 enable_feature() {
     local feat="$1"
     init_config
-    sed -i "/^${feat}=/d" "$CONFIG_FILE"
+    sed -i -E "/^${feat}=/d" "$CONFIG_FILE" 2>/dev/null || sed -i "/^${feat}=/d" "$CONFIG_FILE"
     echo "${feat}=enabled" >> "$CONFIG_FILE"
     echo -e "${BOLD_GREEN}✅ Enabled feature '${feat}'.${RESET}"
 }
@@ -91,7 +97,7 @@ enable_feature() {
 disable_feature() {
     local feat="$1"
     init_config
-    sed -i "/^${feat}=/d" "$CONFIG_FILE"
+    sed -i -E "/^${feat}=/d" "$CONFIG_FILE" 2>/dev/null || sed -i "/^${feat}=/d" "$CONFIG_FILE"
     echo "${feat}=disabled" >> "$CONFIG_FILE"
     echo -e "${BOLD_YELLOW}⚠️ Disabled feature '${feat}'.${RESET}"
 }
