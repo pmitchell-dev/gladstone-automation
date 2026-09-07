@@ -58,32 +58,17 @@ init_config() {
         for feat in $(get_mode_features); do
             echo "${feat}=enabled" >> "$CONFIG_FILE"
         done
-        echo -e "${BOLD_GREEN}✅ Initialized feature configuration with all features enabled.${RESET}"
-    else
-        # Automatically register any newly added features not yet present in existing config file
-        for feat in $(get_mode_features); do
-            if ! grep -q "^${feat}=" "$CONFIG_FILE" 2>/dev/null; then
-                echo "${feat}=enabled" >> "$CONFIG_FILE"
-                echo -e "${BOLD_GREEN}✅ Registered new feature '${feat}' as enabled.${RESET}"
-            fi
-        done
+        echo -e "${BOLD_GREEN}✅ Initialized feature configuration with default features enabled.${RESET}"
     fi
 }
 
 is_feature_enabled() {
     local feat="$1"
     init_config
-    if [ ! -f "$CONFIG_FILE" ]; then
+    if [ -f "$CONFIG_FILE" ] && grep -iq "^${feat}=enabled" "$CONFIG_FILE" 2>/dev/null; then
         return 0
     fi
-    # If explicitly marked as disabled in config, feature is disabled
-    if grep -iq "^${feat}=disabled" "$CONFIG_FILE" 2>/dev/null; then
-        return 1
-    fi
-    if grep -iq "^${feat}=enabled" "$CONFIG_FILE" 2>/dev/null; then
-        return 0
-    fi
-    return 0
+    return 1
 }
 
 enable_feature() {
