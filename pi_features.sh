@@ -59,6 +59,14 @@ init_config() {
             echo "${feat}=enabled" >> "$CONFIG_FILE"
         done
         echo -e "${BOLD_GREEN}✅ Initialized feature configuration with all features enabled.${RESET}"
+    else
+        # Automatically register any newly added features not yet present in existing config file
+        for feat in $(get_mode_features); do
+            if ! grep -q "^${feat}=" "$CONFIG_FILE" 2>/dev/null; then
+                echo "${feat}=enabled" >> "$CONFIG_FILE"
+                echo -e "${BOLD_GREEN}✅ Registered new feature '${feat}' as enabled.${RESET}"
+            fi
+        done
     fi
 }
 
