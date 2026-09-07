@@ -130,12 +130,18 @@ if [ "$DRY_RUN" -eq 1 ]; then
     log_msg "INFO" "Running in DRY-RUN mode."
 fi
 if [ "$VERBOSE" -eq 1 ]; then
-    RCLONE_FLAGS+=("-v")
+    RCLONE_FLAGS+=("-vv" "--progress")
+    log_msg "INFO" "Running in VERBOSE mode (-vv --progress)."
 fi
 
 log_msg "INFO" "Executing rclone sync..."
-rclone sync "$REMOTE_SRC" "$TARGET_DIR" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
-SYNC_STATUS=$?
+if [ "$VERBOSE" -eq 1 ]; then
+    rclone sync "$REMOTE_SRC" "$TARGET_DIR" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+    SYNC_STATUS=${PIPESTATUS[0]}
+else
+    rclone sync "$REMOTE_SRC" "$TARGET_DIR" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
+    SYNC_STATUS=$?
+fi
 
 if [ $SYNC_STATUS -eq 0 ]; then
     log_msg "INFO" "✅ Google Drive 'Family Photos' mirror sync completed successfully."
