@@ -53,6 +53,9 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | **Simple Login Web** (`simplelogin-app`) | `simplelogin-compose.yml` | Pi5 Hub | 7777 / 25 | Self-Hosted Email Alias Manager UI & API (`localrepo.net`) | **Active (Added)** |
 | **Simple Login Database** (`simplelogin-db`) | `simplelogin-compose.yml` | Pi5 Hub | 5432 (Internal) | PostgreSQL 16 DB for Simple Login | **Active (Added)** |
 | **Simple Login Postfix** (`simplelogin-postfix`) | `simplelogin-compose.yml` | Pi5 Hub | 25 | Postfix Mail Engine for Simple Login | **Active (Added)** |
+| **Immich Server** (`immich_server`) | `immich-compose.yml` | Webhost | 2283 | Self-Hosted Photo & Video Management Web UI & API | **Active (Added)** |
+| **Immich Database** (`immich_postgres`) | `immich-compose.yml` | Webhost | 5432 (Internal) | PostgreSQL Vector Database (`pgvector`) | **Active (Added)** |
+| **Immich Redis** (`immich_redis`) | `immich-compose.yml` | Webhost | 6379 (Internal) | Valkey Cache & Queue Broker | **Active (Added)** |
 
 ### Removed / Deprecated Containers
 

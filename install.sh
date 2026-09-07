@@ -147,6 +147,22 @@ if [ "$MODE" == "webhost" ]; then
     else
         echo "⏩ Skipping RelayIT (Feature disabled)."
     fi
+
+    # Immich Stack Setup
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "immich" 2>/dev/null; then
+        echo "🖼️  Provisioning Immich Stack..."
+        IMMICH_DIR="$HOME/immich"
+        mkdir -p "$IMMICH_DIR" "/mnt/network_backups/immich_uploads" "/mnt/network_backups/family_photos"
+        if [ -f "$SCRIPT_DIR/immich-compose.yml" ]; then
+            cp "$SCRIPT_DIR/immich-compose.yml" "$IMMICH_DIR/docker-compose.yml"
+        fi
+        if [ ! -f "$IMMICH_DIR/.env" ] && [ -f "$SCRIPT_DIR/immich-env.template" ]; then
+            cp "$SCRIPT_DIR/immich-env.template" "$IMMICH_DIR/.env"
+        fi
+        echo "🖼️  Immich Stack provisioned."
+    else
+        echo "⏩ Skipping Immich (Feature disabled)."
+    fi
 fi
 
 # 4b. Webhost — Dozzle Log Viewer Stack

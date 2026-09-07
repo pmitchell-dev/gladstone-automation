@@ -388,6 +388,23 @@ elif [ "$MODE" == "--webhost" ]; then
     else
         echo -e "  ${CYAN}[Dozzle Log Viewer]${RESET} Skipped (Feature is disabled)."
     fi
+
+    # Immich Photo & Video Server Stack Sync
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "immich" 2>/dev/null; then
+        echo "🖼️ Synchronizing Immich Stack..."
+        IMMICH_DIR="$HOME/immich"
+        mkdir -p "$IMMICH_DIR" "/mnt/network_backups/immich_uploads" "/mnt/network_backups/family_photos"
+        if [ ! -f "$IMMICH_DIR/.env" ] && [ -f "$SCRIPT_DIR/immich-env.template" ]; then
+            cp "$SCRIPT_DIR/immich-env.template" "$IMMICH_DIR/.env"
+        fi
+        if [ -f "$SCRIPT_DIR/immich-compose.yml" ]; then
+            cp "$SCRIPT_DIR/immich-compose.yml" "$IMMICH_DIR/docker-compose.yml"
+        fi
+        cd "$IMMICH_DIR" && run_quiet_compose up -d --remove-orphans
+        echo "✅ Immich Stack synced. (http://$HOST_IP:2283)"
+    else
+        echo -e "  ${CYAN}[Immich Stack]${RESET} Skipped (Feature is disabled)."
+    fi
 fi
 
 

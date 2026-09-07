@@ -52,6 +52,11 @@
   * `simplelogin-app`: Self-Hosted Email Alias Manager UI & API on Pi5 Hub (`http://simplelogin.localrepo.net:7777` / domain: `localrepo.net`)
   * `simplelogin-db`: PostgreSQL 16 DB (Port 5432 internal)
   * `simplelogin-postfix`: Postfix Mail Server Engine (Port 25)
+* **Immich Photo & Video Stack** (`immich-compose.yml`):
+  * `immich_server`: Immich Web UI & API Backend on Webhost (`http://192.168.50.217:2283`)
+  * `immich_postgres`: PostgreSQL Vector DB (`pgvector`)
+  * `immich_redis`: Valkey Cache & Queue Broker
+  * *(Machine Learning: Remote node via `IMMICH_MACHINE_LEARNING_URL=http://192.168.50.138:3003`)*
 
 ### Removed / Deprecated Containers
 * **Hivemind Stack** (`hivemind-compose.yml`):

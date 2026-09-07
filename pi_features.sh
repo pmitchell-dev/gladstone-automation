@@ -22,7 +22,7 @@ BOLD_RED='\033[1;31m'
 RESET='\033[0m'
 
 # Available features per mode
-WEBHOST_FEATURES=("homeasset" "jobboard" "relayit" "gemini-api" "rustdesk" "dozzle")
+WEBHOST_FEATURES=("homeasset" "jobboard" "relayit" "gemini-api" "rustdesk" "dozzle" "immich")
 NTFY_FEATURES=("simplelogin" "dozzle-agent" "ntfy_listener" "cloudflare_ddns" "printer_health")
 
 get_mode_features() {
@@ -41,6 +41,7 @@ get_feature_label() {
         gemini-api) echo "Gemini API Backend Proxy Server" ;;
         rustdesk) echo "RustDesk Remote Desktop Server" ;;
         dozzle) echo "Dozzle Centralized Log Viewer" ;;
+        immich) echo "Immich Photo & Video Server Stack (Port 2283)" ;;
         simplelogin) echo "SimpleLogin Email Alias Stack" ;;
         dozzle-agent) echo "Dozzle Log Agent (Hub Streamer)" ;;
         ntfy_listener) echo "Ntfy Command Listener Script Service" ;;
