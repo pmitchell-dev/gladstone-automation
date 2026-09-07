@@ -59,124 +59,154 @@ sudo apt install -y docker-compose-plugin
 sudo systemctl enable --now docker
 export PATH="$PATH:/usr/bin:/usr/local/bin"
 
+# 3c. Feature Manager Initialization
+if [ -f "$SCRIPT_DIR/pi_features.sh" ]; then
+    bash "$SCRIPT_DIR/pi_features.sh" --init
+fi
+
 # 4. Webhost Specific Logic (Code Cloning)
 if [ "$MODE" == "webhost" ]; then
     echo "🖥️  Configuring Webhost Stack..."
-    if [ ! -d "$HOME/homeasset" ]; then
-        echo "🔄 Initial Clone of HomeAsset Repository..."
-        git clone https://github.com/pmitchell-dev/HomeAsset.git "$HOME/homeasset"
-        # Copy the provided docker-compose file for homeasset
-        if [ -f "$SCRIPT_DIR/homeasset-compose.yml" ]; then
-            cp "$SCRIPT_DIR/homeasset-compose.yml" "$HOME/homeasset/docker-compose.yml"
+
+    # HomeAsset Stack Setup
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "homeasset" 2>/dev/null; then
+        if [ ! -d "$HOME/homeasset" ]; then
+            echo "🔄 Initial Clone of HomeAsset Repository..."
+            git clone https://github.com/pmitchell-dev/HomeAsset.git "$HOME/homeasset"
+            if [ -f "$SCRIPT_DIR/homeasset-compose.yml" ]; then
+                cp "$SCRIPT_DIR/homeasset-compose.yml" "$HOME/homeasset/docker-compose.yml"
+            fi
         fi
+    else
+        echo "⏩ Skipping HomeAsset (Feature disabled)."
     fi
 
-
     # RustDesk Server Stack Setup
-    RUSTDESK_DIR="$HOME/rustdesk"
-    mkdir -p "$RUSTDESK_DIR/data"
-    
-    if [ -f "$SCRIPT_DIR/rustdesk-compose.yml" ]; then
-        cp "$SCRIPT_DIR/rustdesk-compose.yml" "$RUSTDESK_DIR/docker-compose.yml"
-        echo "?? RustDesk Stack provisioned."
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "rustdesk" 2>/dev/null; then
+        RUSTDESK_DIR="$HOME/rustdesk"
+        mkdir -p "$RUSTDESK_DIR/data"
+        if [ -f "$SCRIPT_DIR/rustdesk-compose.yml" ]; then
+            cp "$SCRIPT_DIR/rustdesk-compose.yml" "$RUSTDESK_DIR/docker-compose.yml"
+            echo "?? RustDesk Stack provisioned."
+        fi
+    else
+        echo "⏩ Skipping RustDesk (Feature disabled)."
     fi
 
     # JobBoard Stack Setup
-    if [ ! -d "$HOME/jobboard" ]; then
-        echo "📋 Initial Clone of JobBoard..."
-        git clone https://github.com/pmitchell-dev/JobBoard.git "$HOME/jobboard"
-        # Override upstream compose with our port-remapped version
-        if [ -f "$SCRIPT_DIR/jobboard-compose.yml" ]; then
-            cp "$SCRIPT_DIR/jobboard-compose.yml" "$HOME/jobboard/docker-compose.yml"
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "jobboard" 2>/dev/null; then
+        if [ ! -d "$HOME/jobboard" ]; then
+            echo "📋 Initial Clone of JobBoard..."
+            git clone https://github.com/pmitchell-dev/JobBoard.git "$HOME/jobboard"
+            if [ -f "$SCRIPT_DIR/jobboard-compose.yml" ]; then
+                cp "$SCRIPT_DIR/jobboard-compose.yml" "$HOME/jobboard/docker-compose.yml"
+            fi
         fi
+        mkdir -p "$HOME/jobboard/data/backups"
+        mkdir -p "$HOME/jobboard/cache"
+        sudo chown -R 1000:1000 "$HOME/jobboard/data" "$HOME/jobboard/cache"
+    else
+        echo "⏩ Skipping JobBoard (Feature disabled)."
     fi
-    # Ensure persistent host directories exist (survives container rebuilds)
-    mkdir -p "$HOME/jobboard/data/backups"
-    mkdir -p "$HOME/jobboard/cache"
-    # Fix ownership so container user (1000:1000) can write to mounted volumes
-    sudo chown -R 1000:1000 "$HOME/jobboard/data" "$HOME/jobboard/cache"
-
-
 
     # Gemini API Backend Stack Setup
-    GEMINI_DIR="$HOME/gemini-api"
-    mkdir -p "$GEMINI_DIR"
-    if [ -f "$SCRIPT_DIR/gemini-compose.yml" ]; then
-        cp "$SCRIPT_DIR/gemini-compose.yml" "$GEMINI_DIR/docker-compose.yml"
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "gemini-api" 2>/dev/null; then
+        GEMINI_DIR="$HOME/gemini-api"
+        mkdir -p "$GEMINI_DIR"
+        if [ -f "$SCRIPT_DIR/gemini-compose.yml" ]; then
+            cp "$SCRIPT_DIR/gemini-compose.yml" "$GEMINI_DIR/docker-compose.yml"
+        fi
+        if [ -f "$SCRIPT_DIR/gemini_api_server.py" ]; then
+            cp "$SCRIPT_DIR/gemini_api_server.py" "$GEMINI_DIR/gemini_api_server.py"
+        fi
+        if [ -f "$SCRIPT_DIR/Dockerfile.gemini" ]; then
+            cp "$SCRIPT_DIR/Dockerfile.gemini" "$GEMINI_DIR/Dockerfile.gemini"
+        fi
+        if [ ! -f "$GEMINI_DIR/.env" ]; then
+            echo "GEMINI_API_KEY=your_gemini_api_key_here" > "$GEMINI_DIR/.env"
+            echo "🔑 Created $GEMINI_DIR/.env file (Add your GEMINI_API_KEY here)."
+        fi
+        echo "🤖 Gemini API Stack provisioned."
+    else
+        echo "⏩ Skipping Gemini API (Feature disabled)."
     fi
-    if [ -f "$SCRIPT_DIR/gemini_api_server.py" ]; then
-        cp "$SCRIPT_DIR/gemini_api_server.py" "$GEMINI_DIR/gemini_api_server.py"
-    fi
-    if [ -f "$SCRIPT_DIR/Dockerfile.gemini" ]; then
-        cp "$SCRIPT_DIR/Dockerfile.gemini" "$GEMINI_DIR/Dockerfile.gemini"
-    fi
-    if [ ! -f "$GEMINI_DIR/.env" ]; then
-        echo "GEMINI_API_KEY=your_gemini_api_key_here" > "$GEMINI_DIR/.env"
-        echo "🔑 Created $GEMINI_DIR/.env file (Add your GEMINI_API_KEY here)."
-    fi
-    echo "🤖 Gemini API Stack provisioned."
 
     # RelayIT Stack Setup
-    if [ ! -d "$HOME/relayit" ]; then
-        echo "🎟️ Initial Clone of RelayIT..."
-        git clone https://github.com/pmitchell-dev/RelayIT.git "$HOME/relayit"
-        if [ -f "$SCRIPT_DIR/relayit-compose.yml" ]; then
-            cp "$SCRIPT_DIR/relayit-compose.yml" "$HOME/relayit/docker-compose.yml"
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "relayit" 2>/dev/null; then
+        if [ ! -d "$HOME/relayit" ]; then
+            echo "🎟️ Initial Clone of RelayIT..."
+            git clone https://github.com/pmitchell-dev/RelayIT.git "$HOME/relayit"
+            if [ -f "$SCRIPT_DIR/relayit-compose.yml" ]; then
+                cp "$SCRIPT_DIR/relayit-compose.yml" "$HOME/relayit/docker-compose.yml"
+            fi
         fi
+        mkdir -p "$HOME/relayit/data/pgdata"
+        mkdir -p "$HOME/relayit/data/caddy_data"
+        mkdir -p "$HOME/relayit/data/caddy_config"
+        echo "🎟️ RelayIT Stack provisioned."
+    else
+        echo "⏩ Skipping RelayIT (Feature disabled)."
     fi
-    mkdir -p "$HOME/relayit/data/pgdata"
-    mkdir -p "$HOME/relayit/data/caddy_data"
-    mkdir -p "$HOME/relayit/data/caddy_config"
-    echo "🎟️ RelayIT Stack provisioned."
 fi
 
 # 4b. Webhost — Dozzle Log Viewer Stack
 if [ "$MODE" == "webhost" ]; then
-    echo "📊 Deploying Dozzle Log Viewer (Webhost main instance)..."
-    DOZZLE_DIR="$HOME/dozzle"
-    mkdir -p "$DOZZLE_DIR"
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle" 2>/dev/null; then
+        echo "📊 Deploying Dozzle Log Viewer (Webhost main instance)..."
+        DOZZLE_DIR="$HOME/dozzle"
+        mkdir -p "$DOZZLE_DIR"
 
-    if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
-        cp "$SCRIPT_DIR/dozzle-compose.yml" "$DOZZLE_DIR/docker-compose.yml"
+        if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
+            cp "$SCRIPT_DIR/dozzle-compose.yml" "$DOZZLE_DIR/docker-compose.yml"
+        fi
+
+        cd "$DOZZLE_DIR"
+        sudo docker compose up -d --remove-orphans
+        echo "✅ Dozzle Log Viewer running at http://192.168.50.217:8888"
+    else
+        echo "⏩ Skipping Dozzle Log Viewer (Feature disabled)."
     fi
-
-    cd "$DOZZLE_DIR"
-    sudo docker compose up -d --remove-orphans
-    echo "✅ Dozzle Log Viewer running at http://192.168.50.217:8888"
 fi
 
 # 4c. Pi5 Hub — Dozzle Agent Stack
 if [ "$MODE" == "ntfy" ]; then
-    echo "📊 Deploying Dozzle Agent (Pi5 hub)..."
-    DOZZLE_DIR="$HOME/dozzle"
-    mkdir -p "$DOZZLE_DIR"
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
+        echo "📊 Deploying Dozzle Agent (Pi5 hub)..."
+        DOZZLE_DIR="$HOME/dozzle"
+        mkdir -p "$DOZZLE_DIR"
 
-    # Ensure the shared log directory exists (scripts write here)
-    mkdir -p "$SCRIPT_DIR/logs"
+        mkdir -p "$SCRIPT_DIR/logs"
 
-    if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
-        cp "$SCRIPT_DIR/dozzle-agent-compose.yml" "$DOZZLE_DIR/docker-compose.yml"
+        if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
+            cp "$SCRIPT_DIR/dozzle-agent-compose.yml" "$DOZZLE_DIR/docker-compose.yml"
+        fi
+
+        cd "$DOZZLE_DIR"
+        sudo docker compose up -d --remove-orphans
+        echo "✅ Dozzle Agent running on port 7007 (connected to Webhost)"
+    else
+        echo "⏩ Skipping Dozzle Agent (Feature disabled)."
     fi
-
-    cd "$DOZZLE_DIR"
-    sudo docker compose up -d --remove-orphans
-    echo "✅ Dozzle Agent running on port 7007 (connected to Webhost)"
 fi
 
 # 4d. Pi5 Hub — Simple Login Stack
 if [ "$MODE" == "ntfy" ]; then
-    echo "📧 Deploying Simple Login Stack (Pi5 hub)..."
-    SIMPLELOGIN_DIR="$HOME/simplelogin"
-    mkdir -p "$SIMPLELOGIN_DIR/data/pgdata" "$SIMPLELOGIN_DIR/data/sl" "$SIMPLELOGIN_DIR/data/upload"
+    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "simplelogin" 2>/dev/null; then
+        echo "📧 Deploying Simple Login Stack (Pi5 hub)..."
+        SIMPLELOGIN_DIR="$HOME/simplelogin"
+        mkdir -p "$SIMPLELOGIN_DIR/data/pgdata" "$SIMPLELOGIN_DIR/data/sl" "$SIMPLELOGIN_DIR/data/upload"
 
-    if [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
-        cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
+        if [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
+            cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
+        fi
+
+        cd "$SIMPLELOGIN_DIR"
+        sudo docker compose down --remove-orphans 2>/dev/null || true
+        sudo docker compose up -d --remove-orphans
+        echo "✅ Simple Login running at http://simplelogin.localrepo.net:7777 (localrepo.net)"
+    else
+        echo "⏩ Skipping Simple Login (Feature disabled)."
     fi
-
-    cd "$SIMPLELOGIN_DIR"
-    sudo docker compose down --remove-orphans 2>/dev/null || true
-    sudo docker compose up -d --remove-orphans
-    echo "✅ Simple Login running at http://simplelogin.localrepo.net:7777 (localrepo.net)"
 fi
 
 # 5. TerminalBuddy Setup (embedded — no internet required)

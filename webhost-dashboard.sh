@@ -69,11 +69,12 @@ generate_dashboard() {
 
     echo -e "${CYAN}------------------------------------------------------------${NC}"
     echo -e "${BLUE}[ LOCAL COMMANDS ] (Bash):${NC}"
-    echo -e "   - ${GREEN}refresh:${NC} Reload terminal environment (aliases/paths)"
-    echo -e "   - ${GREEN}update:${NC}  Fetch and install system updates"
-    echo -e "   - ${GREEN}db:${NC}      Launch this webhost dashboard"
-    echo -e "   - ${GREEN}sync:${NC}    Backup codebase to GitHub repository"
-    echo -e "   - ${GREEN}rebuild:${NC} Pull latest code and re-deploy Docker containers"
+    echo -e "   - ${GREEN}features:${NC} Manage enabled services & container stacks"
+    echo -e "   - ${GREEN}refresh:${NC}  Reload terminal environment (aliases/paths)"
+    echo -e "   - ${GREEN}update:${NC}   Fetch and install system updates"
+    echo -e "   - ${GREEN}db:${NC}       Launch this webhost dashboard"
+    echo -e "   - ${GREEN}sync:${NC}     Backup codebase to GitHub repository"
+    echo -e "   - ${GREEN}rebuild:${NC}  Pull latest code and re-deploy Docker containers"
     echo -e "${CYAN}------------------------------------------------------------${NC}"
 }
 

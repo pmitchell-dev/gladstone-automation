@@ -125,6 +125,7 @@ generate_dashboard() {
     echo "   - cycle: Restart command listener"
     echo "   - reinstall: Force update and rebuild"
     echo "[ LOCAL ] (Bash):"
+    echo "   - features: Manage enabled services & containers"
     echo "   - refresh: Reload terminal environment"
     echo "   - update: Update OS and Software"
     echo "   - db: Launch this dashboard"
