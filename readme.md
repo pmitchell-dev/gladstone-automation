@@ -68,6 +68,7 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | Command | Alias | Purpose |
 | :--- | :--- | :--- |
 | `db` | `dashboard` | View system vitals, printer status, and network speeds. |
+| `features` | `pi-features` | Launch interactive menu to enable/disable feature stacks & container services. |
 | `relay` | `relay` | Send formatted ntfy messages to alert channels. |
 | `sync` | `sync` | Push local changes to GitHub with mode-aware heartbeat. |
 | `update` | `update` | Pull GitHub changes and trigger smart refresh of container stacks. |
