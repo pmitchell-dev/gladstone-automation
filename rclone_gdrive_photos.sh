@@ -134,8 +134,16 @@ EOF
     exit 1
 fi
 
-# Ensure target output folder exists
-mkdir -p "$TARGET_DIR" 2>/dev/null || sudo mkdir -p "$TARGET_DIR" 2>/dev/null || true
+# Ensure log directory ownership and write permissions
+mkdir -p "$LOG_DIR" 2>/dev/null || sudo mkdir -p "$LOG_DIR" 2>/dev/null || true
+sudo chown -R $USER:$USER "$LOG_DIR" 2>/dev/null || true
+
+# Ensure target output folder exists and user has write permissions
+if [ ! -d "$TARGET_DIR" ]; then
+    mkdir -p "$TARGET_DIR" 2>/dev/null || sudo mkdir -p "$TARGET_DIR" 2>/dev/null || true
+fi
+sudo chown -R $USER:$USER "$TARGET_DIR" 2>/dev/null || true
+sudo chmod -R 775 "$TARGET_DIR" 2>/dev/null || true
 
 # Prepare rclone flags
 RCLONE_FLAGS=("--create-empty-src-dirs" "--transfers" "4" "--checkers" "8")
