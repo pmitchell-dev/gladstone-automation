@@ -11,6 +11,14 @@ SCRIPT_DIR="$HOME/scripts"
 mkdir -p "$SCRIPT_DIR/logs"
 exec > >(tee -a "$SCRIPT_DIR/logs/rebuild.log") 2>&1
 
+run_quiet_compose() {
+    # Silence build/up output on screen while appending full details to rebuild.log
+    if sudo docker compose --progress=plain "$@" >> "$SCRIPT_DIR/logs/rebuild.log" 2>&1 || docker compose --progress=plain "$@" >> "$SCRIPT_DIR/logs/rebuild.log" 2>&1; then
+        return 0
+    fi
+    return 1
+}
+
 # ANSI Color Definitions
 CYAN='\033[0;36m'
 BOLD_CYAN='\033[1;36m'
@@ -71,8 +79,7 @@ if [ "$MODE" == "--ntfy" ]; then
         if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
             cp "$SCRIPT_DIR/dozzle-agent-compose.yml" "$HOME/dozzle/docker-compose.yml"
         fi
-        mkdir -p "$SCRIPT_DIR/logs"
-        cd "$HOME/dozzle" && sudo docker compose up -d --remove-orphans
+        cd "$HOME/dozzle" && run_quiet_compose up -d --remove-orphans
         echo "✅ Dozzle Agent synced on port 7007."
     else
         echo "⏩ Skipping Dozzle Agent (Feature disabled)."
@@ -88,8 +95,8 @@ if [ "$MODE" == "--ntfy" ]; then
                 cp "$SCRIPT_DIR/simplelogin-compose.yml" "$SIMPLELOGIN_DIR/docker-compose.yml"
             fi
             cd "$SIMPLELOGIN_DIR"
-            sudo docker compose down --remove-orphans 2>/dev/null || true
-            sudo docker compose up -d --remove-orphans
+            run_quiet_compose down --remove-orphans || true
+            run_quiet_compose up -d --remove-orphans
             echo "✅ Simple Login synced at http://simplelogin.localrepo.net:7777 (localrepo.net)"
         fi
     else
@@ -147,7 +154,7 @@ elif [ "$MODE" == "--webhost" ]; then
 
             echo -e "${BOLD_CYAN}🔨 Rebuilding local HomeAsset image...${RESET}"
             if [ -f "docker-compose.yml" ]; then
-                docker compose up -d --build
+                run_quiet_compose up -d --build
             else
                 echo -e "  ⚠ Warning: No docker-compose.yml found in $HOME/homeasset"
             fi
@@ -171,7 +178,7 @@ elif [ "$MODE" == "--webhost" ]; then
             echo "?? Synchronizing RustDesk Stack..."
             cd "$HOME/rustdesk"
             if [ -f "docker-compose.yml" ]; then
-                docker compose up -d
+                run_quiet_compose up -d
                 echo "? RustDesk Stack Deployment Check Complete."
             else
                 echo "? Warning: No docker-compose.yml found in $HOME/rustdesk"
@@ -237,7 +244,7 @@ elif [ "$MODE" == "--webhost" ]; then
 
             echo -e "${BOLD_CYAN}🔨 Rebuilding local JobBoard image...${RESET}"
             if [ -f "docker-compose.yml" ]; then
-                docker compose up -d --build --force-recreate
+                run_quiet_compose up -d --build --force-recreate
             else
                 echo -e "  ⚠ Warning: No docker-compose.yml found in $HOME/jobboard"
             fi
@@ -271,7 +278,7 @@ elif [ "$MODE" == "--webhost" ]; then
                 echo "🔑 Created $HOME/gemini-api/.env (Add your real GEMINI_API_KEY)"
             fi
             if [ -f "docker-compose.yml" ]; then
-                docker compose up -d --build
+                run_quiet_compose up -d --build
                 echo "✅ Gemini API Deployment Complete. (http://$HOST_IP:5050/api/query)"
             else
                 echo "⚠ Warning: No docker-compose.yml found in $HOME/gemini-api"
@@ -323,9 +330,9 @@ elif [ "$MODE" == "--webhost" ]; then
 
             echo -e "${BOLD_CYAN}🔨 Rebuilding local RelayIT image (no cache)...${RESET}"
             if [ -f "docker-compose.yml" ]; then
-                docker compose down --remove-orphans 2>/dev/null || true
-                docker compose build --no-cache
-                docker compose up -d --force-recreate
+                run_quiet_compose down --remove-orphans || true
+                run_quiet_compose build --no-cache
+                run_quiet_compose up -d --force-recreate
             else
                 echo -e "  ⚠ Warning: No docker-compose.yml found in $HOME/relayit"
             fi
@@ -348,7 +355,7 @@ elif [ "$MODE" == "--webhost" ]; then
         if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
             cp "$SCRIPT_DIR/dozzle-compose.yml" "$HOME/dozzle/docker-compose.yml"
         fi
-        cd "$HOME/dozzle" && sudo docker compose up -d --remove-orphans
+        cd "$HOME/dozzle" && run_quiet_compose up -d --remove-orphans
         echo "✅ Dozzle Log Viewer synced. (http://$HOST_IP:8888)"
     else
         echo -e "  ${CYAN}[Dozzle Log Viewer]${RESET} Skipped (Feature is disabled)."
