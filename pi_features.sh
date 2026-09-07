@@ -253,11 +253,13 @@ interactive_menu() {
             w_args+=("$feat" "$label" "$status")
         done
 
-        local choices=$(whiptail --title "Gladstone Feature Manager ($MODE)" \
+        local choices
+        choices=$(whiptail --title "Gladstone Feature Manager ($MODE)" \
             --checklist "Select features to enable on this system (Space to toggle, Enter to save):" \
             20 75 10 "${w_args[@]}" 3>&1 1>&2 2>&3)
+        local exit_code=$?
 
-        if [ $? -eq 0 ]; then
+        if [ $exit_code -eq 0 ]; then
             local enable_list=""
             local disable_list=""
             for feat in "${features[@]}"; do
@@ -269,7 +271,10 @@ interactive_menu() {
             done
 
             confirm_and_apply_changes "$enable_list" "$disable_list"
-            return
+            return 0
+        else
+            echo -e "${BOLD_YELLOW}❌ Selection cancelled. Feature configuration unchanged.${RESET}"
+            return 0
         fi
     fi
 
