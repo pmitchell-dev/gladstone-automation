@@ -60,44 +60,42 @@ done
 
 # --- LOCAL CONFIGURATION LOAD ---
 ENV_FILE="$CONFIG_DIR/rclone_photos.env"
+
 if [ ! -f "$ENV_FILE" ]; then
     cat << 'EOF' > "$ENV_FILE"
 # Gladstone RClone Family Photos Sync Configuration
-# Customize your rclone remote source path and local backup target directory below.
+# PLEASE UPDATE THESE VALUES FOR YOUR SYNC TO WORK:
 
-GDRIVE_REMOTE="gdrive:Family Pictures"
-BACKUP_TARGET_DIR="/mnt/Central_Backups/family_photos"
+GDRIVE_REMOTE="gdrive:YOUR_REMOTE_FOLDER_NAME"
+BACKUP_TARGET_DIR="/mnt/YOUR_BACKUP_DRIVE/family_photos"
 EOF
-    log_msg "INFO" "Created local configuration file at $ENV_FILE"
+    log_msg "WARNING" "RClone photos config missing. Created sample template at $ENV_FILE"
+    if [ -z "$CUSTOM_REMOTE" ] && [ -z "$CUSTOM_TARGET" ]; then
+        log_msg "ERROR" "❌ Please edit $ENV_FILE to set your Google Drive remote source and backup target path."
+        curl -s -d "[$HOSTNAME] ⚠️ RClone photos config missing ($ENV_FILE). Please edit $ENV_FILE to set folder paths." "$ALERT_TOPIC" >/dev/null || true
+        exit 1
+    fi
 fi
 
 if [ -f "$ENV_FILE" ]; then
     source "$ENV_FILE"
 fi
 
-# Remote source resolution (CLI flag > local rclone_photos.env > generic fallback)
-REMOTE_SRC="${CUSTOM_REMOTE:-${GDRIVE_REMOTE:-gdrive:photos}}"
+# Check if file still contains placeholder values
+if [[ "$GDRIVE_REMOTE" == *"YOUR_REMOTE_FOLDER"* || "$BACKUP_TARGET_DIR" == *"YOUR_BACKUP_DRIVE"* ]]; then
+    if [ -z "$CUSTOM_REMOTE" ] && [ -z "$CUSTOM_TARGET" ]; then
+        log_msg "ERROR" "❌ Configuration file $ENV_FILE contains unconfigured sample placeholders."
+        log_msg "ERROR" "Please run 'nano $ENV_FILE' to set your Google Drive remote source and target backup folder."
+        curl -s -d "[$HOSTNAME] ⚠️ RClone photos config ($ENV_FILE) requires setup. Please update folder paths." "$ALERT_TOPIC" >/dev/null || true
+        exit 1
+    fi
+fi
 
-# Target directory resolution (CLI flag > local rclone_photos.env > auto-detect fallback)
-get_external_drive_dir() {
-    if [ -n "$CUSTOM_TARGET" ]; then
-        echo "$CUSTOM_TARGET"
-        return
-    fi
-    if [ -n "$BACKUP_TARGET_DIR" ]; then
-        echo "$BACKUP_TARGET_DIR"
-        return
-    fi
-    if [ -d "/mnt/network_backups" ]; then
-        echo "/mnt/network_backups/family_photos"
-    elif [ -d "/mnt/backups" ]; then
-        echo "/mnt/backups/family_photos"
-    else
-        echo "$HOME/.gladstone_disabled_archive/family_photos"
-    fi
-}
+# Remote source resolution (CLI flag > local rclone_photos.env)
+REMOTE_SRC="${CUSTOM_REMOTE:-$GDRIVE_REMOTE}"
 
-TARGET_DIR=$(get_external_drive_dir)
+# Target directory resolution (CLI flag > local rclone_photos.env)
+TARGET_DIR="${CUSTOM_TARGET:-$BACKUP_TARGET_DIR}"
 
 log_msg "INFO" "=========================================================="
 log_msg "INFO" "Starting Google Drive 'Family Photos' RClone Mirror Sync"

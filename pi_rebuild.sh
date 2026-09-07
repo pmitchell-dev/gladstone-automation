@@ -92,12 +92,12 @@ EOF
     if [ ! -f "$HOME/.config/rclone/rclone_photos.env" ]; then
         cat << 'EOF' > "$HOME/.config/rclone/rclone_photos.env"
 # Gladstone RClone Family Photos Sync Configuration
-# Customize your rclone remote source path and local backup target directory below.
+# PLEASE UPDATE THESE VALUES FOR YOUR SYNC TO WORK:
 
-GDRIVE_REMOTE="gdrive:Family Pictures"
-BACKUP_TARGET_DIR="/mnt/Central_Backups/family_photos"
+GDRIVE_REMOTE="gdrive:YOUR_REMOTE_FOLDER_NAME"
+BACKUP_TARGET_DIR="/mnt/YOUR_BACKUP_DRIVE/family_photos"
 EOF
-        echo "📸 RClone photos env config created at ~/.config/rclone/rclone_photos.env"
+        echo "📸 RClone photos sample env created at ~/.config/rclone/rclone_photos.env"
     fi
 
     # Dozzle Agent Stack Sync
@@ -496,9 +496,13 @@ echo "✓ TerminalBuddy setup complete"
 
 if [ "$MODE" == "--ntfy" ] || [ "$MODE" == "ntfy" ]; then
     if [ ! -f "$HOME/.config/rclone/rclone.conf" ]; then
-        echo -e "${BOLD_YELLOW}⚠️  RCLONE CONFIGURATION REQUIRED:${RESET}"
+        echo -e "${BOLD_YELLOW}⚠️  RCLONE AUTHENTICATION REQUIRED:${RESET}"
         echo -e "   File ${BOLD_CYAN}~/.config/rclone/rclone.conf${RESET} was not found."
-        echo -e "   Run '${BOLD_CYAN}rclone config${RESET}' on the Pi to pair your Google Drive ('gdrive:family_photos')."
+        echo -e "   Run '${BOLD_CYAN}rclone config${RESET}' on the Pi to pair your Google Drive."
+    fi
+    if [ -f "$HOME/.config/rclone/rclone_photos.env" ] && grep -q "YOUR_REMOTE_FOLDER" "$HOME/.config/rclone/rclone_photos.env" 2>/dev/null; then
+        echo -e "${BOLD_YELLOW}⚠️  RCLONE FOLDER SETUP REQUIRED:${RESET}"
+        echo -e "   Please edit ${BOLD_CYAN}~/.config/rclone/rclone_photos.env${RESET} to set your Google Drive remote source and backup target path."
     fi
 fi
 
