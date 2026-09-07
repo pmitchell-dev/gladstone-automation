@@ -22,7 +22,7 @@
 * **Self-Backup:** Daily at midnight via `pi_backup.sh` / `backup_manager.py`.
   * **Webhost Target:** Local path `/mnt/backups/laptopwebhost`
   * **NTFY Hub Target:** Network SMB `//192.168.50.217/Backups/CentralServers` (CIFS mount, credentials `Pi:sambauser`)
-* **Google Drive Photo Sync:** Daily at 02:00 AM via `rclone_gdrive_photos.sh` (`gdrive:family_photos` -> `/mnt/network_backups/family_photos`)
+* **Google Drive Photo Sync:** Daily at 02:00 AM via `rclone_gdrive_photos.sh` (`gdrive:Family Pictures` -> `/mnt/Central_Backups/family_photos`)
 * **Watchdog:** 5-minute check with 5-strike retry logic.
 
 ---

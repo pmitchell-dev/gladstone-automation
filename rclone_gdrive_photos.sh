@@ -59,7 +59,7 @@ while [[ $# -gt 0 ]]; do
 done
 
 # Default Google Drive remote source
-REMOTE_SRC="${CUSTOM_REMOTE:-gdrive:family_photos}"
+REMOTE_SRC="${CUSTOM_REMOTE:-gdrive:Family Pictures}"
 
 # Auto-detect external drive location
 get_external_drive_dir() {
@@ -67,7 +67,9 @@ get_external_drive_dir() {
         echo "$CUSTOM_TARGET"
         return
     fi
-    if [ -d "/mnt/network_backups" ]; then
+    if [ -d "/mnt/Central_Backups" ]; then
+        echo "/mnt/Central_Backups/family_photos"
+    elif [ -d "/mnt/network_backups" ]; then
         echo "/mnt/network_backups/family_photos"
     elif [ -d "/mnt/backups" ]; then
         echo "/mnt/backups/family_photos"
