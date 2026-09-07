@@ -12,9 +12,9 @@ services:
     container_name: immich_server
     image: ghcr.io/immich-app/immich-server:${IMMICH_VERSION:-release}
     volumes:
-      - ${UPLOAD_LOCATION:-/mnt/network_backups/immich_uploads}:/data
+      - ${UPLOAD_LOCATION:-/mnt/backups/immich_uploads}:/data
       - /etc/localtime:/etc/localtime:ro
-      - "/mnt/network_backups/family_photos:/mnt/network_backups/family_photos:ro"
+      - "/mnt/backups/family_photos:/mnt/backups/family_photos:ro"
     env_file:
       - .env
     ports:
