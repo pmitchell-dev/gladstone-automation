@@ -1,17 +1,17 @@
 # 🖥️ Gladstone Master System Context
-**Last Updated:** August 15, 2026  
+**Last Updated:** September 7, 2026  
 **Architecture:** Hub & Spoke (Communication Hub Model)
 
 ---
 
 ## 🖥️ Server Roles
-* **Hub (RPi5):** The primary entry point. Manages printer logs, network speedtests, and relays commands to other nodes via `--ntfy`.
+* **Hub (RPi5):** The primary entry point. Manages printer logs, network speedtests, Google Drive media backups, and relays commands to other nodes via `--ntfy`.
 * **Spoke (Webhost):** Specialized nodes (like the Ubuntu Laptop) that run application stacks (RelayIT, HomeAsset, JobBoard, Gemini API, Invidious, RustDesk, Dozzle) via `--webhost`.
 
 ---
 
 ## 🚩 Deployment Flags
-* `--ntfy`: Installs the full communication suite (speedtest, printer monitoring, master listener, Dozzle agent).
+* `--ntfy`: Installs the full communication suite (speedtest, printer monitoring, Google Drive rclone photo mirror, master listener, Dozzle agent).
 * `--webhost`: Installs web application container stacks and heartbeat watchdog monitoring.
 
 ---
@@ -22,6 +22,7 @@
 * **Self-Backup:** Daily at midnight via `pi_backup.sh` / `backup_manager.py`.
   * **Webhost Target:** Local path `/mnt/backups/laptopwebhost`
   * **NTFY Hub Target:** Network SMB `//192.168.50.217/Backups/CentralServers` (CIFS mount, credentials `Pi:sambauser`)
+* **Google Drive Photo Sync:** Daily at 02:00 AM via `rclone_gdrive_photos.sh` (`gdrive:Family Photos` -> `/mnt/network_backups/Family Photos`)
 * **Watchdog:** 5-minute check with 5-strike retry logic.
 
 ---

@@ -98,6 +98,27 @@ generate_dashboard() {
     else
         echo -e "📦  LAST SUCCESSFUL BACKUP: Never / No Backups Found"
     fi
+
+    # --- GOOGLE DRIVE FAMILY PHOTOS SYNC STATUS ---
+    PHOTOS_LOG="/home/pi/scripts/logs/rclone_gdrive_photos.log"
+    RCLONE_CONF="$HOME/.config/rclone/rclone.conf"
+    if [ ! -f "$RCLONE_CONF" ]; then
+        echo -e "📸  FAMILY PHOTOS SYNC: ⚠️ Config Required (Run 'rclone config')"
+    elif [ -f "$PHOTOS_LOG" ]; then
+        LAST_SUCCESS=$(grep "completed successfully" "$PHOTOS_LOG" 2>/dev/null | tail -n 1)
+        LAST_FAIL=$(grep "failed" "$PHOTOS_LOG" 2>/dev/null | tail -n 1)
+        if [ -n "$LAST_SUCCESS" ]; then
+            P_TIME=$(echo "$LAST_SUCCESS" | cut -d']' -f1 | tr -d '[')
+            echo -e "📸  FAMILY PHOTOS SYNC: ✅ Last sync $P_TIME"
+        elif [ -n "$LAST_FAIL" ]; then
+            P_TIME=$(echo "$LAST_FAIL" | cut -d']' -f1 | tr -d '[')
+            echo -e "📸  FAMILY PHOTOS SYNC: ❌ Failed at $P_TIME"
+        else
+            echo -e "📸  FAMILY PHOTOS SYNC: Ready (No syncs recorded yet)"
+        fi
+    else
+        echo -e "📸  FAMILY PHOTOS SYNC: Ready (Scheduled daily at 02:00 AM)"
+    fi
     echo "------------------------------------------------------------"
 
     # --- 3. BROTHER PRINTER SECTION ---

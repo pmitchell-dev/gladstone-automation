@@ -74,6 +74,7 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | `update` | `update` | Pull GitHub changes and trigger smart refresh of container stacks. |
 | `rebuild` | `rebuild` | Force rebuild and pull latest container stacks from GitHub. |
 | `backup` | `backup` | Execute role-aware single-archive system backup (`pi_backup.sh`). |
+| `sync-photos` | `photos-sync` | Mirror Google Drive "Family Photos" to external backup drive (`rclone_gdrive_photos.sh`). |
 | `restore` | `restore` | Launch interactive system restoration tool (`pi_restore.sh`). |
 | `reinstall` | `reinstall` | Run Gladstone bootstrap installer to fix permissions or apply updates. |
 

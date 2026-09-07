@@ -67,10 +67,27 @@ if [ "$MODE" == "--ntfy" ]; then
 1 0,8,12,16,20 * * * $SCRIPT_DIR/printer_alert.sh
 0 */6 * * * $SCRIPT_DIR/net_speed.sh
 0 0 * * * $SCRIPT_DIR/pi_backup.sh --mode ntfy
+0 2 * * * $SCRIPT_DIR/rclone_gdrive_photos.sh
 */5 * * * * $SCRIPT_DIR/pi_services_manager.sh
 */15 * * * * $SCRIPT_DIR/cloudflare_ddns.sh
 @reboot /bin/bash $SCRIPT_DIR/ntfy_listener.sh > $SCRIPT_DIR/logs/ntfy.log 2>&1 &"
     echo "$MASTER_CRON" | crontab -
+
+    # RClone Google Drive Infrastructure Provisioning
+    mkdir -p "$HOME/.config/rclone"
+    if [ ! -f "$HOME/.config/rclone/rclone.conf" ] && [ ! -f "$HOME/.config/rclone/rclone.conf.example" ]; then
+        cat << 'EOF' > "$HOME/.config/rclone/rclone.conf.example"
+# Gladstone RClone Google Drive Configuration Template
+# Run 'rclone config' on your Pi or populate this file with valid credentials.
+#
+# Example:
+# [gdrive]
+# type = drive
+# scope = drive.readonly
+# token = {"access_token":"...","token_type":"Bearer","refresh_token":"...","expiry":"..."}
+EOF
+        echo "📸 RClone example config template created at ~/.config/rclone/rclone.conf.example"
+    fi
 
     # Dozzle Agent Stack Sync
     if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
@@ -465,5 +482,13 @@ mkdir -p ~/dashboard
 
 echo "✓ TerminalBuddy setup complete"
 # ──────────────────────────────────────────────
+
+if [ "$MODE" == "--ntfy" ] || [ "$MODE" == "ntfy" ]; then
+    if [ ! -f "$HOME/.config/rclone/rclone.conf" ]; then
+        echo -e "${BOLD_YELLOW}⚠️  RCLONE CONFIGURATION REQUIRED:${RESET}"
+        echo -e "   File ${BOLD_CYAN}~/.config/rclone/rclone.conf${RESET} was not found."
+        echo -e "   Run '${BOLD_CYAN}rclone config${RESET}' on the Pi to pair your Google Drive ('gdrive:Family Photos')."
+    fi
+fi
 
 echo "✅ [$HOSTNAME] Rebuild Complete."

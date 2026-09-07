@@ -78,3 +78,10 @@ When you modify a compose file (e.g., dozzle-agent-compose.yml, jobboard-compose
   Pi5 hub: Dozzle agent on port 7007 (auto-connected)
   Scripts: /home/pi/scripts/logs/ → streamed via gladstone-scripts-log container
   NVR:     ANNKE Alarm Host → 192.168.50.217:514 (UDP) → nvr-syslog container
+
+7. Google Drive RClone Media Sync Setup
+  Script:  ~/scripts/rclone_gdrive_photos.sh
+  Config:  ~/.config/rclone/rclone.conf (Run 'rclone config' or copy config file)
+  Remote:  gdrive:Family Photos -> Target: /mnt/network_backups/Family Photos
+  Notice:  rebuild & update auto-generate ~/.config/rclone/rclone.conf.example if unconfigured.
+  Aliases: sync-photos | photos-sync

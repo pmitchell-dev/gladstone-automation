@@ -64,4 +64,12 @@ elif [ "$MODE" == "webhost" ] || [ -d "$HOME/relayit" ]; then
     bash "$SCRIPT_DIR/pi_rebuild.sh" --webhost
 fi
 
+if [ "$MODE" == "ntfy" ]; then
+    if [ ! -f "$HOME/.config/rclone/rclone.conf" ]; then
+        echo -e "${BOLD_YELLOW}⚠️  RCLONE CONFIGURATION REQUIRED:${RESET}"
+        echo -e "   File ${BOLD_CYAN}~/.config/rclone/rclone.conf${RESET} was not found."
+        echo -e "   Run '${BOLD_CYAN}rclone config${RESET}' on the Pi to pair your Google Drive ('gdrive:Family Photos')."
+    fi
+fi
+
 echo "✅ [$HOSTNAME] Update Complete ($MODE mode)."
