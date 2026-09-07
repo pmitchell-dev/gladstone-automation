@@ -393,7 +393,16 @@ elif [ "$MODE" == "--webhost" ]; then
     if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "immich" 2>/dev/null; then
         echo "🖼️ Synchronizing Immich Stack..."
         IMMICH_DIR="$HOME/immich"
-        mkdir -p "$IMMICH_DIR" "/mnt/network_backups/immich_uploads" "/mnt/network_backups/family_photos"
+        mkdir -p "$IMMICH_DIR" "/mnt/backups/immich_uploads" "/mnt/backups/family_photos" "/mnt/network_backups" 2>/dev/null || sudo mkdir -p "$IMMICH_DIR" "/mnt/backups/immich_uploads" "/mnt/backups/family_photos" "/mnt/network_backups" 2>/dev/null || true
+        
+        # Ensure /mnt/network_backups/family_photos and immich_uploads map cleanly on Webhost
+        if [ ! -d "/mnt/network_backups/family_photos" ] && [ -d "/mnt/backups/family_photos" ]; then
+            sudo ln -sfn /mnt/backups/family_photos /mnt/network_backups/family_photos 2>/dev/null || true
+        fi
+        if [ ! -d "/mnt/network_backups/immich_uploads" ] && [ -d "/mnt/backups/immich_uploads" ]; then
+            sudo ln -sfn /mnt/backups/immich_uploads /mnt/network_backups/immich_uploads 2>/dev/null || true
+        fi
+
         if [ ! -f "$IMMICH_DIR/.env" ] && [ -f "$SCRIPT_DIR/immich-env.template" ]; then
             cp "$SCRIPT_DIR/immich-env.template" "$IMMICH_DIR/.env"
         fi
