@@ -86,6 +86,9 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 ### The 5-Strike Watchdog
 `pi_services_manager.sh` runs every 5 minutes. If a persistent service or container fails, the watchdog attempts 4 silent restarts. On the 5th failure, it dispatches an Urgent Priority 5 Alert including error log snippets to ntfy.
 
+### Google Drive RClone Media Sync
+`rclone_gdrive_photos.sh` runs daily at 02:00 AM. It reads its remote source folder and local target destination from `~/.config/rclone/rclone_photos.env` (untracked local config file). If missing or unconfigured, it creates a sample template file and alerts the user to populate their custom folder paths.
+
 ### Clean Reset
 To reset or clear the Gladstone environment from a machine:
 ```bash
