@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================================
-# GLADSTONE PI 5 OFFICIAL ALIASES & UTILITIES (v1.6)
+# GLADSTONE PI 5 OFFICIAL ALIASES & UTILITIES (v1.7)
 # ==========================================================
 
 SCRIPT_DIR="$HOME/scripts"
