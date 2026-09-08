@@ -134,16 +134,24 @@ EOF
     exit 1
 fi
 
-# Ensure log directory ownership and write permissions
-mkdir -p "$LOG_DIR" 2>/dev/null || sudo mkdir -p "$LOG_DIR" 2>/dev/null || true
-sudo chown -R $USER:$USER "$LOG_DIR" 2>/dev/null || true
+# Ensure log directory exists and is writable
+mkdir -p "$LOG_DIR" 2>/dev/null || true
+if [ ! -w "$LOG_DIR" ]; then
+    echo "ERROR: Log directory ($LOG_DIR) is not writable by $USER." >&2
+    exit 1
+fi
 
 # Ensure target output folder exists and user has write permissions
 if [ ! -d "$TARGET_DIR" ]; then
-    mkdir -p "$TARGET_DIR" 2>/dev/null || sudo mkdir -p "$TARGET_DIR" 2>/dev/null || true
+    mkdir -p "$TARGET_DIR" 2>/dev/null || true
 fi
-sudo chown -R $USER:$USER "$TARGET_DIR" 2>/dev/null || true
-sudo chmod -R 775 "$TARGET_DIR" 2>/dev/null || true
+
+if [ ! -d "$TARGET_DIR" ] || [ ! -w "$TARGET_DIR" ]; then
+    log_msg "ERROR" "❌ Target directory $TARGET_DIR does not exist or is not writable by user $USER."
+    log_msg "ERROR" "Please verify target folder permissions or create it with proper ownership."
+    curl -s -d "[$HOSTNAME] ⚠️ RClone photo sync target path ($TARGET_DIR) is not writable!" "$ALERT_TOPIC" >/dev/null || true
+    exit 1
+fi
 
 # Prepare rclone flags
 RCLONE_FLAGS=("--create-empty-src-dirs" "--transfers" "4" "--checkers" "8")
