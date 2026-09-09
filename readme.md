@@ -62,7 +62,6 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | Service / Container | Compose File | Reason for Removal | Status |
 | :--- | :--- | :--- | :--- |
 | **Hivemind** (`hivemind`) | `hivemind-compose.yml` | Deprecated; functionality migrated to RelayIT and Gemini API stacks | **Removed** |
-| **Invidious** (`invidious`) | `invidious-compose.yml` | Removed from Webhost stack | **Removed** |
 
 ---
 

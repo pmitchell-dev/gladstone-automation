@@ -108,17 +108,6 @@ elif [ "$MODE" == "--webhost" ]; then
     echo "🔄 Synchronizing Webhost Services..."
     HOST_IP=$(hostname -I | awk '{print $1}')
     
-    # Purge legacy Invidious containers & files if present
-    INVIDIOUS_CONTAINERS=$(docker ps -a --filter "name=invidious" -q 2>/dev/null)
-    if [ -n "$INVIDIOUS_CONTAINERS" ]; then
-        echo -e "${BOLD_CYAN}🧹 Stopping and purging legacy Invidious containers...${RESET}"
-        docker stop $INVIDIOUS_CONTAINERS 2>/dev/null || true
-        docker rm -f $INVIDIOUS_CONTAINERS 2>/dev/null || true
-    fi
-    if [ -d "$HOME/invidious" ]; then
-        rm -rf "$HOME/invidious"
-    fi
-    
     # HomeAsset Stack Sync
     if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "homeasset" 2>/dev/null; then
         if [ ! -d "$HOME/homeasset" ]; then

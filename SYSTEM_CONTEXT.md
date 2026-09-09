@@ -6,7 +6,7 @@
 
 ## 🖥️ Server Roles
 * **Hub (RPi5):** The primary entry point. Manages printer logs, network speedtests, Google Drive media backups, and relays commands to other nodes via `--ntfy`.
-* **Spoke (Webhost):** Specialized nodes (like the Ubuntu Laptop) that run application stacks (RelayIT, HomeAsset, JobBoard, Gemini API, Invidious, RustDesk, Dozzle) via `--webhost`.
+* **Spoke (Webhost):** Specialized nodes (like the Ubuntu Laptop) that run application stacks (RelayIT, HomeAsset, JobBoard, Gemini API, RustDesk, Dozzle) via `--webhost`.
 
 ---
 
