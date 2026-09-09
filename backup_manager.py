@@ -51,7 +51,6 @@ RETENTION_COUNT = 7  # Keep top 7 daily backups
 DATA_SOURCES = [
     (os.path.expanduser("~/homeasset/data"), "data/homeasset", "HomeAsset Data"),
     (os.path.expanduser("~/jobboard/data"), "data/jobboard", "JobBoard Data"),
-    (os.path.expanduser("~/relayit/data"), "data/relayit", "RelayIT Data"),
     (os.path.expanduser("~/immich/pgdata"), "data/immich/pgdata", "Immich Database (pgdata)"),
     (os.path.expanduser("~/immich/.env"), "data/immich/.env", "Immich Environment Config"),
     (os.path.expanduser("~/immich/docker-compose.yml"), "data/immich/docker-compose.yml", "Immich Docker Compose"),
