@@ -49,10 +49,13 @@ RETENTION_COUNT = 7  # Keep top 7 daily backups
 
 # Data directories to include if present: (path, target_subfolder_name, description)
 DATA_SOURCES = [
-    ("/home/pi/homeasset/data", "data/homeasset", "HomeAsset Data"),
-    ("/home/pi/jobboard/data", "data/jobboard", "JobBoard Data"),
-    ("/home/pi/relayit/data", "data/relayit", "RelayIT Data"),
-    ("/home/pi/.config/terminalbuddy", "data/terminalbuddy", "TerminalBuddy Config"),
+    (os.path.expanduser("~/homeasset/data"), "data/homeasset", "HomeAsset Data"),
+    (os.path.expanduser("~/jobboard/data"), "data/jobboard", "JobBoard Data"),
+    (os.path.expanduser("~/relayit/data"), "data/relayit", "RelayIT Data"),
+    (os.path.expanduser("~/immich/pgdata"), "data/immich/pgdata", "Immich Database (pgdata)"),
+    (os.path.expanduser("~/immich/.env"), "data/immich/.env", "Immich Environment Config"),
+    (os.path.expanduser("~/immich/docker-compose.yml"), "data/immich/docker-compose.yml", "Immich Docker Compose"),
+    (os.path.expanduser("~/.config/terminalbuddy"), "data/terminalbuddy", "TerminalBuddy Config"),
 ]
 
 # Exclude patterns when backing up scripts directory
@@ -103,23 +106,18 @@ class BackupLogger:
 
         # Console Handler
         ch = logging.StreamHandler(sys.stdout)
-        ch.setLevel(logging.INFO)
         ch.setFormatter(console_formatter)
         self.logger.addHandler(ch)
 
         # File Handlers
-        for lp in log_paths:
+        for log_path in log_paths:
             try:
-                os.makedirs(os.path.dirname(lp), exist_ok=True)
-                fh = logging.FileHandler(lp, encoding='utf-8')
-                fh.setLevel(logging.INFO)
+                os.makedirs(os.path.dirname(log_path), exist_ok=True)
+                fh = logging.FileHandler(log_path, encoding='utf-8')
                 fh.setFormatter(file_formatter)
                 self.logger.addHandler(fh)
-            except Exception as e:
-                ch.emit(logging.LogRecord(
-                    "GladstoneBackup", logging.WARNING, "", 0,
-                    f"⚠️ Could not setup logfile handler for {lp}: {e}", None, None
-                ))
+            except Exception:
+                pass
 
     def info(self, msg):
         self.logger.info(msg)
@@ -131,71 +129,56 @@ class BackupLogger:
         self.logger.error(msg)
 
 
-def calculate_sha256(filepath):
-    """Calculates SHA256 hash of a file."""
-    sha256_hash = hashlib.sha256()
-    with open(filepath, "rb") as f:
-        for byte_block in iter(lambda: f.read(65536), b""):
-            sha256_hash.update(byte_block)
-    return sha256_hash.hexdigest()
-
-
-def get_system_diagnostics():
-    """Gathers system storage and diagnostic information."""
-    diagnostics = {}
+def check_disk_space(target_path, logger, required_mb=500):
+    """Verifies sufficient disk space exists at target path."""
     try:
-        total, used, free = shutil.disk_usage("/")
-        diagnostics["disk_total_gb"] = round(total / (1024**3), 2)
-        diagnostics["disk_used_gb"] = round(used / (1024**3), 2)
-        diagnostics["disk_free_gb"] = round(free / (1024**3), 2)
-    except Exception:
-        diagnostics["disk_free_gb"] = "Unknown"
+        os.makedirs(target_path, exist_ok=True)
+        stat = shutil.disk_usage(target_path)
+        free_mb = stat.free / (1024 * 1024)
+        logger.info(f"📊 Target disk space check ({target_path}): {free_mb:.2f} MB free.")
+        if free_mb < required_mb:
+            logger.warning(f"⚠️ Low disk space alert: Less than {required_mb} MB available at {target_path}!")
+            return False
+        return True
+    except Exception as e:
+        logger.warning(f"⚠️ Unable to check disk space at {target_path}: {e}")
+        return True
+
+
+def calculate_sha256(file_path):
+    """Calculates SHA256 checksum of a file."""
+    sha256 = hashlib.sha256()
+    with open(file_path, "rb") as f:
+        for chunk in iter(lambda: f.read(65536), b""):
+            sha256.update(chunk)
+    return sha256.hexdigest()
+
+
+def mount_smb_share(smb_share, mount_point, user, password, logger):
+    """Mounts SMB share to local mount_point using cifs-utils."""
+    os.makedirs(mount_point, exist_ok=True)
     
-    diagnostics["hostname"] = os.uname().nodename if hasattr(os, "uname") else "Unknown"
-    return diagnostics
-
-
-def mount_smb_share(logger, smb_share, mount_point, user, password):
-    """Mounts SMB share via CIFS if not already mounted using credentials."""
-    try:
-        os.makedirs(mount_point, exist_ok=True)
-    except PermissionError:
-        subprocess.run(["sudo", "mkdir", "-p", mount_point], capture_output=True)
-        if hasattr(os, "getuid"):
-            subprocess.run(["sudo", "chown", "-R", f"{os.getuid()}:{os.getgid()}", mount_point], capture_output=True)
-
     # Check if already mounted
-    try:
-        check_mount = subprocess.run(["mountpoint", "-q", mount_point])
-        if check_mount.returncode == 0:
-            logger.info(f"ℹ️ SMB share already mounted at {mount_point}")
-            return True
-    except Exception:
-        pass
+    res = subprocess.run(["mountpoint", "-q", mount_point], capture_output=True)
+    if res.returncode == 0:
+        logger.info(f"✅ SMB share already mounted at {mount_point}")
+        return True
 
-    logger.info(f"🔌 Mounting SMB share {smb_share} -> {mount_point}...")
-
-    uid = os.getuid() if hasattr(os, "getuid") else 1000
-    gid = os.getgid() if hasattr(os, "getgid") else 1000
-
-    mount_options_list = [
-        f"username={user},password={password},uid={uid},gid={gid},vers=3.0",
-        f"username={user},password={password},uid={uid},gid={gid},vers=3.0,noperm",
-        f"username={user},password={password},sec=ntlmssp,uid={uid},gid={gid},vers=3.0",
+    logger.info(f"🔌 Mounting SMB share {smb_share} to {mount_point}...")
+    mount_cmd = [
+        "sudo", "mount", "-t", "cifs",
+        smb_share, mount_point,
+        "-o", f"username={user},password={password},uid={os.getuid()},gid={os.getgid()},file_mode=0777,dir_mode=0777,nobrl"
     ]
-
+    
     last_error = ""
-    for opts in mount_options_list:
-        mount_cmd = ["sudo", "mount", "-t", "cifs", smb_share, mount_point, "-o", opts]
-        try:
-            res = subprocess.run(mount_cmd, capture_output=True, text=True, timeout=25)
-            if res.returncode == 0:
-                logger.info("✅ SMB share mounted successfully.")
-                return True
-            else:
-                last_error = res.stderr.strip()
-        except Exception as e:
-            last_error = str(e)
+    for attempt in range(1, 4):
+        res = subprocess.run(mount_cmd, capture_output=True, text=True, timeout=30)
+        if res.returncode == 0:
+            logger.info("✅ SMB share mounted successfully.")
+            return True
+        last_error = res.stderr.strip()
+        logger.warning(f"⚠️ SMB mount attempt {attempt} failed: {last_error}")
 
     logger.error(f"❌ SMB mount failed: {last_error}")
     return False
@@ -238,7 +221,31 @@ def stage_backup_contents(staging_dir, logger):
         except Exception as e:
             logger.warning(f"  └─ ⚠️ Copying scripts warning: {e}")
 
-    # 2. Copy App Data Sources
+    # 2. Dump Immich PostgreSQL database if running
+    immich_dir = os.path.expanduser("~/immich")
+    if os.path.exists(immich_dir):
+        immich_target = os.path.join(staging_dir, "data", "immich")
+        os.makedirs(immich_target, exist_ok=True)
+        dump_path = os.path.join(immich_target, "immich_db_dump.sql")
+        
+        try:
+            res = subprocess.run(
+                ["docker", "exec", "immich_postgres", "pg_dumpall", "-U", "postgres"],
+                capture_output=True, text=True, timeout=60
+            )
+            if res.returncode != 0:
+                res = subprocess.run(
+                    ["docker", "exec", "immich-postgres", "pg_dumpall", "-U", "postgres"],
+                    capture_output=True, text=True, timeout=60
+                )
+            if res.returncode == 0 and res.stdout.strip():
+                with open(dump_path, "w", encoding="utf-8") as f:
+                    f.write(res.stdout)
+                logger.info("  └─ ✅ Immich Database Dump (SQL): Staged -> data/immich/immich_db_dump.sql")
+        except Exception as e:
+            logger.warning(f"  └─ ⚠️ Immich pg_dump notice: {e}")
+
+    # 3. Copy App Data Sources
     app_summary = []
     for source_path, dest_rel_path, description in DATA_SOURCES:
         if os.path.exists(source_path):

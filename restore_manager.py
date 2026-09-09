@@ -52,6 +52,10 @@ TARGET_MAPPINGS = [
     ("data/homeasset", "homeasset/data", "HomeAsset Data"),
     ("data/jobboard", "jobboard/data", "JobBoard Data"),
     ("data/relayit", "relayit/data", "RelayIT Data"),
+    ("data/immich/pgdata", "immich/pgdata", "Immich Database Files (pgdata)"),
+    ("data/immich/.env", "immich/.env", "Immich Environment Config"),
+    ("data/immich/docker-compose.yml", "immich/docker-compose.yml", "Immich Docker Compose"),
+    ("data/immich/immich_db_dump.sql", "immich/immich_db_dump.sql", "Immich Database Dump (SQL)"),
     ("data/terminalbuddy", ".config/terminalbuddy", "TerminalBuddy Config"),
 ]
 
@@ -63,6 +67,7 @@ DOCKER_STACK_DIRS = [
     "gemini-api",
     "rustdesk",
     "dozzle",
+    "immich",
 ]
 
 
