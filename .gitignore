@@ -26,3 +26,9 @@ GEMINI.MD
 
 # Ignore Education folder
 Education/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
