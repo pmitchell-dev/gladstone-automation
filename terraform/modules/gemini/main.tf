@@ -10,7 +10,7 @@ terraform {
 resource "docker_image" "gemini_api" {
   name = "gemini-api:latest"
   build {
-    context    = "/home/gladstone/gemini-api"
+    context    = "/home/gladstone/scripts"
     dockerfile = "Dockerfile.gemini"
   }
 }

@@ -5,7 +5,6 @@ include_recipe 'gladstone_base::default'
 %w(
   JobBoard
   HomeAsset
-  Gemini-API
 ).each do |repo|
   git "/home/gladstone/#{repo.downcase}" do
     repository "https://github.com/pmitchell-dev/#{repo}.git"
