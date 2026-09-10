@@ -23,7 +23,7 @@ apt-get install -y jq curl git bc zip cifs-utils python3 smbclient rclone speedt
 if ! id "gladstone" &>/dev/null; then
   echo "👤 Creating 'gladstone' user..."
   useradd -m -s /bin/bash gladstone
-  echo "gladstone:root" | chpasswd
+  echo "gladstone:GladstoneTemp123!" | chpasswd
   usermod -aG sudo gladstone
   echo "gladstone ALL=(ALL) NOPASSWD:ALL" > /etc/sudoers.d/gladstone
   chmod 0440 /etc/sudoers.d/gladstone

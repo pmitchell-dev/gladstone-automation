@@ -19,7 +19,7 @@ end
 
 # Create Gladstone OS User
 execute 'create_gladstone_user' do
-  command 'useradd -m -s /bin/bash gladstone && echo "gladstone:root" | chpasswd'
+  command 'useradd -m -s /bin/bash gladstone && echo "gladstone:GladstoneTemp123!" | chpasswd'
   not_if 'id gladstone'
 end
 
