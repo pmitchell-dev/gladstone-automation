@@ -78,3 +78,20 @@ link '/home/gladstone/.bash_aliases' do
   owner 'gladstone'
   group 'gladstone'
 end
+
+# Setup Terminal Buddy Shell Integration
+directory '/home/gladstone/.config/terminalbuddy' do
+  owner 'gladstone'
+  group 'gladstone'
+  mode '0755'
+  recursive true
+  action :create
+end
+
+remote_file '/home/gladstone/.config/terminalbuddy/terminalbuddy.sh' do
+  source 'https://raw.githubusercontent.com/pmitchell-dev/TerminalBuddy/main/shell-integration/terminalbuddy.sh'
+  owner 'gladstone'
+  group 'gladstone'
+  mode '0755'
+  action :create
+end
