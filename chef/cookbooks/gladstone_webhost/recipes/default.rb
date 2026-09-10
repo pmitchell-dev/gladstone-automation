@@ -40,8 +40,9 @@ systemd_unit 'gladstone_watchdog.service' do
     [Service]
     Type=oneshot
     ExecStart=/home/gladstone/scripts/services_manager.sh
-    User=#{'gladstone'}
+    User=gladstone
   EOU
+  verify false
   action [:create]
 end
 
@@ -57,6 +58,7 @@ systemd_unit 'gladstone_watchdog.timer' do
     [Install]
     WantedBy=timers.target
   EOU
+  verify false
   action [:create, :enable, :start]
 end
 
