@@ -1,7 +1,0 @@
-name 'gladstone_hub'
-maintainer 'Gladstone Admin'
-maintainer_email 'admin@gladstone'
-license 'All Rights Reserved'
-description 'Configures the hub Hub node (ntfy, printers, network audit)'
-version '0.1.0'
-depends 'gladstone_base'
