@@ -21,9 +21,13 @@ showcase_printable.html
 gemini.md
 GEMINI.MD
 
-
-
-
+# Ignore Terraform state and artifacts
+.terraform/
+.terraform.lock.hcl
+terraform.tfstate
+terraform.tfstate.backup
+*.tfstate
+*.tfstate.backup
 # Ignore Education folder
 Education/
 
