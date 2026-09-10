@@ -91,7 +91,7 @@ package 'vault' do
   action :install
 end
 
-directory '/home/gladstone/vault/data' do
+directory '/opt/vault/data' do
   owner 'vault'
   group 'vault'
   mode '0750'
@@ -109,7 +109,7 @@ end
 file '/etc/vault.d/vault.hcl' do
   content <<~EOV
     storage "file" {
-      path = "/home/gladstone/vault/data"
+      path = "/opt/vault/data"
     }
 
     listener "tcp" {
