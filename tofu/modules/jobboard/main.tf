@@ -40,5 +40,9 @@ resource "docker_container" "jobboard" {
   ]
 
   security_opts = ["seccomp:unconfined"]
-  extra_hosts   = ["host.docker.internal:host-gateway"]
+  
+  host {
+    host = "host.docker.internal"
+    ip   = "host-gateway"
+  }
 }
