@@ -19,14 +19,16 @@ find "$HOME" -maxdepth 3 -name ".git" -type d 2>/dev/null | while read -r gitdir
     echo "📁 Updating: $repo_dir"
     cd "$repo_dir" || continue
     
-    # Check if there are unstaged changes before pulling to prevent errors
-    if ! git diff-index --quiet HEAD --; then
-        echo "⚠️  Warning: Unstaged changes detected in $repo_dir. Stashing changes..."
-        git stash
-        git pull
-        git stash pop || echo "⚠️  Warning: Merge conflict after stash pop in $repo_dir. Please check manually."
+    # Check if there's a configured upstream remote
+    UPSTREAM=$(git rev-parse --abbrev-ref --symbolic-full-name @{u} 2>/dev/null)
+    
+    if [ -n "$UPSTREAM" ]; then
+        echo "⬇️  Force syncing with $UPSTREAM..."
+        git fetch --all
+        git reset --hard "$UPSTREAM"
+        git clean -fd
     else
-        git pull
+        echo "⚠️  Warning: No upstream tracking branch found in $repo_dir. Skipping."
     fi
 done
 
