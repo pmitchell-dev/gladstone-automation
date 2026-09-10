@@ -69,3 +69,87 @@ cron_d 'gdrive_photos_sync' do
   hour '2'
   user 'gladstone'
 end
+# ==========================================
+# Production Vault Setup
+# ==========================================
+
+execute 'add_hashicorp_gpg' do
+  command 'wget -O- https://apt.releases.hashicorp.com/gpg | gpg --dearmor -o /usr/share/keyrings/hashicorp-archive-keyring.gpg'
+  creates '/usr/share/keyrings/hashicorp-archive-keyring.gpg'
+end
+
+file '/etc/apt/sources.list.d/hashicorp.list' do
+  content "deb [signed-by=/usr/share/keyrings/hashicorp-archive-keyring.gpg] https://apt.releases.hashicorp.com jammy main\n"
+  notifies :update, 'apt_update[update_hashicorp]', :immediately
+end
+
+apt_update 'update_hashicorp' do
+  action :nothing
+end
+
+package 'vault' do
+  action :install
+end
+
+directory '/home/gladstone/vault/data' do
+  owner 'vault'
+  group 'vault'
+  mode '0750'
+  recursive true
+  action :create
+end
+
+directory '/etc/vault.d' do
+  owner 'vault'
+  group 'vault'
+  mode '0750'
+  action :create
+end
+
+file '/etc/vault.d/vault.hcl' do
+  content <<~EOV
+    storage "file" {
+      path = "/home/gladstone/vault/data"
+    }
+
+    listener "tcp" {
+      address     = "127.0.0.1:8200"
+      tls_disable = 1
+    }
+
+    ui = true
+    disable_mlock = true
+  EOV
+  owner 'vault'
+  group 'vault'
+  mode '0640'
+  action :create
+end
+
+systemd_unit 'vault.service' do
+  content <<~EOU
+    [Unit]
+    Description=HashiCorp Vault
+    Documentation=https://www.vaultproject.io/docs/
+    Requires=network-online.target
+    After=network-online.target
+
+    [Service]
+    User=vault
+    Group=vault
+    ExecStart=/usr/bin/vault server -config=/etc/vault.d/vault.hcl
+    ExecReload=/bin/kill --signal HUP $MAINPID
+    KillMode=process
+    KillSignal=SIGINT
+    Restart=on-failure
+    RestartSec=5
+    TimeoutStopSec=30
+    LimitNOFILE=65536
+    LimitMEMLOCK=infinity
+
+    [Install]
+    WantedBy=multi-user.target
+  EOU
+  action [:create, :enable, :start]
+  verify false
+end
