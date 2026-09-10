@@ -20,9 +20,9 @@
 # listener remains responsive to subsequent messages.
 # ==========================================================
 
-TOPIC="patrick_mitch_pi5_x9k2v_alerts"
-LISTEN_TOPICS="patrick_mitch_pi5_x9k2v_alerts,patrick_mitch_pi5_x9k2v_actions"
-SCRIPT_DIR="/home/pi/scripts"
+TOPIC="patrick_mitch_hub_x9k2v_alerts"
+LISTEN_TOPICS="patrick_mitch_hub_x9k2v_alerts,patrick_mitch_hub_x9k2v_actions"
+SCRIPT_DIR="/home/gladstone/scripts"
 
 echo "👂 [$(date)] Listener starting..."
 
@@ -39,17 +39,17 @@ while true; do
             echo "📥 Received: $RAW_MSG"
 
             if [[ "$MSG" == "help" ]]; then
-                bash "$SCRIPT_DIR/pi_help.sh" &
+                bash "$SCRIPT_DIR/help.sh" &
             elif [[ "$MSG" == "health" || "$MSG" == "status" ]]; then
                 bash "$SCRIPT_DIR/printer_health.sh" &
             elif [[ "$MSG" == "sync" ]]; then
-                bash "$SCRIPT_DIR/pi_sync.sh" &
+                bash "$SCRIPT_DIR/sync.sh" &
             elif [[ "$MSG" == "cycle" ]]; then
                 # We use the function logic here to restart
                 curl -s -d "🔄 Restarting listener..." ntfy.sh/$TOPIC
-                source /home/pi/.bashrc && cycle &
+                source /home/gladstone/.bashrc && cycle &
             elif [[ "$MSG" == "reinstall" || "$MSG" == "rebuild" ]]; then
-                bash "$SCRIPT_DIR/pi_rebuild.sh" &
+                bash "$SCRIPT_DIR/rebuild.sh" &
             elif [[ "$MSG" =~ ^flight\ *([a-z]{2})\ *([0-9]+)(\ *to\ *([a-z]{3}))?$ ]]; then
                 bash "$SCRIPT_DIR/track_flight.sh" "${BASH_REMATCH[1]}${BASH_REMATCH[2]}" "${BASH_REMATCH[4]}" &
             elif [[ "$MSG" == "mute_watchdog" ]]; then

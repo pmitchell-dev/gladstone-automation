@@ -27,7 +27,7 @@ generate_dashboard() {
     echo -e "🧠 ${YELLOW}Mem:${NC} $MEM    🚀 ${YELLOW}Uptime:${NC} $(uptime -p)"
 
     BACKUP_DIR="/mnt/backups/laptopwebhost"
-    BACKUP_LOG="/home/pi/scripts/logs/pi_backup.log"
+    BACKUP_LOG="/home/gladstone/scripts/logs/backup.log"
 
     LAST_BACKUP_INFO=""
     if [ -d "$BACKUP_DIR" ]; then

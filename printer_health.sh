@@ -10,12 +10,12 @@
 # ==========================================================
 
 # --- CONFIGURATION ---
-STATUS_FILE="/home/pi/printer_data/status.html"
-TOPIC="patrick_mitch_pi5_x9k2v_alerts"
+STATUS_FILE="/home/gladstone/printer_data/status.html"
+TOPIC="patrick_mitch_hub_x9k2v_alerts"
 
 # --- DATA REFRESH ---
 # First, trigger the scraper script to ensure we have the newest HTML data.
-bash /home/pi/scripts/get_printer_status.sh > /dev/null
+bash /home/gladstone/scripts/get_printer_status.sh > /dev/null
 
 # --- PARSING LOGIC ---
 if [ ! -f "$STATUS_FILE" ]; then

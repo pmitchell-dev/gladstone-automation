@@ -34,7 +34,7 @@ fi
 # Guard Rail 2: Prevent fresh Pi installs from becoming a webhost
 HOSTNAME=$(hostname)
 if [ "$MODE" == "webhost" ] && [[ "$HOSTNAME" == *"raspberrypi"* || "$HOSTNAME" == *"pi"* ]]; then
-    echo "❌ ERROR: Hostname suggests this is a Raspberry Pi!"
+    echo "❌ ERROR: Hostname suggests this is a Hub Node!"
     echo "Please use './install.sh --ntfy' for the Hub."
     exit 1
 fi
@@ -60,8 +60,8 @@ sudo systemctl enable --now docker
 export PATH="$PATH:/usr/bin:/usr/local/bin"
 
 # 3c. Feature Manager Initialization
-if [ -f "$SCRIPT_DIR/pi_features.sh" ]; then
-    bash "$SCRIPT_DIR/pi_features.sh" --init
+if [ -f "$SCRIPT_DIR/features.sh" ]; then
+    bash "$SCRIPT_DIR/features.sh" --init
 fi
 
 # 4. Webhost Specific Logic (Code Cloning)
@@ -69,7 +69,7 @@ if [ "$MODE" == "webhost" ]; then
     echo "🖥️  Configuring Webhost Stack..."
 
     # HomeAsset Stack Setup
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "homeasset" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "homeasset" 2>/dev/null; then
         if [ ! -d "$HOME/homeasset" ]; then
             echo "🔄 Initial Clone of HomeAsset Repository..."
             git clone https://github.com/pmitchell-dev/HomeAsset.git "$HOME/homeasset"
@@ -82,7 +82,7 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     # RustDesk Server Stack Setup
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "rustdesk" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "rustdesk" 2>/dev/null; then
         RUSTDESK_DIR="$HOME/rustdesk"
         mkdir -p "$RUSTDESK_DIR/data"
         if [ -f "$SCRIPT_DIR/rustdesk-compose.yml" ]; then
@@ -94,7 +94,7 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     # JobBoard Stack Setup
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "jobboard" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "jobboard" 2>/dev/null; then
         if [ ! -d "$HOME/jobboard" ]; then
             echo "📋 Initial Clone of JobBoard..."
             git clone https://github.com/pmitchell-dev/JobBoard.git "$HOME/jobboard"
@@ -110,7 +110,7 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     # Gemini API Backend Stack Setup
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "gemini-api" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "gemini-api" 2>/dev/null; then
         GEMINI_DIR="$HOME/gemini-api"
         mkdir -p "$GEMINI_DIR"
         if [ -f "$SCRIPT_DIR/gemini-compose.yml" ]; then
@@ -132,7 +132,7 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     # RelayIT Stack Setup
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "relayit" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "relayit" 2>/dev/null; then
         if [ ! -d "$HOME/relayit" ]; then
             echo "🎟️ Initial Clone of RelayIT..."
             git clone https://github.com/pmitchell-dev/RelayIT.git "$HOME/relayit"
@@ -149,7 +149,7 @@ if [ "$MODE" == "webhost" ]; then
     fi
 
     # Immich Stack Setup
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "immich" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "immich" 2>/dev/null; then
         echo "🖼️  Provisioning Immich Stack..."
         IMMICH_DIR="$HOME/immich"
         mkdir -p "$IMMICH_DIR" "/mnt/network_backups/immich_uploads" "/mnt/network_backups/family_photos"
@@ -167,7 +167,7 @@ fi
 
 # 4b. Webhost — Dozzle Log Viewer Stack
 if [ "$MODE" == "webhost" ]; then
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "dozzle" 2>/dev/null; then
         echo "📊 Deploying Dozzle Log Viewer (Webhost main instance)..."
         DOZZLE_DIR="$HOME/dozzle"
         mkdir -p "$DOZZLE_DIR"
@@ -184,10 +184,10 @@ if [ "$MODE" == "webhost" ]; then
     fi
 fi
 
-# 4c. Pi5 Hub — Dozzle Agent Stack
+# 4c. hub Hub — Dozzle Agent Stack
 if [ "$MODE" == "ntfy" ]; then
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
-        echo "📊 Deploying Dozzle Agent (Pi5 hub)..."
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
+        echo "📊 Deploying Dozzle Agent (hub hub)..."
         DOZZLE_DIR="$HOME/dozzle"
         mkdir -p "$DOZZLE_DIR"
 
@@ -205,10 +205,10 @@ if [ "$MODE" == "ntfy" ]; then
     fi
 fi
 
-# 4d. Pi5 Hub — Simple Login Stack
+# 4d. hub Hub — Simple Login Stack
 if [ "$MODE" == "ntfy" ]; then
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "simplelogin" 2>/dev/null; then
-        echo "📧 Deploying Simple Login Stack (Pi5 hub)..."
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "simplelogin" 2>/dev/null; then
+        echo "📧 Deploying Simple Login Stack (hub hub)..."
         SIMPLELOGIN_DIR="$HOME/simplelogin"
         mkdir -p "$SIMPLELOGIN_DIR/data/pgdata" "$SIMPLELOGIN_DIR/data/sl" "$SIMPLELOGIN_DIR/data/upload"
 
@@ -338,4 +338,4 @@ echo "✓ TerminalBuddy setup complete"
 # 6. Permissions & Hand-off to Rebuild
 sudo chown -R $USER:$USER "$SCRIPT_DIR"
 chmod +x $SCRIPT_DIR/*.sh
-bash "$SCRIPT_DIR/pi_rebuild.sh" "--$MODE"
+bash "$SCRIPT_DIR/rebuild.sh" "--$MODE"

@@ -13,10 +13,10 @@
 # The static IP of the Brother printer on the Gladstone network
 PRINTER_IP="192.168.50.56"
 # Local path where the raw HTML data will be saved
-OUTPUT_FILE="/home/pi/printer_data/status.html"
+OUTPUT_FILE="/home/gladstone/printer_data/status.html"
 
 # Ensure the destination directory exists before downloading
-mkdir -p /home/pi/printer_data
+mkdir -p /home/gladstone/printer_data
 
 # --- DATA ACQUISITION ---
 # We use a full Chrome User-Agent to bypass "Please Login" redirects.

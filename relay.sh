@@ -8,7 +8,7 @@
 
 PRIORITY=$1
 MESSAGE=$2
-TOPIC="patrick_mitch_pi5_x9k2v_alerts"
+TOPIC="patrick_mitch_hub_x9k2v_alerts"
 
 # Validate Priority input
 if [[ ! "$PRIORITY" =~ ^[1-5]$ ]]; then
@@ -37,7 +37,7 @@ fi
 curl -H "Priority: $PRIORITY" \
      -H "Tags: $TAGS" \
      -H "Title: $TITLE ($HOSTNAME)" \
-     -H "Actions: http, Mute rest of the day, https://ntfy.sh/patrick_mitch_pi5_x9k2v_actions, method=POST, body=mute_watchdog" \
+     -H "Actions: http, Mute rest of the day, https://ntfy.sh/patrick_mitch_hub_x9k2v_actions, method=POST, body=mute_watchdog" \
      -d "$MESSAGE" \
      "ntfy.sh/$TOPIC"
 

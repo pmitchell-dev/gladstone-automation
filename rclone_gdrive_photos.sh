@@ -23,7 +23,7 @@ CONFIG_FILE="$CONFIG_DIR/rclone.conf"
 CONFIG_EXAMPLE="$CONFIG_DIR/rclone.conf.example"
 
 HOSTNAME=$(hostname)
-ALERT_TOPIC="ntfy.sh/patrick_mitch_pi5_x9k2v_alerts"
+ALERT_TOPIC="ntfy.sh/patrick_mitch_hub_x9k2v_alerts"
 
 mkdir -p "$LOG_DIR"
 mkdir -p "$CONFIG_DIR"

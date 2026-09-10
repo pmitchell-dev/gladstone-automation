@@ -1,6 +1,6 @@
 #!/bin/bash
 # ==========================================================
-# GLADSTONE DYNAMIC FEATURE SELECTOR (pi_features.sh)
+# GLADSTONE DYNAMIC FEATURE SELECTOR (features.sh)
 # ==========================================================
 # Manage enabled/disabled services & containers per server role.
 # Bypasses git pulls/builds for disabled features, removes containers,
@@ -350,7 +350,7 @@ case "$1" in
         ;;
     --is-enabled)
         if [ -z "$2" ]; then
-            echo "Usage: pi_features.sh --is-enabled <feature_name>"
+            echo "Usage: features.sh --is-enabled <feature_name>"
             exit 1
         fi
         is_feature_enabled "$2"
@@ -358,7 +358,7 @@ case "$1" in
         ;;
     --enable)
         if [ -z "$2" ]; then
-            echo "Usage: pi_features.sh --enable <feature_name>"
+            echo "Usage: features.sh --enable <feature_name>"
             exit 1
         fi
         if [ "$3" != "-y" ] && [ -t 0 ]; then
@@ -373,7 +373,7 @@ case "$1" in
         ;;
     --disable)
         if [ -z "$2" ]; then
-            echo "Usage: pi_features.sh --disable <feature_name>"
+            echo "Usage: features.sh --disable <feature_name>"
             exit 1
         fi
         if [ "$3" != "-y" ] && [ -t 0 ]; then
@@ -395,7 +395,7 @@ case "$1" in
         ;;
     --help|-h)
         echo "Gladstone Feature Selector"
-        echo "Usage: pi_features.sh [OPTION]"
+        echo "Usage: features.sh [OPTION]"
         echo "  (no args)             Launch interactive selection TUI"
         echo "  --list                List all available features and enabled state"
         echo "  --is-enabled <feat>   Check if feature is enabled (exit code 0 if enabled)"
@@ -407,7 +407,7 @@ case "$1" in
     *)
         if [ -n "$1" ]; then
             echo "Unknown option: $1"
-            echo "Run 'pi_features.sh --help' for usage."
+            echo "Run 'features.sh --help' for usage."
             exit 1
         fi
         interactive_menu

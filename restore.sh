@@ -1,18 +1,18 @@
 #!/bin/bash
 
 # ==========================================================
-# GLADSTONE SYSTEM RESTORE WRAPPER (pi_restore.sh)
+# GLADSTONE SYSTEM RESTORE WRAPPER (restore.sh)
 # ==========================================================
 # PURPOSE:
 # Invokes Python Restore Manager (restore_manager.py).
 # Provides interactive backup selection, SHA256 verification,
 # automated container teardown, and data restoration.
-# Streams logs to ~/scripts/logs/pi_restore.log.
+# Streams logs to ~/scripts/logs/restore.log.
 # ==========================================================
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 LOG_DIR="$SCRIPT_DIR/logs"
-LOG_FILE="$LOG_DIR/pi_restore.log"
+LOG_FILE="$LOG_DIR/restore.log"
 
 mkdir -p "$LOG_DIR"
 

@@ -420,8 +420,8 @@ def main():
             mode = "ntfy"
 
     home_dir = os.path.expanduser("~")
-    log_file_1 = os.path.join(home_dir, "scripts", "logs", "pi_restore.log")
-    log_file_2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "pi_restore.log")
+    log_file_1 = os.path.join(home_dir, "scripts", "logs", "restore.log")
+    log_file_2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "restore.log")
     logger = RestoreLogger([log_file_1, log_file_2])
 
     now_dt = datetime.now()

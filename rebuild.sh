@@ -33,16 +33,16 @@ if [ -d "$SCRIPT_DIR/.git" ]; then
     echo -e "${BOLD_CYAN}🔄 Updating scripts from GitHub...${RESET}"
     SCRIPT_PATH=$(realpath "$0")
     cd "$SCRIPT_DIR" || exit
-    git remote set-url origin https://github.com/pmitchell-dev/pi5-scripts.git 2>/dev/null || true
+    git remote set-url origin https://github.com/pmitchell-dev/gladstone-automation.git 2>/dev/null || true
     git checkout -- . 2>/dev/null
     BEFORE_PULL=$(git rev-parse HEAD 2>/dev/null)
     git pull --rebase origin main 2>/dev/null || git pull --rebase origin master 2>/dev/null || git pull --rebase
     AFTER_PULL=$(git rev-parse HEAD 2>/dev/null)
     if [ "$BEFORE_PULL" != "$AFTER_PULL" ]; then
         echo -e "${BOLD_GREEN}========================================================================${RESET}"
-        echo -e "${BOLD_YELLOW}🚀 NEW SCRIPT UPDATES DETECTED & PULLED [pi5-scripts]${RESET}"
+        echo -e "${BOLD_YELLOW}🚀 NEW SCRIPT UPDATES DETECTED & PULLED [gladstone-automation]${RESET}"
         echo -e "${BOLD_GREEN}========================================================================${RESET}"
-        echo -e "${CYAN} Repository:${RESET}   https://github.com/pmitchell-dev/pi5-scripts"
+        echo -e "${CYAN} Repository:${RESET}   https://github.com/pmitchell-dev/gladstone-automation"
         echo -e "${CYAN} Commit Range:${RESET} ${BEFORE_PULL:~0:7}..${AFTER_PULL:~0:7}"
         echo -e "${CYAN} New Commits:${RESET}"
         git log --oneline -n 5 "$BEFORE_PULL..$AFTER_PULL" | sed 's/^/   • /'
@@ -50,30 +50,30 @@ if [ -d "$SCRIPT_DIR/.git" ]; then
         echo -e "${BOLD_CYAN}🔄 Scripts updated. Re-executing rebuild script...${RESET}"
         exec /bin/bash "$SCRIPT_PATH" "$@"
     else
-        echo -e "  ${CYAN}[pi5-scripts]${RESET} Already up to date (no new changes found)."
+        echo -e "  ${CYAN}[gladstone-automation]${RESET} Already up to date (no new changes found)."
     fi
 fi
 
 
 # Clean up any disabled features before rebuilding
-if [ -f "$SCRIPT_DIR/pi_features.sh" ]; then
-    bash "$SCRIPT_DIR/pi_features.sh" --cleanup
+if [ -f "$SCRIPT_DIR/features.sh" ]; then
+    bash "$SCRIPT_DIR/features.sh" --cleanup
 fi
 
-# --- 1. HUB MODE (Raspberry Pi Only) ---
+# --- 1. HUB MODE (Hub Node Only) ---
 if [ "$MODE" == "--ntfy" ]; then
     echo "📝 Applying Hub Crontab..."
     MASTER_CRON="0 0,8,12,16,20 * * * $SCRIPT_DIR/get_printer_status.sh
 1 0,8,12,16,20 * * * $SCRIPT_DIR/printer_alert.sh
 0 */6 * * * $SCRIPT_DIR/net_speed.sh
-0 0 * * * $SCRIPT_DIR/pi_backup.sh --mode ntfy
-*/5 * * * * $SCRIPT_DIR/pi_services_manager.sh
+0 0 * * * $SCRIPT_DIR/backup.sh --mode ntfy
+*/5 * * * * $SCRIPT_DIR/services_manager.sh
 */15 * * * * $SCRIPT_DIR/cloudflare_ddns.sh
 @reboot /bin/bash $SCRIPT_DIR/ntfy_listener.sh > $SCRIPT_DIR/logs/ntfy.log 2>&1 &"
     echo "$MASTER_CRON" | crontab -
 
     # Dozzle Agent Stack Sync
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "dozzle-agent" 2>/dev/null; then
         echo "📊 Synchronizing Dozzle Agent..."
         mkdir -p "$HOME/dozzle"
         if [ -f "$SCRIPT_DIR/dozzle-agent-compose.yml" ]; then
@@ -86,7 +86,7 @@ if [ "$MODE" == "--ntfy" ]; then
     fi
 
     # Simple Login Stack Sync
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "simplelogin" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "simplelogin" 2>/dev/null; then
         if [ -d "$HOME/simplelogin" ] || [ -f "$SCRIPT_DIR/simplelogin-compose.yml" ]; then
             echo "📧 Synchronizing Simple Login Stack..."
             SIMPLELOGIN_DIR="$HOME/simplelogin"
@@ -109,7 +109,7 @@ elif [ "$MODE" == "--webhost" ]; then
     HOST_IP=$(hostname -I | awk '{print $1}')
     
     # HomeAsset Stack Sync
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "homeasset" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "homeasset" 2>/dev/null; then
         if [ ! -d "$HOME/homeasset" ]; then
             echo -e "${BOLD_CYAN}🔄 HomeAsset missing. Cloning repository...${RESET}"
             git clone https://github.com/pmitchell-dev/HomeAsset.git "$HOME/homeasset"
@@ -154,7 +154,7 @@ elif [ "$MODE" == "--webhost" ]; then
     fi
 
     # RustDesk Stack Synchronization
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "rustdesk" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "rustdesk" 2>/dev/null; then
         if [ ! -d "$HOME/rustdesk" ]; then
             echo "?? RustDesk missing. Provisioning stack..."
             mkdir -p "$HOME/rustdesk/data"
@@ -178,7 +178,7 @@ elif [ "$MODE" == "--webhost" ]; then
     fi
 
     # JobBoard Stack Synchronization
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "jobboard" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "jobboard" 2>/dev/null; then
         if [ ! -d "$HOME/jobboard" ]; then
             echo "📋 JobBoard missing. Cloning repository..."
             git clone https://github.com/pmitchell-dev/JobBoard.git "$HOME/jobboard"
@@ -244,7 +244,7 @@ elif [ "$MODE" == "--webhost" ]; then
     fi
 
     # Gemini API Stack Synchronization
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "gemini-api" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "gemini-api" 2>/dev/null; then
         if [ ! -d "$HOME/gemini-api" ]; then
             echo "🤖 Gemini API Stack missing. Provisioning stack..."
             mkdir -p "$HOME/gemini-api"
@@ -278,7 +278,7 @@ elif [ "$MODE" == "--webhost" ]; then
     fi
 
     # RelayIT Stack Synchronization
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "relayit" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "relayit" 2>/dev/null; then
         if [ ! -d "$HOME/relayit" ]; then
             echo -e "${BOLD_CYAN}🎟️ RelayIT missing. Cloning repository...${RESET}"
             git clone https://github.com/pmitchell-dev/RelayIT.git "$HOME/relayit"
@@ -332,9 +332,9 @@ elif [ "$MODE" == "--webhost" ]; then
     fi
 
     # Webhost Maintenance Crontab
-    WEB_CRON="0 0 * * * $SCRIPT_DIR/pi_backup.sh --mode webhost
+    WEB_CRON="0 0 * * * $SCRIPT_DIR/backup.sh --mode webhost
 0 2 * * * $SCRIPT_DIR/rclone_gdrive_photos.sh
-*/5 * * * * $SCRIPT_DIR/pi_services_manager.sh
+*/5 * * * * $SCRIPT_DIR/services_manager.sh
 0 3 * * 0 docker system prune -af --volumes"
     echo "$WEB_CRON" | crontab -
 
@@ -366,7 +366,7 @@ EOF
     fi
 
     # Dozzle Log Viewer Stack Sync
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "dozzle" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "dozzle" 2>/dev/null; then
         echo "📊 Synchronizing Dozzle Log Viewer..."
         mkdir -p "$HOME/dozzle"
         if [ -f "$SCRIPT_DIR/dozzle-compose.yml" ]; then
@@ -379,7 +379,7 @@ EOF
     fi
 
     # Immich Photo & Video Server Stack Sync
-    if bash "$SCRIPT_DIR/pi_features.sh" --is-enabled "immich" 2>/dev/null; then
+    if bash "$SCRIPT_DIR/features.sh" --is-enabled "immich" 2>/dev/null; then
         echo "🖼️ Synchronizing Immich Stack..."
         IMMICH_DIR="$HOME/immich"
         mkdir -p "$IMMICH_DIR" "/mnt/backups/immich_uploads" "/mnt/backups/family_photos" "/mnt/network_backups" 2>/dev/null || sudo mkdir -p "$IMMICH_DIR" "/mnt/backups/immich_uploads" "/mnt/backups/family_photos" "/mnt/network_backups" 2>/dev/null || true

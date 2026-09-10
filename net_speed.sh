@@ -4,8 +4,8 @@
 # GLADSTONE NETWORK SPEED MONITOR (net_speed.sh)
 # ==========================================================
 
-LOG_FILE="/home/pi/scripts/logs/net_speed.log"
-mkdir -p /home/pi/scripts/logs
+LOG_FILE="/home/gladstone/scripts/logs/net_speed.log"
+mkdir -p /home/gladstone/scripts/logs
 
 echo "?? Running Network Speedtest..."
 

@@ -332,8 +332,8 @@ def main():
 
     # Log setup
     home_dir = os.path.expanduser("~")
-    log_file_1 = os.path.join(home_dir, "scripts", "logs", "pi_backup.log")
-    log_file_2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "pi_backup.log")
+    log_file_1 = os.path.join(home_dir, "scripts", "logs", "backup.log")
+    log_file_2 = os.path.join(os.path.dirname(os.path.abspath(__file__)), "logs", "backup.log")
     logger = BackupLogger([log_file_1, log_file_2])
 
     now_dt = datetime.now()

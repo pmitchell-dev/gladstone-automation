@@ -16,7 +16,7 @@ Why: This ensures the new file gets the correct +x (executable) bit.
 
 Documentation: Add the script name and a 1-sentence purpose to the 📂 Core File Registry table in SYSTEM_CONTEXT.md.
 
-Dashboard Integration: * Open pi-dashboard.sh.
+Dashboard Integration: * Open dashboard.sh.
 
 Add a new echo line in Section 2 to show if the script is active or when it last ran.
 
@@ -27,18 +27,18 @@ Define: Open ~/scripts/aliases.sh.
 
 Add: Append the alias: alias log='tail -f ~/ntfy.log'.
 
-Sync to Dashboard: Open pi-dashboard.sh and scroll to Section 4 (Quick Reference). Add the command name to the LOCAL (Bash) list so you don't forget it exists.
+Sync to Dashboard: Open dashboard.sh and scroll to Section 4 (Quick Reference). Add the command name to the LOCAL (Bash) list so you don't forget it exists.
 
 Apply: Run the refresh command (or source ~/.bashrc) to activate it in your current session.
 
 3. Adding a New Crontab Entry
 When you want to schedule a task (e.g., every morning at 9 AM):
 
-DO NOT USE crontab -e manually. 2.  Update the Source: Open ~/scripts/pi_rebuild.sh.
+DO NOT USE crontab -e manually. 2.  Update the Source: Open ~/scripts/rebuild.sh.
 
 Modify Section 4: Add your new logic to the bracketed list.
 
-Example: echo "0 9 * * * /home/pi/scripts/my_new_task.sh"
+Example: echo "0 9 * * * /home/gladstone/scripts/my_new_task.sh"
 
 Update the Registry: If the task is a background service that must stay alive, add it to services.registry.
 
@@ -58,25 +58,25 @@ Why: This pushes your changes to GitHub so that if the Pi dies 5 minutes from no
 5. Updating the Dozzle Log Viewer (or any Docker Compose Stack)
 When you modify a compose file (e.g., dozzle-agent-compose.yml, jobboard-compose.yml):
 
-  DO NOT run docker compose up directly from /home/pi/dozzle or similar.
+  DO NOT run docker compose up directly from /home/gladstone/dozzle or similar.
   These directories contain COPIES managed by install.sh.
   Running docker compose there without re-running install.sh uses stale config.
 
-  Correct update flow (Pi5 / ntfy hub):
-    cd /home/pi/scripts && git pull && ./install.sh
+  Correct update flow (hub / ntfy hub):
+    cd /home/gladstone/scripts && git pull && ./install.sh
 
   Correct update flow (Webhost / laptop):
-    cd /home/pi/scripts && git pull && ./install.sh --webhost
+    cd /home/gladstone/scripts && git pull && ./install.sh --webhost
 
   Why: install.sh copies the compose files from ~/scripts/ into their
-  deployment directories (/home/pi/dozzle/, /home/pi/jobboard/, etc.)
+  deployment directories (/home/gladstone/dozzle/, /home/gladstone/jobboard/, etc.)
   before restarting the containers. Skipping this step means the container
   restarts with the old configuration, making any fix appear to not work.
 
 6. Log Viewer Quick Reference
   URL:     http://192.168.50.217:8888
-  Pi5 hub: Dozzle agent on port 7007 (auto-connected)
-  Scripts: /home/pi/scripts/logs/ → streamed via gladstone-scripts-log container
+  hub hub: Dozzle agent on port 7007 (auto-connected)
+  Scripts: /home/gladstone/scripts/logs/ → streamed via gladstone-scripts-log container
   NVR:     ANNKE Alarm Host → 192.168.50.217:514 (UDP) → nvr-syslog container
 
 7. Google Drive RClone Media Sync Setup

@@ -30,7 +30,7 @@ services:
     restart: unless-stopped
     volumes:
       - ${HOME:-/home/pi}/scripts/logs:/logs
-    entrypoint: ["bash", "-c", "mkdir -p /logs && touch /logs/rebuild.log /logs/pi_services_manager.log /logs/pi_backup.log && echo '📋 [Webhost] Script log stream starting...' && tail -f /logs/rebuild.log /logs/pi_services_manager.log /logs/pi_backup.log"]
+    entrypoint: ["bash", "-c", "mkdir -p /logs && touch /logs/rebuild.log /logs/services_manager.log /logs/backup.log && echo '📋 [Webhost] Script log stream starting...' && tail -f /logs/rebuild.log /logs/services_manager.log /logs/backup.log"]
     labels:
       dozzle.name: "Webhost Scripts"
 

@@ -14,8 +14,8 @@ app_dirs = [
 
 app_dirs.each do |dir|
   directory dir do
-    owner ENV['USER'] || 'pi'
-    group ENV['USER'] || 'pi'
+    owner ENV['USER'] || 'gladstone'
+    group ENV['USER'] || 'gladstone'
     mode '0755'
     recursive true
     action :create
@@ -24,13 +24,13 @@ end
 
 # Cron job for Webhost daily backups
 cron_d 'webhost_daily_backup' do
-  command "#{ENV['HOME']}/scripts/pi_backup.sh"
+  command "#{ENV['HOME']}/scripts/backup.sh"
   minute '0'
   hour '0'
-  user ENV['USER'] || 'pi'
+  user ENV['USER'] || 'gladstone'
 end
 
-# Ensure the 5-strike watchdog script runs via systemd timer (replaces pi_services_manager loop)
+# Ensure the 5-strike watchdog script runs via systemd timer (replaces services_manager loop)
 systemd_unit 'gladstone_watchdog.service' do
   content <<~EOU
     [Unit]
@@ -39,8 +39,8 @@ systemd_unit 'gladstone_watchdog.service' do
 
     [Service]
     Type=oneshot
-    ExecStart=#{ENV['HOME']}/scripts/pi_services_manager.sh
-    User=#{ENV['USER'] || 'pi'}
+    ExecStart=#{ENV['HOME']}/scripts/services_manager.sh
+    User=#{ENV['USER'] || 'gladstone'}
   EOU
   action [:create]
 end
@@ -65,5 +65,5 @@ cron_d 'gdrive_photos_sync' do
   command "#{ENV['HOME']}/scripts/rclone_gdrive_photos.sh"
   minute '0'
   hour '2'
-  user ENV['USER'] || 'pi'
+  user ENV['USER'] || 'gladstone'
 end

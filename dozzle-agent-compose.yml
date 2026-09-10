@@ -1,8 +1,8 @@
 # ==========================================================
-# GLADSTONE DOZZLE AGENT (Pi5 Hub — 192.168.50.138)
+# GLADSTONE DOZZLE AGENT (hub Hub — 192.168.50.138)
 # ==========================================================
 # Deploy:  cd ~/dozzle && docker compose up -d --remove-orphans
-# This exposes Pi5 Docker logs to the Webhost Dozzle instance.
+# This exposes hub Docker logs to the Webhost Dozzle instance.
 # Port 7007 must be reachable from 192.168.50.217.
 # ==========================================================
 
@@ -21,10 +21,10 @@ services:
     volumes:
       - /var/run/docker.sock:/var/run/docker.sock:ro
     environment:
-      DOZZLE_HOSTNAME: "Pi5 Hub (192.168.50.138)"
+      DOZZLE_HOSTNAME: "hub Hub (192.168.50.138)"
 
   # ── Gladstone Script Log Bridge ───────────────────────
-  # Tails all Pi5 Gladstone script logs to stdout so Dozzle
+  # Tails all hub Gladstone script logs to stdout so Dozzle
   # can stream them in real-time alongside container logs.
   gladstone-scripts-log:
     image: debian:bookworm-slim
@@ -32,6 +32,6 @@ services:
     restart: unless-stopped
     volumes:
       - ${HOME:-/home/pi}/scripts/logs:/logs
-    entrypoint: ["bash", "-c", "mkdir -p /logs && touch /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/pi_services_manager.log /logs/pi_backup.log /logs/cloudflare_ddns.log && echo '📋 [Gladstone] Script log stream starting...' && tail -f /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/pi_services_manager.log /logs/pi_backup.log /logs/cloudflare_ddns.log"]
+    entrypoint: ["bash", "-c", "mkdir -p /logs && touch /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/services_manager.log /logs/backup.log /logs/cloudflare_ddns.log && echo '📋 [Gladstone] Script log stream starting...' && tail -f /logs/ntfy.log /logs/rebuild.log /logs/net_speed.log /logs/ntfy_listener.log /logs/services_manager.log /logs/backup.log /logs/cloudflare_ddns.log"]
     labels:
-      dozzle.name: "Gladstone Pi5 Scripts"
+      dozzle.name: "Gladstone hub Scripts"

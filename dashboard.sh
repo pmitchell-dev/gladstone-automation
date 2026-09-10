@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # ==========================================================
-# GLADSTONE CONTROL CENTER (pi-dashboard.sh)
+# GLADSTONE CONTROL CENTER (dashboard.sh)
 # ==========================================================
 # Version: 1.2.0
 # Logic: Architecture-aware vitals, Printer stats, 
@@ -30,7 +30,7 @@ generate_dashboard() {
     echo -e "?? Mem: $MEM    ?? Uptime: $(uptime -p)"
 
     # --- NETWORK SPEED STATUS ---
-    SPEED_LOG="/home/pi/scripts/logs/net_speed.log"
+    SPEED_LOG="/home/gladstone/scripts/logs/net_speed.log"
     if [ -f "$SPEED_LOG" ]; then
         DOWNLOAD=$(grep "Download" "$SPEED_LOG" | awk '{print $2}')
         UPLOAD=$(grep "Upload" "$SPEED_LOG" | awk '{print $2}')
@@ -42,8 +42,8 @@ generate_dashboard() {
 
     # --- 1.5 SYSTEM HEALTH & PERMISSIONS ---
     # Check for files NOT owned by the current user in the scripts folder
-    BAD_OWNER=$(find /home/pi/scripts -not -user $USER | wc -l)
-    LOG_WRITE=$( [ -w "/home/pi/scripts/logs" ] && echo "OK" || echo "LOCKED" )
+    BAD_OWNER=$(find /home/gladstone/scripts -not -user $USER | wc -l)
+    LOG_WRITE=$( [ -w "/home/gladstone/scripts/logs" ] && echo "OK" || echo "LOCKED" )
 
     if [ "$BAD_OWNER" -gt 0 ]; then
         echo -e "??  SECURITY: $BAD_OWNER files have wrong ownership! (Run 'reinstall')"
@@ -63,7 +63,7 @@ generate_dashboard() {
         echo -e "??  ACTIVE TRACKING: None"
     fi
 
-    SYNC_LOG="/home/pi/scripts/logs/last_sync.log"
+    SYNC_LOG="/home/gladstone/scripts/logs/last_sync.log"
     if [ -f "$SYNC_LOG" ]; then
         echo -e "☁️  LAST CLOUD SYNC: $(cat $SYNC_LOG)"
     else
@@ -71,7 +71,7 @@ generate_dashboard() {
     fi
 
     BACKUP_DIR="/mnt/network_backups/CentralServer"
-    BACKUP_LOG="/home/pi/scripts/logs/pi_backup.log"
+    BACKUP_LOG="/home/gladstone/scripts/logs/backup.log"
 
     LAST_BACKUP_INFO=""
     if [ -d "$BACKUP_DIR" ]; then
@@ -100,7 +100,7 @@ generate_dashboard() {
     fi
 
     # --- GOOGLE DRIVE FAMILY PHOTOS SYNC STATUS ---
-    PHOTOS_LOG="/home/pi/scripts/logs/rclone_gdrive_photos.log"
+    PHOTOS_LOG="/home/gladstone/scripts/logs/rclone_gdrive_photos.log"
     RCLONE_CONF="$HOME/.config/rclone/rclone.conf"
     if [ ! -f "$RCLONE_CONF" ]; then
         echo -e "📸  FAMILY PHOTOS SYNC: ⚠️ Config Required (Run 'rclone config')"
@@ -123,7 +123,7 @@ generate_dashboard() {
 
     # --- 3. BROTHER PRINTER SECTION ---
     echo -e "\e[1;34m[ Brother Printer ]\e[0m"
-    STATUS_FILE="/home/pi/printer_data/status.html"
+    STATUS_FILE="/home/gladstone/printer_data/status.html"
     if [ -f "$STATUS_FILE" ]; then
         P_STATUS=$(grep -Ei "Ready|Sleep|Deep" "$STATUS_FILE" | sed -e 's/<[^>]*>//g' | xargs | head -n 1)
         HEIGHT=$(grep -oP 'height="\K[0-9]+' "$STATUS_FILE" | head -n 3 | tail -n 1)

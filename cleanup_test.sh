@@ -12,7 +12,7 @@ sleep 2
 # 1. Kill Persistent Services
 echo "🛑 Stopping ntfy_listener and background tasks..."
 pkill -f ntfy_listener.sh 2>/dev/null
-pkill -f pi_services_manager.sh 2>/dev/null
+pkill -f services_manager.sh 2>/dev/null
 pkill -f nvr_syslog.py 2>/dev/null
 
 # 2. Stop Docker Compose Stacks if Docker exists

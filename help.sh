@@ -9,10 +9,10 @@
 # ==========================================================
 
 # --- CONFIGURATION ---
-TOPIC="patrick_mitch_pi5_x9k2v_alerts"
+TOPIC="patrick_mitch_hub_x9k2v_alerts"
 
 # --- THE HELP MENU ---
-# Using $HOSTNAME makes the message dynamic (e.g., "Gladstone-Pi5 Bot")
+# Using $HOSTNAME makes the message dynamic (e.g., "Gladstone-hub Bot")
 HELP_MSG="🛠️ $HOSTNAME Bot Commands:
 --------------------------
 🏥 health
@@ -34,4 +34,4 @@ curl -s -d "$HELP_MSG" ntfy.sh/$TOPIC > /dev/null
 # 2. PROACTIVE UPDATE:
 # Immediately follow up by running the actual Printer Health script.
 # This ensures the user sees live data right after the help menu.
-bash /home/pi/scripts/printer_health.sh
+bash /home/gladstone/scripts/printer_health.sh

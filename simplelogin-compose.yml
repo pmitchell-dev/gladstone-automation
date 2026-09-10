@@ -1,5 +1,5 @@
 # ==========================================================
-# GLADSTONE SIMPLELOGIN STACK (Pi5 Hub — localrepo.net)
+# GLADSTONE SIMPLELOGIN STACK (hub Hub — localrepo.net)
 # ARM64 / AMD64 Multi-Arch Self-Hosted Stack
 # ==========================================================
 # Deploy:  cd ~/simplelogin && docker compose up -d --remove-orphans

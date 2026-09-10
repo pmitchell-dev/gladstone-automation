@@ -7,7 +7,7 @@ This repository contains the master automation suite for the **Gladstone Pi 5 Co
 ## 🌐 Architecture Overview
 
 The Gladstone ecosystem follows a **Hub & Spoke** model:
-* **The Hub (RPi5):** The central brain. Manages printer monitoring, network speed audits, local backups, and relays commands to other nodes.
+* **The Hub (Rhub):** The central brain. Manages printer monitoring, network speed audits, local backups, and relays commands to other nodes.
 * **The Nodes (Laptop/VM):** Specialized servers (like Webhosts) that host application stacks, while reporting health back to the Hub.
 
 ---
@@ -17,7 +17,7 @@ The Gladstone ecosystem follows a **Hub & Spoke** model:
 To deploy or fully update a server, run the following command from your home directory:
 
 ```bash
-cd ~ && rm -rf ~/scripts && git clone https://github.com/pmitchell-dev/pi5-scripts.git ~/scripts && cd ~/scripts && ./install.sh --[MODE]
+cd ~ && rm -rf ~/scripts && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/scripts && cd ~/scripts && ./install.sh --[MODE]
 ```
 
 ### Available Modes:
@@ -49,10 +49,10 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | **Dozzle Log Viewer** (`dozzle`) | `dozzle-compose.yml` | Webhost | 8888 | Centralized Docker Log Dashboard | **Active** |
 | **NVR Syslog** (`nvr-syslog`) | `dozzle-compose.yml` | Webhost | 514 (UDP) | ANNKE NVR Camera Syslog Collector | **Active** |
 | **Gladstone Logs** (`gladstone-scripts-log`) | `dozzle-compose.yml` | Webhost | N/A | Streamer for Gladstone Script Telemetry | **Active** |
-| **Dozzle Agent** (`dozzle-agent`) | `dozzle-agent-compose.yml` | Pi5 Hub | 7007 | Remote Log Agent on Hub | **Active** |
-| **Simple Login Web** (`simplelogin-app`) | `simplelogin-compose.yml` | Pi5 Hub | 7777 / 25 | Self-Hosted Email Alias Manager UI & API (`localrepo.net`) | **Active (Added)** |
-| **Simple Login Database** (`simplelogin-db`) | `simplelogin-compose.yml` | Pi5 Hub | 5432 (Internal) | PostgreSQL 16 DB for Simple Login | **Active (Added)** |
-| **Simple Login Postfix** (`simplelogin-postfix`) | `simplelogin-compose.yml` | Pi5 Hub | 25 | Postfix Mail Engine for Simple Login | **Active (Added)** |
+| **Dozzle Agent** (`dozzle-agent`) | `dozzle-agent-compose.yml` | hub Hub | 7007 | Remote Log Agent on Hub | **Active** |
+| **Simple Login Web** (`simplelogin-app`) | `simplelogin-compose.yml` | hub Hub | 7777 / 25 | Self-Hosted Email Alias Manager UI & API (`localrepo.net`) | **Active (Added)** |
+| **Simple Login Database** (`simplelogin-db`) | `simplelogin-compose.yml` | hub Hub | 5432 (Internal) | PostgreSQL 16 DB for Simple Login | **Active (Added)** |
+| **Simple Login Postfix** (`simplelogin-postfix`) | `simplelogin-compose.yml` | hub Hub | 25 | Postfix Mail Engine for Simple Login | **Active (Added)** |
 | **Immich Server** (`immich_server`) | `immich-compose.yml` | Webhost | 2283 | Self-Hosted Photo & Video Management Web UI & API | **Active (Added)** |
 | **Immich Database** (`immich_postgres`) | `immich-compose.yml` | Webhost | 5432 (Internal) | PostgreSQL Vector Database (`pgvector`) | **Active (Added)** |
 | **Immich Redis** (`immich_redis`) | `immich-compose.yml` | Webhost | 6379 (Internal) | Valkey Cache & Queue Broker | **Active (Added)** |
@@ -75,9 +75,9 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | `sync` | `sync` | Push local changes to GitHub with mode-aware heartbeat. |
 | `update` | `update` | Pull GitHub changes and trigger smart refresh of container stacks. |
 | `rebuild` | `rebuild` | Force rebuild and pull latest container stacks from GitHub. |
-| `backup` | `backup` | Execute role-aware single-archive system backup (`pi_backup.sh`). |
+| `backup` | `backup` | Execute role-aware single-archive system backup (`backup.sh`). |
 | `sync-photos` | `photos-sync` | Mirror Google Drive "Family Photos" to external backup drive (`rclone_gdrive_photos.sh`). |
-| `restore` | `restore` | Launch interactive system restoration tool (`pi_restore.sh`). |
+| `restore` | `restore` | Launch interactive system restoration tool (`restore.sh`). |
 | `reinstall` | `reinstall` | Run Gladstone bootstrap installer to fix permissions or apply updates. |
 | `fresh-install` | `git-install` | Fresh clone from GitHub and launch bootstrap installer. |
 
@@ -86,7 +86,7 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 ## 🛡️ System Maintenance
 
 ### The 5-Strike Watchdog
-`pi_services_manager.sh` runs every 5 minutes. If a persistent service or container fails, the watchdog attempts 4 silent restarts. On the 5th failure, it dispatches an Urgent Priority 5 Alert including error log snippets to ntfy.
+`services_manager.sh` runs every 5 minutes. If a persistent service or container fails, the watchdog attempts 4 silent restarts. On the 5th failure, it dispatches an Urgent Priority 5 Alert including error log snippets to ntfy.
 
 ### Google Drive RClone Media Sync
 `rclone_gdrive_photos.sh` runs daily at 02:00 AM. It reads its remote source folder and local target destination from `~/.config/rclone/rclone_photos.env` (untracked local config file). If missing or unconfigured, it creates a sample template file and alerts the user to populate their custom folder paths.
@@ -102,5 +102,5 @@ bash ~/scripts/cleanup_test.sh
 ## 📂 Directory Structure
 * `~/scripts/`: Core automation logic & docker compose specifications.
 * `~/scripts/logs/`: Runtime telemetry & error logs (Excluded from git).
-* `~/scripts/backup/`: Backup location. Webhost targets `/mnt/backups/laptopwebhost` and NTFY Hub targets `//192.168.50.217/Backups/CentralServers` via SMB (`Pi:sambauser`). Retains top 7 daily backups with SHA256 integrity verification.
+* `~/scripts/backup/`: Backup location. Webhost targets `/mnt/backups/laptopwebhost` and NTFY Hub targets `//192.168.50.217/Backups/CentralServers` via SMB (`gladstone:sambauser`). Retains top 7 daily backups with SHA256 integrity verification.
 * `~/printer_data/`: Scraped HTML telemetry from Brother printer.

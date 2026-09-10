@@ -15,7 +15,7 @@ end
 
 group 'docker' do
   action :modify
-  members ENV['USER'] || 'pi'
+  members ENV['USER'] || 'gladstone'
   append true
 end
 
@@ -26,8 +26,8 @@ end
 # Deploy base scripts and aliases
 cookbook_file "#{ENV['HOME']}/.bash_aliases" do
   source 'bashrc.webhost.template'
-  owner ENV['USER'] || 'pi'
-  group ENV['USER'] || 'pi'
+  owner ENV['USER'] || 'gladstone'
+  group ENV['USER'] || 'gladstone'
   mode '0644'
   action :create
 end
