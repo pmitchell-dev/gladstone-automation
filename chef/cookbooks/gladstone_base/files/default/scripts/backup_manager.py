@@ -310,6 +310,22 @@ def rotate_backups(target_dir, prefix, keep_count, logger):
             logger.info(f"  └─ Total backup archives ({len(files)}) within retention limit ({keep_count}).")
     except Exception as e:
         logger.error(f"❌ Rotation error: {e}")
+def get_system_diagnostics():
+    """Returns basic system diagnostics (hostname, free disk space)."""
+    import shutil
+    import socket
+    
+    hostname = socket.gethostname()
+    try:
+        stat = shutil.disk_usage("/")
+        free_gb = round(stat.free / (1024 * 1024 * 1024), 2)
+    except Exception:
+        free_gb = 0.0
+        
+    return {
+        "hostname": hostname,
+        "disk_free_gb": free_gb
+    }
 
 
 def main():
