@@ -16,11 +16,6 @@ provider "docker" {
 }
 
 # Modules for container stacks
-module "relayit" {
-  source = "./modules/relayit"
-  db_password = data.vault_generic_secret.postgres.data["password"]
-}
-
 module "homeasset" {
   source = "./modules/homeasset"
 }

@@ -5,9 +5,6 @@ include_recipe 'gladstone_base::default'
 app_dirs = [
   "/home/gladstone/jobboard/data/backups",
   "/home/gladstone/jobboard/cache",
-  "/home/gladstone/relayit/data/pgdata",
-  "/home/gladstone/relayit/data/caddy_data",
-  "/home/gladstone/relayit/data/caddy_config",
   "/home/gladstone/rustdesk/data",
   "/home/gladstone/gemini-api"
 ]
