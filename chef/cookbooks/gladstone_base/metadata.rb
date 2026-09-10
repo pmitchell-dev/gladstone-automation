@@ -1,0 +1,6 @@
+name 'gladstone_base'
+maintainer 'Gladstone Admin'
+maintainer_email 'admin@gladstone'
+license 'All Rights Reserved'
+description 'Installs/Configures baseline packages, users, and aliases'
+version '0.1.0'

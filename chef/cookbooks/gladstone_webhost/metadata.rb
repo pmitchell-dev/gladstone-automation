@@ -1,0 +1,7 @@
+name 'gladstone_webhost'
+maintainer 'Gladstone Admin'
+maintainer_email 'admin@gladstone'
+license 'All Rights Reserved'
+description 'Configures the Webhost Node (app directories, systemd watchdogs)'
+version '0.1.0'
+depends 'gladstone_base'
