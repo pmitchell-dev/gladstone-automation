@@ -100,3 +100,6 @@ gemini_clean() {
 }
 
 alias gemini='GEMINI_CLI_NO_RELAUNCH=1 node /usr/lib/node_modules/@google/gemini-cli/bundle/gemini.js'
+
+# Run dashboard on login
+db
