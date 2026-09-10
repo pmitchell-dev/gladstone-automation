@@ -30,3 +30,9 @@ terraform.tfstate.backup
 *.tfstate.backup
 # Ignore Education folder
 Education/
+
+# Terraform
+.terraform/
+.terraform.lock.hcl
+*.tfstate
+*.tfstate.backup
