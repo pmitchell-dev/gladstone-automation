@@ -10,7 +10,7 @@ end
 # Install Docker Engine
 execute 'install_docker' do
   command 'curl -fsSL https://get.docker.com | sh'
-  not_if 'command -v docker'
+  not_if 'which docker'
 end
 
 service 'docker' do
