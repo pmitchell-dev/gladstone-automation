@@ -23,7 +23,6 @@ module "relayit" {
 
 module "homeasset" {
   source = "./modules/homeasset"
-  db_password = data.vault_generic_secret.postgres.data["password"]
 }
 
 module "jobboard" {
