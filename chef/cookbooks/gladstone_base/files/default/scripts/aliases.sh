@@ -18,6 +18,7 @@ fi
 # --- MAINTENANCE & RECOVERY ---
 alias run-chef='cd ~/gladstone-automation && git pull && cd chef && sudo chef-client -z -r "recipe[gladstone_base::default],recipe[gladstone_webhost::default]"'
 alias run-terraform='cd ~/gladstone-automation && git pull && cd terraform && terraform apply'
+alias update-repos="bash $SCRIPT_DIR/update_repos.sh"
 alias sync="bash $SCRIPT_DIR/sync.sh"
 alias rebuild="bash $SCRIPT_DIR/rebuild.sh"
 alias update="bash $SCRIPT_DIR/update.sh"
