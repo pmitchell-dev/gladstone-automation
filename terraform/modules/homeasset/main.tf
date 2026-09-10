@@ -9,7 +9,7 @@ terraform {
 resource "docker_image" "homeasset" {
   name = "homeasset:latest"
   build {
-    context = "/home/gladstone/homeasset"
+    context = "${path.root}/../homeasset"
   }
 }
 

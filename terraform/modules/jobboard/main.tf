@@ -9,7 +9,7 @@ terraform {
 resource "docker_image" "jobboard" {
   name = "jobboard:latest"
   build {
-    context = "/home/gladstone/jobboard"
+    context = "${path.root}/../jobboard"
   }
 }
 
