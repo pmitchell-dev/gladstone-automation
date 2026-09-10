@@ -73,13 +73,6 @@ if [ "$MODE" == "webhost" ]; then
         fi
     fi
 
-    # RelayIT
-    if bash "$SCRIPT_DIR/features.sh" --is-enabled "relayit" 2>/dev/null; then
-        if ! docker ps --format '{{.Names}}' | grep -q "^relayit"; then
-            echo "🎟️ Recovering RelayIT container..."
-            cd "$HOME/relayit" 2>/dev/null && docker compose --progress=plain up -d >> "$LOG_DIR/services_manager.log" 2>&1
-        fi
-    fi
 fi
 
 # DOCKER MONITOR (hub Hub Mode)

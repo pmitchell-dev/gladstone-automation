@@ -51,7 +51,6 @@ TARGET_MAPPINGS = [
     ("scripts", "scripts", "System Scripts"),
     ("data/homeasset", "homeasset/data", "HomeAsset Data"),
     ("data/jobboard", "jobboard/data", "JobBoard Data"),
-    ("data/relayit", "relayit/data", "RelayIT Data"),
     ("data/gladstone-automation", "gladstone-automation", "Gladstone IaC Repository"),
     ("data/immich/immich_db_dump.sql", "immich_db_dump.sql", "Immich Database Dump (SQL)"),
     ("data/terminalbuddy", ".config/terminalbuddy", "TerminalBuddy Config"),
@@ -61,7 +60,6 @@ TARGET_MAPPINGS = [
 DOCKER_STACK_DIRS = [
     "homeasset",
     "jobboard",
-    "relayit",
     "gemini-api",
     "rustdesk",
     "dozzle",

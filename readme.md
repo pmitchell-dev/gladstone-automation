@@ -37,9 +37,6 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 
 | Service / Container | Compose File | Host / Node | Port(s) | Description | Status |
 | :--- | :--- | :--- | :--- | :--- | :--- |
-| **RelayIT Web** (`relayit-web`) | `relayit-compose.yml` | Webhost | 8000 (Internal) | FastAPI Tech Support Ticketing App | **Active (Added)** |
-| **RelayIT Database** (`relayit-db`) | `relayit-compose.yml` | Webhost | 5432 (Internal) | PostgreSQL 16 DB for RelayIT | **Active (Added)** |
-| **RelayIT Caddy** (`relayit-caddy`) | `relayit-compose.yml` | Webhost | 80 | Caddy Reverse Proxy & HTTP Entrypoint | **Active (Added)** |
 | **HomeAsset Web** (`homeasset`) | `homeasset-compose.yml` | Webhost | 8080 | FastAPI Home Asset & Inventory App | **Active** |
 | **HomeAsset Database** (`homeasset-db`) | `homeasset-compose.yml` | Webhost | 5432 (Internal) | PostgreSQL 16 DB for HomeAsset | **Active** |
 | **JobBoard** (`jobboard`) | `jobboard-compose.yml` | Webhost | 3001 | Next.js Job Aggregator & Dashboard | **Active** |
@@ -61,7 +58,7 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 
 | Service / Container | Compose File | Reason for Removal | Status |
 | :--- | :--- | :--- | :--- |
-| **Hivemind** (`hivemind`) | `hivemind-compose.yml` | Deprecated; functionality migrated to RelayIT and Gemini API stacks | **Removed** |
+| **Hivemind** (`hivemind`) | `hivemind-compose.yml` | Deprecated; functionality migrated to Gemini API stack | **Removed** |
 
 ---
 

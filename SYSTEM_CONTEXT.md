@@ -6,13 +6,13 @@
 
 ## 🖥️ Server Roles
 * **Hub (Rhub):** The primary entry point. Manages printer logs, network speedtests, Google Drive media backups, and relays commands to other nodes via `--ntfy`.
-* **Spoke (Webhost):** Specialized nodes (like the Ubuntu Laptop) that run application stacks (RelayIT, HomeAsset, JobBoard, Gemini API, RustDesk, Dozzle) via `--webhost`.
+* **Spoke (Webhost):** Specialized nodes (like the Ubuntu Laptop) that run application stacks (HomeAsset, JobBoard, Gemini API, RustDesk, Dozzle) via `--webhost`.
 
 ---
 
 ## 🚩 Deployment Flags
 * `--ntfy`: Installs the full communication suite (speedtest, printer monitoring, master listener, Dozzle agent).
-* `--webhost`: Installs web application container stacks (RelayIT, HomeAsset, JobBoard, Gemini API, RustDesk, Dozzle, Immich), Google Drive rclone photo sync, and heartbeat watchdog monitoring.
+* `--webhost`: Installs web application container stacks (HomeAsset, JobBoard, Gemini API, RustDesk, Dozzle, Immich), Google Drive rclone photo sync, and heartbeat watchdog monitoring.
 
 ---
 
@@ -30,10 +30,6 @@
 ## 🐳 Docker Containers & Stack Registry
 
 ### Active Containers
-* **RelayIT Stack** (`relayit-compose.yml`):
-  * `relayit-web`: FastAPI Tech Support Ticketing App (Port 8000 internal)
-  * `relayit-db`: PostgreSQL 16 DB (Port 5432 internal)
-  * `relayit-caddy`: Caddy Reverse Proxy & HTTP Entrypoint (Port 80)
 * **HomeAsset Stack** (`homeasset-compose.yml`):
   * `homeasset`: FastAPI Home Asset & Inventory App (Port 8080)
   * `homeasset-db`: PostgreSQL 16 DB (Port 5432 internal)
@@ -60,7 +56,7 @@
 
 ### Removed / Deprecated Containers
 * **Hivemind Stack** (`hivemind-compose.yml`):
-  * `hivemind`: Removed from active stack; superseded by RelayIT ticketing and Gemini API integration.
+  * `hivemind`: Removed from active stack; superseded by Gemini API integration.
 
 ---
 
