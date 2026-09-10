@@ -419,7 +419,11 @@ def main():
 
                 # Move/Copy to target destination
                 logger.info(f"🚚 Saving archive bundle -> {final_archive}...")
-                shutil.copy2(temp_archive, final_archive)
+                try:
+                    shutil.copy2(temp_archive, final_archive)
+                except OSError:
+                    # Fallback for exFAT/NTFS external drives that don't support metadata copying
+                    shutil.copy(temp_archive, final_archive)
                 os.remove(temp_archive)
 
                 dest_checksum = calculate_sha256(final_archive)
