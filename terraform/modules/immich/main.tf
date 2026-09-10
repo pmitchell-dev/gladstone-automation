@@ -62,6 +62,10 @@ resource "docker_container" "immich_server" {
   name    = "immich_server"
   image   = docker_image.immich_server.name
   restart = "always"
+  depends_on = [
+    docker_container.database,
+    docker_container.redis
+  ]
 
   networks_advanced {
     name = docker_network.immich_net.name
