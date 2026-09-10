@@ -3,19 +3,19 @@ include_recipe 'gladstone_base::default'
 
 # Prepare Application Data Directories
 app_dirs = [
-  "#{ENV['HOME']}/jobboard/data/backups",
-  "#{ENV['HOME']}/jobboard/cache",
-  "#{ENV['HOME']}/relayit/data/pgdata",
-  "#{ENV['HOME']}/relayit/data/caddy_data",
-  "#{ENV['HOME']}/relayit/data/caddy_config",
-  "#{ENV['HOME']}/rustdesk/data",
-  "#{ENV['HOME']}/gemini-api"
+  "/home/gladstone/jobboard/data/backups",
+  "/home/gladstone/jobboard/cache",
+  "/home/gladstone/relayit/data/pgdata",
+  "/home/gladstone/relayit/data/caddy_data",
+  "/home/gladstone/relayit/data/caddy_config",
+  "/home/gladstone/rustdesk/data",
+  "/home/gladstone/gemini-api"
 ]
 
 app_dirs.each do |dir|
   directory dir do
-    owner ENV['USER'] || 'gladstone'
-    group ENV['USER'] || 'gladstone'
+    owner 'gladstone'
+    group 'gladstone'
     mode '0755'
     recursive true
     action :create
@@ -24,10 +24,10 @@ end
 
 # Cron job for Webhost daily backups
 cron_d 'webhost_daily_backup' do
-  command "#{ENV['HOME']}/scripts/backup.sh"
+  command "/home/gladstone/scripts/backup.sh"
   minute '0'
   hour '0'
-  user ENV['USER'] || 'gladstone'
+  user 'gladstone'
 end
 
 # Ensure the 5-strike watchdog script runs via systemd timer (replaces services_manager loop)
@@ -39,8 +39,8 @@ systemd_unit 'gladstone_watchdog.service' do
 
     [Service]
     Type=oneshot
-    ExecStart=#{ENV['HOME']}/scripts/services_manager.sh
-    User=#{ENV['USER'] || 'gladstone'}
+    ExecStart=/home/gladstone/scripts/services_manager.sh
+    User=#{'gladstone'}
   EOU
   action [:create]
 end
@@ -62,8 +62,8 @@ end
 
 # Cron job for Google Drive Photos Sync (Daily at 02:00 AM)
 cron_d 'gdrive_photos_sync' do
-  command "#{ENV['HOME']}/scripts/rclone_gdrive_photos.sh"
+  command "/home/gladstone/scripts/rclone_gdrive_photos.sh"
   minute '0'
   hour '2'
-  user ENV['USER'] || 'gladstone'
+  user 'gladstone'
 end

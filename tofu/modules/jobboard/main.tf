@@ -9,7 +9,7 @@ terraform {
 resource "docker_image" "jobboard" {
   name = "jobboard:latest"
   build {
-    context = pathexpand("~/jobboard")
+    context = "/home/gladstone/jobboard"
   }
 }
 
@@ -24,12 +24,12 @@ resource "docker_container" "jobboard" {
   }
 
   volumes {
-    host_path      = pathexpand("~/jobboard/data")
+    host_path      = "/home/gladstone/jobboard/data"
     container_path = "/app/data"
   }
 
   volumes {
-    host_path      = pathexpand("~/jobboard/cache")
+    host_path      = "/home/gladstone/jobboard/cache"
     container_path = "/app/cache"
   }
 

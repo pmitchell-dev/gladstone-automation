@@ -8,26 +8,26 @@ end
 
 # Cron job for printer scrape
 cron_d 'printer_scrape' do
-  command "#{ENV['HOME']}/scripts/printer_health.sh"
+  command "/home/gladstone/scripts/printer_health.sh"
   minute '0'
   hour '*/4'
-  user ENV['USER'] || 'gladstone'
+  user 'gladstone'
 end
 
 # Cron job for network audit
 cron_d 'network_audit' do
-  command "#{ENV['HOME']}/scripts/net_speed.sh"
+  command "/home/gladstone/scripts/net_speed.sh"
   minute '0'
   hour '*/6'
-  user ENV['USER'] || 'gladstone'
+  user 'gladstone'
 end
 
 # Cron job for daily backups targeting NTFY Hub Target
 cron_d 'hub_daily_backup' do
-  command "#{ENV['HOME']}/scripts/backup.sh"
+  command "/home/gladstone/scripts/backup.sh"
   minute '0'
   hour '0'
-  user ENV['USER'] || 'gladstone'
+  user 'gladstone'
 end
 
 # Ensure ntfy listener is running via systemd
@@ -38,9 +38,9 @@ systemd_unit 'ntfy_listener.service' do
     After=network.target
 
     [Service]
-    ExecStart=#{ENV['HOME']}/scripts/ntfy_listener.sh
+    ExecStart=/home/gladstone/scripts/ntfy_listener.sh
     Restart=always
-    User=#{ENV['USER'] || 'gladstone'}
+    User=gladstone
 
     [Install]
     WantedBy=multi-user.target

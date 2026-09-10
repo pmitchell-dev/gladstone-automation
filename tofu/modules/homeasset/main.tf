@@ -9,7 +9,7 @@ terraform {
 resource "docker_image" "homeasset" {
   name = "homeasset:latest"
   build {
-    context = pathexpand("~/homeasset")
+    context = "/home/gladstone/homeasset"
   }
 }
 
@@ -24,7 +24,7 @@ resource "docker_container" "homeasset" {
   }
 
   volumes {
-    host_path      = pathexpand("~/homeasset/data")
+    host_path      = "/home/gladstone/homeasset/data"
     container_path = "/data"
   }
 
