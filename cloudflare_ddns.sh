@@ -45,14 +45,14 @@ if [ "$CURRENT_IP" == "$LAST_IP" ]; then
     exit 0
 fi
 
-echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 WAN IP change detected ($LAST_IP -> $CURRENT_IP). Triggering OpenTofu Apply..." >> "$LOG_FILE"
+echo "[$(date '+%Y-%m-%d %H:%M:%S')] 🔄 WAN IP change detected ($LAST_IP -> $CURRENT_IP). Triggering Openterraform Apply..." >> "$LOG_FILE"
 
-cd "$SCRIPT_DIR/tofu"
-tofu apply -var="wan_ip=$CURRENT_IP" -target=module.cloudflare -auto-approve >> "$LOG_FILE" 2>&1
+cd "$SCRIPT_DIR/terraform"
+terraform apply -var="wan_ip=$CURRENT_IP" -target=module.cloudflare -auto-approve >> "$LOG_FILE" 2>&1
 
 if [ $? -eq 0 ]; then
     echo "$CURRENT_IP" > "$CACHE_FILE"
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Successfully updated Cloudflare via OpenTofu to $CURRENT_IP." >> "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ✅ Successfully updated Cloudflare via Openterraform to $CURRENT_IP." >> "$LOG_FILE"
 else
-    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Failed to update Cloudflare via OpenTofu." >> "$LOG_FILE"
+    echo "[$(date '+%Y-%m-%d %H:%M:%S')] ❌ Failed to update Cloudflare via Openterraform." >> "$LOG_FILE"
 fi
