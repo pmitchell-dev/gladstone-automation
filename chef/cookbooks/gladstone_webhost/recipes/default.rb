@@ -1,12 +1,27 @@
 # gladstone_webhost::default
 include_recipe 'gladstone_base::default'
 
+# Sync Application Source Code from GitHub
+%w(
+  JobBoard
+  HomeAsset
+  Gemini-API
+).each do |repo|
+  git "/home/gladstone/#{repo.downcase}" do
+    repository "https://github.com/pmitchell-dev/#{repo}.git"
+    revision 'main'
+    user 'gladstone'
+    group 'gladstone'
+    action :sync
+  end
+end
+
 # Prepare Application Data Directories
 app_dirs = [
   "/home/gladstone/jobboard/data/backups",
   "/home/gladstone/jobboard/cache",
   "/home/gladstone/rustdesk/data",
-  "/home/gladstone/gemini-api"
+  "/home/gladstone/gemini-api/data"
 ]
 
 app_dirs.each do |dir|
