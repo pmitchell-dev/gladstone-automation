@@ -219,28 +219,29 @@ def stage_backup_contents(staging_dir, logger):
             logger.warning(f"  └─ ⚠️ Copying scripts warning: {e}")
 
     # 2. Dump Immich PostgreSQL database if running
-    immich_dir = os.path.expanduser("~/immich")
-    if os.path.exists(immich_dir):
-        immich_target = os.path.join(staging_dir, "data", "immich")
-        os.makedirs(immich_target, exist_ok=True)
-        dump_path = os.path.join(immich_target, "immich_db_dump.sql")
-        
-        try:
+    # Check if the container exists instead of checking for ~/immich directory
+    try:
+        check_container = subprocess.run(
+            ["docker", "inspect", "immich_postgres"],
+            capture_output=True, text=True
+        )
+        if check_container.returncode == 0:
+            immich_target = os.path.join(staging_dir, "data", "immich")
+            os.makedirs(immich_target, exist_ok=True)
+            dump_path = os.path.join(immich_target, "immich_db_dump.sql")
+            
             res = subprocess.run(
                 ["docker", "exec", "immich_postgres", "pg_dumpall", "-U", "postgres"],
-                capture_output=True, text=True, timeout=60
+                capture_output=True, text=True, timeout=120
             )
-            if res.returncode != 0:
-                res = subprocess.run(
-                    ["docker", "exec", "immich-postgres", "pg_dumpall", "-U", "postgres"],
-                    capture_output=True, text=True, timeout=60
-                )
             if res.returncode == 0 and res.stdout.strip():
                 with open(dump_path, "w", encoding="utf-8") as f:
                     f.write(res.stdout)
                 logger.info("  └─ ✅ Immich Database Dump (SQL): Staged -> data/immich/immich_db_dump.sql")
-        except Exception as e:
-            logger.warning(f"  └─ ⚠️ Immich pg_dump notice: {e}")
+            else:
+                logger.warning(f"  └─ ⚠️ Immich pg_dump failed: {res.stderr.strip()}")
+    except Exception as e:
+        logger.warning(f"  └─ ⚠️ Immich pg_dump notice: {e}")
 
     # 3. Copy App Data Sources
     app_summary = []

@@ -30,6 +30,10 @@ resource "docker_image" "postgres" {
   name = "ghcr.io/immich-app/postgres:14-vectorchord0.4.3-pgvectors0.2.0@sha256:bcf63357191b76a916ae5eb93464d65c07511da41e3bf7a8416db519b40b1c23"
 }
 
+resource "docker_volume" "immich_postgres_data" {
+  name = "immich_postgres_data"
+}
+
 resource "docker_container" "database" {
   name    = "immich_postgres"
   image   = docker_image.postgres.name
@@ -48,7 +52,7 @@ resource "docker_container" "database" {
   ]
 
   volumes {
-    host_path      = "/mnt/backups/immich_db"
+    volume_name    = docker_volume.immich_postgres_data.name
     container_path = "/var/lib/postgresql/data"
   }
 }
