@@ -8,7 +8,7 @@ WORKDIR /app
 RUN pip install --no-cache-dir flask flask-cors requests gunicorn
 
 # Copy server code
-COPY gemini_api_server.py .
+COPY chef/cookbooks/gladstone_base/files/default/scripts/gemini_api_server.py .
 
 EXPOSE 5050
 
