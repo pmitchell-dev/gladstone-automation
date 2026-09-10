@@ -55,7 +55,7 @@ resource "docker_container" "database" {
 
 # Immich Server
 resource "docker_image" "immich_server" {
-  name = "ghcr.io/immich-app/immich-server:release"
+  name = "ghcr.io/immich-app/immich-server:v3.2.0"
 }
 
 resource "docker_container" "immich_server" {
