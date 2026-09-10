@@ -84,7 +84,7 @@ if ! shopt -oq posix; then
 fi
 
 # Custom user integrations
-[ -f "$HOME/scripts/aliases.sh" ] && source "$HOME/scripts/aliases.sh"
+
 [ -f ~/.config/terminalbuddy/terminalbuddy.sh ] && source ~/.config/terminalbuddy/terminalbuddy.sh
 
 # Terminal and Gemini CLI environment fixes

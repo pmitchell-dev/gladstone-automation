@@ -20,9 +20,9 @@ alias sync="bash $SCRIPT_DIR/sync.sh"
 alias rebuild="bash $SCRIPT_DIR/rebuild.sh"
 alias update="bash $SCRIPT_DIR/update.sh"
 alias reinstall="bash $SCRIPT_DIR/install.sh"
-alias fresh-install="cd ~ && rm -rf ~/scripts && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/scripts && cd ~/scripts && ./install.sh"
-alias fresh-reinstall="cd ~ && rm -rf ~/scripts && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/scripts && cd ~/scripts && ./install.sh"
-alias git-install="cd ~ && rm -rf ~/scripts && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/scripts && cd ~/scripts && ./install.sh"
+alias fresh-install="cd ~ && rm -rf ~/gladstone-automation && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/gladstone-automation && cd ~/gladstone-automation/chef && sudo chef-client -z"
+alias fresh-reinstall="cd ~ && rm -rf ~/gladstone-automation && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/gladstone-automation && cd ~/gladstone-automation/chef && sudo chef-client -z"
+alias git-install="cd ~ && rm -rf ~/gladstone-automation && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/gladstone-automation && cd ~/gladstone-automation/chef && sudo chef-client -z"
 alias backup="bash $SCRIPT_DIR/backup.sh"
 alias restore="bash $SCRIPT_DIR/restore.sh"
 alias sync-photos="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
@@ -43,8 +43,3 @@ cycle() {
     nohup /bin/bash "$SCRIPT_DIR/ntfy_listener.sh" > "$SCRIPT_DIR/logs/ntfy.log" 2>&1 &
     echo "? Listener restarted. Logging to $SCRIPT_DIR/logs/ntfy.log"
 }
-
-# --- BASH INTEGRATION ---
-if ! grep -q "scripts/aliases.sh" ~/.bashrc; then
-    echo 'source "$HOME/scripts/aliases.sh"' >> ~/.bashrc
-fi

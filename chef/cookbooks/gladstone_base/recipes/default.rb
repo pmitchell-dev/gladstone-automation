@@ -56,11 +56,25 @@ ruby_block 'migrate_pi_data' do
   action :run
 end
 
-# Deploy base scripts and aliases
-cookbook_file "/home/gladstone/.bash_aliases" do
+# Deploy base scripts and bash profile
+remote_directory '/home/gladstone/scripts' do
+  source 'scripts'
+  owner 'gladstone'
+  group 'gladstone'
+  mode '0755'
+  action :create
+end
+
+cookbook_file '/home/gladstone/.bashrc' do
   source 'bashrc.webhost.template'
   owner 'gladstone'
   group 'gladstone'
   mode '0644'
   action :create
+end
+
+link '/home/gladstone/.bash_aliases' do
+  to '/home/gladstone/scripts/aliases.sh'
+  owner 'gladstone'
+  group 'gladstone'
 end
