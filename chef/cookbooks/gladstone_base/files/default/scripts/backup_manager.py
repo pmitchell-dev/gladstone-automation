@@ -51,9 +51,7 @@ RETENTION_COUNT = 7  # Keep top 7 daily backups
 DATA_SOURCES = [
     (os.path.expanduser("~/homeasset/data"), "data/homeasset", "HomeAsset Data"),
     (os.path.expanduser("~/jobboard/data"), "data/jobboard", "JobBoard Data"),
-    (os.path.expanduser("~/immich/pgdata"), "data/immich/pgdata", "Immich Database (pgdata)"),
-    (os.path.expanduser("~/immich/.env"), "data/immich/.env", "Immich Environment Config"),
-    (os.path.expanduser("~/immich/docker-compose.yml"), "data/immich/docker-compose.yml", "Immich Docker Compose"),
+    (os.path.expanduser("~/gladstone-automation"), "data/gladstone-automation", "Gladstone IaC Repository"),
     (os.path.expanduser("~/.config/terminalbuddy"), "data/terminalbuddy", "TerminalBuddy Config"),
 ]
 
