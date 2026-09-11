@@ -67,3 +67,36 @@ Right now, anyone who goes to `jobs.dark-ops.cc` can see your app. We need to lo
 - Turn off Wi-Fi on your phone and go to `https://jobs.dark-ops.cc`.
 - You should be greeted by a Cloudflare Access screen asking for your email.
 - Enter your email, type in the PIN you receive, and you will be securely granted access to your internal app!
+
+## Phase 4: Allowing Mobile Apps (Like Immich) to Connect
+
+When you lock down your domains with Cloudflare Zero Trust (Phase 3), mobile apps like the Immich Android app will break because they cannot process the Cloudflare Email PIN login screen. 
+
+You have two main options to fix this while keeping your server safe:
+
+### Option 1: Use the Cloudflare One (WARP) App (Most Secure)
+This method keeps your Immich instance 100% hidden behind Zero Trust, but requires an app on your phone.
+
+1. In your Cloudflare Zero Trust dashboard, go to **Settings** -> **WARP Client**.
+2. Under **Device enrollment**, click **Manage** and set up a rule to allow your email address to enroll devices.
+3. On your Android phone, download the **Cloudflare One Agent (WARP)** app from the Play Store.
+4. Open the app, go to Settings -> Account -> **Login to Zero Trust**.
+5. Enter your Zero Trust team name (found in your Cloudflare dashboard under Settings -> Custom Pages -> Team domain).
+6. Log in with your email PIN.
+7. Turn on the WARP connection in the app. 
+8. The Immich app will now be able to connect to `https://photos.dark-ops.cc` seamlessly!
+
+### Option 2: Bypass Zero Trust for Immich's API (Easier)
+This method opens the Immich API to the public internet, relying purely on Immich's built-in login screen for security. The web interface will still be protected by Cloudflare Access.
+
+**Here is how to properly bypass the Immich API:**
+1. In Cloudflare Zero Trust, go to **Access** -> **Applications** and click **Add an application** (Self-hosted).
+2. Name it `Immich API Bypass`.
+3. Set the Domain to `photos.dark-ops.cc` and the **Path** to `api` (no slashes needed, just `api`).
+4. Click Next to go to Policies.
+5. Name the policy `Bypass API`.
+6. Set the **Action** to `Bypass`.
+7. Under **Include**, set the Selector to `Everyone`.
+8. Save the application.
+
+Now, going to `https://photos.dark-ops.cc` in a browser will still ask for a PIN, but the Immich Android App will be able to talk to `https://photos.dark-ops.cc/api` freely and you can log in using your normal Immich username/password!
