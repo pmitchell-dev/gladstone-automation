@@ -154,7 +154,7 @@ if [ ! -d "$TARGET_DIR" ] || [ ! -w "$TARGET_DIR" ]; then
 fi
 
 # Prepare rclone flags
-RCLONE_FLAGS=("--create-empty-src-dirs" "--transfers" "4" "--checkers" "8")
+RCLONE_FLAGS=("--create-empty-src-dirs" "--transfers" "4" "--checkers" "8" "--local-no-set-modtime" "--no-update-modtime")
 if [ "$DRY_RUN" -eq 1 ]; then
     RCLONE_FLAGS+=("--dry-run")
     log_msg "INFO" "Running in DRY-RUN mode."
