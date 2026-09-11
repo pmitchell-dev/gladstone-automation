@@ -6,7 +6,7 @@
 CRON_TMP=$(mktemp)
 crontab -l > "$CRON_TMP" 2>/dev/null || true
 
-HUB_DIR="$HOME/gladstone-automation"
+HUB_DIR="$HOME/scripts"
 
 # Remove old entries to prevent duplicates
 sed -i '/get_printer_status.sh/d' "$CRON_TMP"
