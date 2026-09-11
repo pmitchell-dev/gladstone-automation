@@ -71,6 +71,8 @@ def run_stream():
                 print("Connected! Listening for events...")
                 for chunk in response.iter_lines(decode_unicode=True):
                     if chunk:
+                        if isinstance(chunk, bytes):
+                            chunk = chunk.decode('utf-8', errors='replace')
                         buffer += chunk + "\n"
                         
                         # Once a complete XML block boundary is collected
