@@ -95,6 +95,15 @@ If you want to use the Cloudflare One app to access your Annke cameras, but you 
 5. Save the changes. 
 *Now, when the Cloudflare One app is turned on, it will ONLY intercept traffic going to your cameras. All other web traffic on your phone will function normally!*
 
+### Option 1b: Private Network Routing (Best for IP Cameras and NVRs)
+If your mobile app cannot handle Zero Trust Access policies (and you cannot create a `WARP` bypass policy), the absolute best method is Private Network Routing. Instead of exposing a public URL, you use WARP to securely tunnel directly to the camera's local IP address.
+1. In your Cloudflare Zero Trust dashboard, go to **Networks** -> **Tunnels** and edit your Tunnel.
+2. Go to the **Private Network** (or CIDR routes) tab.
+3. Add a route for your camera's IP: `192.168.50.75/32` (The `/32` means just this single IP).
+4. Go to **Settings** -> **Network** -> **Split Tunnels** (ensure it is on **Include**).
+5. Click **Manage** and add an **IP Address** entry for `192.168.50.75/32`.
+6. Now, turn on Cloudflare One on your phone, open your camera app, and type in the local IP `192.168.50.75`. It will instantly connect!
+
 ### Option 2: Bypass Zero Trust for Immich's API (Easier)
 This method opens the Immich API to the public internet, relying purely on Immich's built-in login screen for security. The web interface will still be protected by Cloudflare Access.
 
