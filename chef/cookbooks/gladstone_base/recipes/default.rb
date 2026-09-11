@@ -125,3 +125,18 @@ cron 'docker_prune' do
   command 'docker system prune -af --volumes'
   user 'gladstone'
 end
+
+# Clean up legacy Hub scripts that are no longer needed on the Spoke
+%w(
+  printer_alert.sh
+  printer_health.sh
+  net_speed.sh
+  ntfy_listener.sh
+  track_flight.sh
+  get_printer_status.sh
+  relay.sh
+).each do |script|
+  file "/home/gladstone/scripts/#{script}" do
+    action :delete
+  end
+end
