@@ -46,7 +46,7 @@ while true; do
                 bash "$SCRIPT_DIR/sync.sh" &
             elif [[ "$MSG" == "cycle" ]]; then
                 # We use the function logic here to restart
-                curl -s -d "🔄 Restarting listener..." ntfy.sh/$TOPIC
+                curl -s -d "🔄 Restarting listener..." https://ntfy.sh/$TOPIC
                 source /home/gladstone/.bashrc && cycle &
             elif [[ "$MSG" == "reinstall" || "$MSG" == "rebuild" ]]; then
                 bash "$SCRIPT_DIR/rebuild.sh" &
@@ -54,7 +54,7 @@ while true; do
                 bash "$SCRIPT_DIR/track_flight.sh" "${BASH_REMATCH[1]}${BASH_REMATCH[2]}" "${BASH_REMATCH[4]}" &
             elif [[ "$MSG" == "mute_watchdog" ]]; then
                 date -d "tomorrow 08:00" +%s > /tmp/gladstone_ntfy_mute
-                curl -s -H "Priority: 3" -d "🔕 Watchdog alerts muted until 8 AM tomorrow." ntfy.sh/$TOPIC &
+                curl -s -H "Priority: 3" -d "🔕 Watchdog alerts muted until 8 AM tomorrow." https://ntfy.sh/$TOPIC &
             fi
         fi
     done

@@ -18,5 +18,5 @@ if [[ -n "$ERROR_MSG" ]]; then
     # Updated: Includes Hostname and Priority Header
     curl -H "Priority: high" \
          -d "[$HOSTNAME] ??? Printer Alert: $ERROR_MSG" \
-         ntfy.sh/$TOPIC
+         https://ntfy.sh/$TOPIC
 fi

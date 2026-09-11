@@ -24,7 +24,7 @@ if [ $? -eq 0 ]; then
     echo "? Sync Successful."
     
     # Updated: Includes Hostname
-    curl -d "[$HOSTNAME] Cloud Sync Complete" ntfy.sh/patrick_mitch_pi5_x9k2v_alerts
+    curl -d "[$HOSTNAME] Cloud Sync Complete" https://ntfy.sh/patrick_mitch_pi5_x9k2v_alerts
 else
-    curl -d "[$HOSTNAME] ? Cloud Sync FAILED" ntfy.sh/patrick_mitch_pi5_x9k2v_alerts
+    curl -d "[$HOSTNAME] ? Cloud Sync FAILED" https://ntfy.sh/patrick_mitch_pi5_x9k2v_alerts
 fi

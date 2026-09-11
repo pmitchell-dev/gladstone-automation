@@ -61,4 +61,4 @@ fi
 
 # --- DISPATCH ---
 # Send the compiled report to your phone via the public ntfy.sh endpoint.
-curl -s -d "$HEALTH_REPORT" ntfy.sh/$TOPIC > /dev/null
+curl -s -d "$HEALTH_REPORT" https://ntfy.sh/$TOPIC > /dev/null

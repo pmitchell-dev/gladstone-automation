@@ -29,7 +29,7 @@ HELP_MSG="🛠️ $HOSTNAME Bot Commands:
 
 # --- EXECUTION ---
 # 1. Send the text-based Guide to ntfy
-curl -s -d "$HELP_MSG" ntfy.sh/$TOPIC > /dev/null
+curl -s -d "$HELP_MSG" https://ntfy.sh/$TOPIC > /dev/null
 
 # 2. PROACTIVE UPDATE:
 # Immediately follow up by running the actual Printer Health script.

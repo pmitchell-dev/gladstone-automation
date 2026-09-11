@@ -39,7 +39,7 @@ curl -H "Priority: $PRIORITY" \
      -H "Title: $TITLE ($HOSTNAME)" \
      -H "Actions: http, Mute rest of the day, https://ntfy.sh/patrick_mitch_pi5_x9k2v_actions, method=POST, body=mute_watchdog" \
      -d "$MESSAGE" \
-     "ntfy.sh/$TOPIC"
+     "https://ntfy.sh/$TOPIC"
 
 if [ $? -eq 0 ]; then
     echo "? Relay Successful."

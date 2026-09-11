@@ -63,4 +63,4 @@ fi
 
 # --- 3. DISPATCH ---
 # Sends the final status report to your phone via the public ntfy cloud.
-curl -s -d "$MSG" ntfy.sh/$NTFY_TOPIC
+curl -s -d "$MSG" https://ntfy.sh/$NTFY_TOPIC

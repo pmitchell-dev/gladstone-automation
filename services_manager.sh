@@ -37,7 +37,7 @@ if [ "$MODE" == "webhost" ]; then
                 if [[ "$MUTE_UNTIL" =~ ^[0-9]+$ ]] && [ "$NOW" -ge "$MUTE_UNTIL" ]; then
                     curl -H "Priority: 5" \
                          -H "Actions: http, Mute rest of the day, https://ntfy.sh/patrick_mitch_pi5_x9k2v_actions, method=POST, body=mute_watchdog" \
-                         -d "[$HOSTNAME] ?? FATAL: HomeAsset Container Failed." ntfy.sh/$TOPIC
+                         -d "[$HOSTNAME] ?? FATAL: HomeAsset Container Failed." https://ntfy.sh/$TOPIC
                 fi
             fi
         else
