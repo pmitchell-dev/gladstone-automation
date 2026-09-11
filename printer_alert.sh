@@ -5,7 +5,7 @@
 # ==========================================================
 
 STATUS_FILE="/home/gladstone/printer_data/status.html"
-TOPIC="patrick_mitch_hub_x9k2v_alerts"
+TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
 if [ ! -f "$STATUS_FILE" ]; then
     exit 1

@@ -17,7 +17,7 @@ DEST_FILTER=$(echo "${2}" | tr '[:lower:]' '[:upper:]')
 # API KEYS (Note: Aviationstack key still needs to be inserted below)
 AIRLABS_KEY="4dc4b2db-5edb-432d-b858-50b9aa4e3afd"
 AVSTACK_KEY="YOUR_AVIATIONSTACK_API_KEY"
-NTFY_TOPIC="patrick_mitch_hub_x9k2v_alerts"
+NTFY_TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
 echo "✈️ Querying $FLIGHT_IATA..."
 

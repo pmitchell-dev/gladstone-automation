@@ -17,7 +17,7 @@
 - **Watchdog:** The `services_manager.sh` is the master process monitor. Any new persistent service must be added to `services.registry`.
 
 ## 📱 Communication (Ntfy)
-- **Topic:** `patrick_mitch_hub_x9k2v_alerts`
+- **Topic:** `patrick_mitch_pi5_x9k2v_alerts`
 - **Standard:** Use headers for priority: `-H "Priority: high"` for Printer Jams, `-H "Priority: default"` for Heartbeats.
 
 ## 🔄 Deployment Workflow

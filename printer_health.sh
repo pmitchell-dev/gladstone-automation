@@ -11,7 +11,7 @@
 
 # --- CONFIGURATION ---
 STATUS_FILE="/home/gladstone/printer_data/status.html"
-TOPIC="patrick_mitch_hub_x9k2v_alerts"
+TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
 # --- DATA REFRESH ---
 # First, trigger the scraper script to ensure we have the newest HTML data.

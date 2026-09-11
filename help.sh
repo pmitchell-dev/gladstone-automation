@@ -9,7 +9,7 @@
 # ==========================================================
 
 # --- CONFIGURATION ---
-TOPIC="patrick_mitch_hub_x9k2v_alerts"
+TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
 # --- THE HELP MENU ---
 # Using $HOSTNAME makes the message dynamic (e.g., "Gladstone-hub Bot")

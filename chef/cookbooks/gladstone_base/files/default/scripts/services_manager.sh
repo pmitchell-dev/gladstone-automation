@@ -7,7 +7,7 @@ LOG_DIR="$HOME/scripts/logs"
 mkdir -p "$LOG_DIR"
 RETRY_FILE="/tmp/service_retries"
 ID_FILE="$HOME/.gladstone_mode"
-TOPIC="patrick_mitch_hub_x9k2v_alerts"
+TOPIC="patrick_mitch_pi5_x9k2v_alerts"
 
 RESTORE_LOCK="/tmp/gladstone_restore_in_progress"
 if [ -f "$RESTORE_LOCK" ]; then
@@ -36,7 +36,7 @@ if [ "$MODE" == "webhost" ]; then
                 MUTE_UNTIL=$(cat /tmp/gladstone_ntfy_mute 2>/dev/null || echo 0)
                 if [[ "$MUTE_UNTIL" =~ ^[0-9]+$ ]] && [ "$NOW" -ge "$MUTE_UNTIL" ]; then
                     curl -H "Priority: 5" \
-                         -H "Actions: http, Mute rest of the day, https://ntfy.sh/patrick_mitch_hub_x9k2v_actions, method=POST, body=mute_watchdog" \
+                         -H "Actions: http, Mute rest of the day, https://ntfy.sh/patrick_mitch_pi5_x9k2v_actions, method=POST, body=mute_watchdog" \
                          -d "[$HOSTNAME] ?? FATAL: HomeAsset Container Failed." ntfy.sh/$TOPIC
                 fi
             fi

@@ -102,7 +102,6 @@ end
   printer_alert.sh
   printer_health.sh
   net_speed.sh
-  ntfy_listener.sh
   track_flight.sh
   get_printer_status.sh
   relay.sh
