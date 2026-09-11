@@ -62,6 +62,7 @@ remote_directory '/home/gladstone/scripts' do
   owner 'gladstone'
   group 'gladstone'
   mode '0755'
+  files_mode '0755'
   action :create
 end
 
