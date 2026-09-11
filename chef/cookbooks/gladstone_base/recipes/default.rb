@@ -97,35 +97,6 @@ remote_file '/home/gladstone/.config/terminalbuddy/terminalbuddy.sh' do
   action :create
 end
 
-# Webhost Maintenance Crontabs
-cron 'webhost_backup' do
-  minute '0'
-  hour '0'
-  command '/home/gladstone/scripts/backup.sh --mode webhost'
-  user 'gladstone'
-end
-
-cron 'rclone_photos' do
-  minute '0'
-  hour '2'
-  command '/home/gladstone/scripts/rclone_gdrive_photos.sh'
-  user 'gladstone'
-end
-
-cron 'services_manager' do
-  minute '*/5'
-  command '/home/gladstone/scripts/services_manager.sh'
-  user 'gladstone'
-end
-
-cron 'docker_prune' do
-  minute '0'
-  hour '3'
-  weekday '0'
-  command 'docker system prune -af --volumes'
-  user 'gladstone'
-end
-
 # Clean up legacy Hub scripts that are no longer needed on the Spoke
 %w(
   printer_alert.sh

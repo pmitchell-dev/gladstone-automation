@@ -80,6 +80,16 @@ cron_d 'gdrive_photos_sync' do
   hour '2'
   user 'gladstone'
 end
+
+# Cron job to prune Docker weekly (Sundays at 03:00 AM)
+cron_d 'docker_prune' do
+  command "docker system prune -af --volumes"
+  minute '0'
+  hour '3'
+  weekday '0'
+  user 'gladstone'
+end
+
 # ==========================================
 # Production Vault Setup
 # ==========================================
