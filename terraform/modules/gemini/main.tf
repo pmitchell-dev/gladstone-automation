@@ -17,7 +17,7 @@ resource "docker_image" "gemini_api" {
     dir_sha1 = sha1(join("", [
       for f in try(fileset("${path.root}/..", "**"), []) : 
       filesha1("${path.root}/../${f}")
-      if !length(regexall("^(\\.git)/", f))
+      if length(regexall("^(\\.git)/", f)) == 0
     ]))
   }
 }

@@ -15,7 +15,7 @@ resource "docker_image" "jobboard" {
     dir_sha1 = sha1(join("", [
       for f in try(fileset("${path.root}/../jobboard", "**"), []) : 
       filesha1("${path.root}/../jobboard/${f}")
-      if !length(regexall("^(\\.git|node_modules)/", f))
+      if length(regexall("^(\\.git|node_modules)/", f)) == 0
     ]))
   }
 }

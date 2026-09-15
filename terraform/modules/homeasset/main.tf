@@ -15,7 +15,7 @@ resource "docker_image" "homeasset" {
     dir_sha1 = sha1(join("", [
       for f in try(fileset("${path.root}/../homeasset", "**"), []) : 
       filesha1("${path.root}/../homeasset/${f}")
-      if !length(regexall("^(\\.git|node_modules|venv|\\.venv)/", f))
+      if length(regexall("^(\\.git|node_modules|venv|\\.venv)/", f)) == 0
     ]))
   }
 }
