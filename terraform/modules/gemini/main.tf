@@ -14,11 +14,8 @@ resource "docker_image" "gemini_api" {
     dockerfile = "Dockerfile.gemini"
   }
   triggers = {
-    dir_sha1 = sha1(join("", [
-      for f in try(fileset("${path.root}/..", "**"), []) : 
-      filesha1("${path.root}/../${f}")
-      if length(regexall("^(\\.git)/", f)) == 0
-    ]))
+    dockerfile_sha = filesha1("${path.root}/../Dockerfile.gemini")
+    script_sha     = filesha1("${path.root}/../chef/cookbooks/gladstone_base/files/default/scripts/gemini_api_server.py")
   }
 }
 
