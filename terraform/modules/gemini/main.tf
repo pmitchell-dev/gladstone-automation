@@ -13,12 +13,19 @@ resource "docker_image" "gemini_api" {
     context    = "${path.root}/.."
     dockerfile = "Dockerfile.gemini"
   }
+  triggers = {
+    dir_sha1 = sha1(join("", [
+      for f in try(fileset("${path.root}/..", "**"), []) : 
+      filesha1("${path.root}/../${f}")
+      if !length(regexall("^(\\.git)/", f))
+    ]))
+  }
 }
 
 # Container deployment using Vault injected secret
 resource "docker_container" "gemini_api" {
   name  = "gemini-api"
-  image = docker_image.gemini_api.name
+  image = docker_image.gemini_api.image_id
   restart = "unless-stopped"
 
   ports {

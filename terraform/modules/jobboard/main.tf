@@ -11,11 +11,18 @@ resource "docker_image" "jobboard" {
   build {
     context = "${path.root}/../jobboard"
   }
+  triggers = {
+    dir_sha1 = sha1(join("", [
+      for f in try(fileset("${path.root}/../jobboard", "**"), []) : 
+      filesha1("${path.root}/../jobboard/${f}")
+      if !length(regexall("^(\\.git|node_modules)/", f))
+    ]))
+  }
 }
 
 resource "docker_container" "jobboard" {
   name    = "jobboard"
-  image   = docker_image.jobboard.name
+  image   = docker_image.jobboard.image_id
   restart = "unless-stopped"
 
   ports {
