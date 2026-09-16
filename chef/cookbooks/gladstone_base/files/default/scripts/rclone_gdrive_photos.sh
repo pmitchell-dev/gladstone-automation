@@ -43,7 +43,7 @@ CUSTOM_TARGET=""
 for arg in "$@"; do
     case $arg in
         --dry-run) DRY_RUN=1 ;;
-        --verbose) VERBOSE=1 ;;
+        --verbose|-v) VERBOSE=1 ;;
         --remote=*) CUSTOM_REMOTE="${arg#*=}" ;;
         --target=*) CUSTOM_TARGET="${arg#*=}" ;;
     esac
@@ -154,7 +154,7 @@ if [ ! -d "$TARGET_DIR" ] || [ ! -w "$TARGET_DIR" ]; then
 fi
 
 # Prepare rclone flags
-RCLONE_FLAGS=("--create-empty-src-dirs" "--transfers" "4" "--checkers" "8" "--local-no-set-modtime" "--no-update-modtime")
+RCLONE_FLAGS=("--create-empty-src-dirs" "--transfers" "4" "--checkers" "8" "--no-update-modtime")
 if [ "$DRY_RUN" -eq 1 ]; then
     RCLONE_FLAGS+=("--dry-run")
     log_msg "INFO" "Running in DRY-RUN mode."
