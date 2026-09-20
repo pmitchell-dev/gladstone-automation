@@ -97,10 +97,19 @@ REMOTE_SRC="${CUSTOM_REMOTE:-$GDRIVE_REMOTE}"
 # Target directory resolution (CLI flag > local rclone_photos.env)
 TARGET_DIR="${CUSTOM_TARGET:-$BACKUP_TARGET_DIR}"
 
+# Patrick and Torrey sync resolution
+REMOTE_ROOT="${REMOTE_SRC%:*}"
+REMOTE_PT_SRC="${REMOTE_ROOT}:Patrick and Torrey"
+TARGET_PT_DIR="$(dirname "$TARGET_DIR")/patrick_and_torrey"
+
 log_msg "INFO" "=========================================================="
 log_msg "INFO" "Starting Google Drive 'Family Photos' RClone Mirror Sync"
 log_msg "INFO" "Remote Source: $REMOTE_SRC"
 log_msg "INFO" "Target Destination: $TARGET_DIR"
+log_msg "INFO" "----------------------------------------------------------"
+log_msg "INFO" "Starting Google Drive 'Patrick and Torrey' RClone Mirror Sync"
+log_msg "INFO" "Remote Source: $REMOTE_PT_SRC"
+log_msg "INFO" "Target Destination: $TARGET_PT_DIR"
 
 # Ensure rclone binary is installed
 if ! command -v rclone &>/dev/null; then
@@ -176,9 +185,40 @@ fi
 if [ $SYNC_STATUS -eq 0 ]; then
     log_msg "INFO" "✅ Google Drive 'Family Photos' mirror sync completed successfully."
     curl -s -d "[$HOSTNAME] 📸 Google Drive 'Family Photos' mirror sync completed successfully." "$ALERT_TOPIC" >/dev/null || true
-    exit 0
 else
     log_msg "ERROR" "❌ Google Drive 'Family Photos' mirror sync failed (Exit Code: $SYNC_STATUS)."
     curl -s -d "[$HOSTNAME] ❌ Google Drive 'Family Photos' mirror sync failed (Exit Code: $SYNC_STATUS)." "$ALERT_TOPIC" >/dev/null || true
     exit $SYNC_STATUS
+fi
+
+log_msg "INFO" "----------------------------------------------------------"
+log_msg "INFO" "Executing rclone sync for 'Patrick and Torrey'..."
+
+# Ensure target output folder exists for Patrick and Torrey and user has write permissions
+if [ ! -d "$TARGET_PT_DIR" ]; then
+    mkdir -p "$TARGET_PT_DIR" 2>/dev/null || true
+fi
+
+if [ ! -d "$TARGET_PT_DIR" ] || [ ! -w "$TARGET_PT_DIR" ]; then
+    log_msg "ERROR" "❌ Target directory $TARGET_PT_DIR does not exist or is not writable by user $USER."
+    curl -s -d "[$HOSTNAME] ⚠️ RClone photo sync target path ($TARGET_PT_DIR) is not writable!" "$ALERT_TOPIC" >/dev/null || true
+    exit 1
+fi
+
+if [ "$VERBOSE" -eq 1 ]; then
+    rclone sync "$REMOTE_PT_SRC" "$TARGET_PT_DIR" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+    SYNC_STATUS_PT=${PIPESTATUS[0]}
+else
+    rclone sync "$REMOTE_PT_SRC" "$TARGET_PT_DIR" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
+    SYNC_STATUS_PT=$?
+fi
+
+if [ $SYNC_STATUS_PT -eq 0 ]; then
+    log_msg "INFO" "✅ Google Drive 'Patrick and Torrey' mirror sync completed successfully."
+    curl -s -d "[$HOSTNAME] 📸 Google Drive 'Patrick and Torrey' mirror sync completed successfully." "$ALERT_TOPIC" >/dev/null || true
+    exit 0
+else
+    log_msg "ERROR" "❌ Google Drive 'Patrick and Torrey' mirror sync failed (Exit Code: $SYNC_STATUS_PT)."
+    curl -s -d "[$HOSTNAME] ❌ Google Drive 'Patrick and Torrey' mirror sync failed (Exit Code: $SYNC_STATUS_PT)." "$ALERT_TOPIC" >/dev/null || true
+    exit $SYNC_STATUS_PT
 fi

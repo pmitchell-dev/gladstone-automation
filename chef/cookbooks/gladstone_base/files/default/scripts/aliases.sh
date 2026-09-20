@@ -30,6 +30,7 @@ alias backup="bash $SCRIPT_DIR/backup.sh"
 alias restore="bash $SCRIPT_DIR/restore.sh"
 alias sync-photos="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
 alias photos-sync="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
+alias google_update="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
 alias features="bash $SCRIPT_DIR/features.sh"
 alias pi-features="bash $SCRIPT_DIR/features.sh"
 alias refresh='source ~/.bashrc && echo "🔄 Environment refreshed."'
