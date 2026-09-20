@@ -104,4 +104,10 @@ resource "docker_container" "immich_server" {
     container_path = "/mnt/backups/family_photos"
     read_only      = true
   }
+
+  volumes {
+    host_path      = "/mnt/backups/patrick_and_torrey"
+    container_path = "/mnt/backups/patrick_and_torrey"
+    read_only      = true
+  }
 }
