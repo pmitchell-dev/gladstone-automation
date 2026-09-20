@@ -71,10 +71,10 @@ generate_dashboard() {
     echo -e "${BLUE}[ LOCAL COMMANDS ] (Bash):${NC}"
     echo -e "   - ${GREEN}features:${NC} Manage enabled services & container stacks"
     echo -e "   - ${GREEN}refresh:${NC}  Reload terminal environment (aliases/paths)"
-    echo -e "   - ${GREEN}update:${NC}   Fetch and install system updates"
+    echo -e "   - ${GREEN}run-chef:${NC} Pull repos and run Chef configuration"
+    echo -e "   - ${GREEN}run-terraform:${NC} Pull repos and run Terraform apply"
+    echo -e "   - ${GREEN}update-repos:${NC} Scan and pull git repos"
     echo -e "   - ${GREEN}db:${NC}       Launch this webhost dashboard"
-    echo -e "   - ${GREEN}sync:${NC}     Backup codebase to GitHub repository"
-    echo -e "   - ${GREEN}rebuild:${NC}  Pull latest code and re-deploy Docker containers"
     echo -e "${CYAN}------------------------------------------------------------${NC}"
 }
 

@@ -19,10 +19,6 @@ fi
 alias run-chef='cd ~/gladstone-automation && git pull && cd chef && sudo chef-client -z -r "recipe[gladstone_base::default],recipe[gladstone_webhost::default]"'
 alias run-terraform='cd ~/gladstone-automation && git pull && cd terraform && terraform apply'
 alias update-repos="bash $SCRIPT_DIR/update_repos.sh"
-alias sync="bash $SCRIPT_DIR/sync.sh"
-alias rebuild="bash $SCRIPT_DIR/rebuild.sh"
-alias update="bash $SCRIPT_DIR/update.sh"
-alias reinstall="bash $SCRIPT_DIR/install.sh"
 alias fresh-install="cd ~ && rm -rf ~/gladstone-automation && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/gladstone-automation && cd ~/gladstone-automation/chef && sudo chef-client -z"
 alias fresh-reinstall="cd ~ && rm -rf ~/gladstone-automation && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/gladstone-automation && cd ~/gladstone-automation/chef && sudo chef-client -z"
 alias git-install="cd ~ && rm -rf ~/gladstone-automation && git clone https://github.com/pmitchell-dev/gladstone-automation.git ~/gladstone-automation && cd ~/gladstone-automation/chef && sudo chef-client -z"
