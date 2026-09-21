@@ -27,7 +27,7 @@ resource "docker_container" "hbbr" {
 resource "docker_container" "hbbs" {
   name    = "hbbs"
   image   = docker_image.rustdesk.name
-  command = ["hbbs"]
+  command = ["hbbs", "-r", "rustdesk.dark-ops.cc"]
   restart = "always"
 
   network_mode = "host"
