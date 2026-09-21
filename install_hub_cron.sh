@@ -14,6 +14,7 @@ sed -i '/printer_alert.sh/d' "$CRON_TMP"
 sed -i '/net_speed.sh/d' "$CRON_TMP"
 sed -i '/backup.sh --mode ntfy/d' "$CRON_TMP"
 sed -i '/services_manager.sh/d' "$CRON_TMP"
+sed -i '/cloudflare_ddns.sh/d' "$CRON_TMP"
 sed -i '/Hub Master Crontab/d' "$CRON_TMP"
 
 cat << EOF >> "$CRON_TMP"
@@ -23,6 +24,7 @@ cat << EOF >> "$CRON_TMP"
 0 */6 * * * $HUB_DIR/net_speed.sh
 0 0 * * * $HUB_DIR/backup.sh --mode ntfy
 */5 * * * * $HUB_DIR/services_manager.sh
+*/15 * * * * $HUB_DIR/cloudflare_ddns.sh
 EOF
 
 crontab "$CRON_TMP"
