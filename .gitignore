@@ -36,3 +36,6 @@ Education/
 .terraform.lock.hcl
 *.tfstate
 *.tfstate.backup
+
+# Cloudflare DDNS configuration
+.env.cloudflare
