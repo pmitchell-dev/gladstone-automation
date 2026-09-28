@@ -41,3 +41,7 @@ module "immich" {
   source = "./modules/immich"
   db_password = data.vault_generic_secret.postgres.data["password"]
 }
+
+module "portfolio" {
+  source = "./modules/portfolio"
+}
