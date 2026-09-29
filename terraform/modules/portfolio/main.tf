@@ -21,7 +21,7 @@ resource "docker_container" "portfolio" {
   }
 
   volumes {
-    host_path      = "/home/gladstone/Showcase"
+    host_path      = "/home/gladstone/pmitchell-dev.github.io"
     container_path = "/usr/share/nginx/html"
     read_only      = true
   }
