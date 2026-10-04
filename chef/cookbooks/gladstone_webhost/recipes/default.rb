@@ -16,7 +16,7 @@ include_recipe 'gladstone_base::default'
 end
 
 git "/home/gladstone/piccurator" do
-  repository "https://github.com/legendary034/duplicate-image-detective.git"
+  repository "https://github.com/pmitchell-dev/duplicate-image-detective.git"
   revision 'master'
   user 'gladstone'
   group 'gladstone'
