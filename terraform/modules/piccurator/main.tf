@@ -9,12 +9,12 @@ terraform {
 resource "docker_image" "piccurator" {
   name = "piccurator:latest"
   build {
-    context = "${path.root}/../piccurator"
+    context = "/home/gladstone/piccurator"
   }
   triggers = {
     dir_sha1 = sha1(join("", [
-      for f in try(fileset("${path.root}/../piccurator", "**"), []) : 
-      filesha1("${path.root}/../piccurator/${f}")
+      for f in try(fileset("/home/gladstone/piccurator", "**"), []) : 
+      filesha1("/home/gladstone/piccurator/${f}")
       if length(regexall("^(\\.git|node_modules|venv|\\.venv|__pycache__)/", f)) == 0
     ]))
   }
