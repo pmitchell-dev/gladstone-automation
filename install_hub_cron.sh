@@ -11,14 +11,16 @@ HUB_DIR="$HOME/scripts"
 # Remove old entries to prevent duplicates
 sed -i '/get_printer_status.sh/d' "$CRON_TMP"
 sed -i '/printer_alert.sh/d' "$CRON_TMP"
+sed -i '/printer_health.sh/d' "$CRON_TMP"
 sed -i '/net_speed.sh/d' "$CRON_TMP"
-sed -i '/backup.sh --mode ntfy/d' "$CRON_TMP"
+sed -i '/backup.sh/d' "$CRON_TMP"
 sed -i '/services_manager.sh/d' "$CRON_TMP"
 sed -i '/cloudflare_ddns.sh/d' "$CRON_TMP"
 sed -i '/Hub Master Crontab/d' "$CRON_TMP"
 
 cat << EOF >> "$CRON_TMP"
 # Hub Master Crontab
+0 8 * * * $HUB_DIR/printer_health.sh
 0 0,8,12,16,20 * * * $HUB_DIR/get_printer_status.sh
 1 0,8,12,16,20 * * * $HUB_DIR/printer_alert.sh
 0 */6 * * * $HUB_DIR/net_speed.sh
