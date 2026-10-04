@@ -10,6 +10,7 @@
 #   ./rclone_gdrive_photos.sh [OPTIONS]
 #   Options:
 #     --dry-run       Perform trial run with no changes made
+#     --resync        Force a full resync (Required on first run for bisync)
 #     --remote NAME   Override rclone remote source (Default: gdrive:Family Photos)
 #     --target PATH   Override target destination directory
 #     --verbose       Enable verbose rclone logging
@@ -37,6 +38,7 @@ log_msg() {
 # --- CLI ARGUMENT PARSING ---
 DRY_RUN=0
 VERBOSE=0
+RESYNC=0
 CUSTOM_REMOTE=""
 CUSTOM_TARGET=""
 
@@ -44,6 +46,7 @@ for arg in "$@"; do
     case $arg in
         --dry-run) DRY_RUN=1 ;;
         --verbose|-v) VERBOSE=1 ;;
+        --resync) RESYNC=1 ;;
         --remote=*) CUSTOM_REMOTE="${arg#*=}" ;;
         --target=*) CUSTOM_TARGET="${arg#*=}" ;;
     esac
@@ -103,11 +106,11 @@ REMOTE_PT_SRC="${REMOTE_ROOT}:Patrick and Torrey"
 TARGET_PT_DIR="$(dirname "$TARGET_DIR")/patrick_and_torrey"
 
 log_msg "INFO" "=========================================================="
-log_msg "INFO" "Starting Google Drive 'Family Photos' RClone Mirror Sync"
+log_msg "INFO" "Starting Google Drive 'Family Photos' RClone Two-Way Bisync"
 log_msg "INFO" "Remote Source: $REMOTE_SRC"
 log_msg "INFO" "Target Destination: $TARGET_DIR"
 log_msg "INFO" "----------------------------------------------------------"
-log_msg "INFO" "Starting Google Drive 'Patrick and Torrey' RClone Mirror Sync"
+log_msg "INFO" "Starting Google Drive 'Patrick and Torrey' RClone Two-Way Bisync"
 log_msg "INFO" "Remote Source: $REMOTE_PT_SRC"
 log_msg "INFO" "Target Destination: $TARGET_PT_DIR"
 
@@ -172,27 +175,31 @@ if [ "$VERBOSE" -eq 1 ]; then
     RCLONE_FLAGS+=("-vv" "--progress")
     log_msg "INFO" "Running in VERBOSE mode (-vv --progress)."
 fi
+if [ "$RESYNC" -eq 1 ]; then
+    RCLONE_FLAGS+=("--resync")
+    log_msg "INFO" "Running with --resync (First time initialization / recovery)."
+fi
 
-log_msg "INFO" "Executing rclone sync..."
+log_msg "INFO" "Executing rclone bisync..."
 if [ "$VERBOSE" -eq 1 ]; then
-    rclone sync "$REMOTE_SRC" "$TARGET_DIR" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+    rclone bisync "$REMOTE_SRC" "$TARGET_DIR" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
     SYNC_STATUS=${PIPESTATUS[0]}
 else
-    rclone sync "$REMOTE_SRC" "$TARGET_DIR" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
+    rclone bisync "$REMOTE_SRC" "$TARGET_DIR" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
     SYNC_STATUS=$?
 fi
 
 if [ $SYNC_STATUS -eq 0 ]; then
-    log_msg "INFO" "✅ Google Drive 'Family Photos' mirror sync completed successfully."
-    curl -s -d "[$HOSTNAME] 📸 Google Drive 'Family Photos' mirror sync completed successfully." "$ALERT_TOPIC" >/dev/null || true
+    log_msg "INFO" "✅ Google Drive 'Family Photos' bisync completed successfully."
+    curl -s -d "[$HOSTNAME] 📸 Google Drive 'Family Photos' bisync completed successfully." "$ALERT_TOPIC" >/dev/null || true
 else
-    log_msg "ERROR" "❌ Google Drive 'Family Photos' mirror sync failed (Exit Code: $SYNC_STATUS)."
-    curl -s -d "[$HOSTNAME] ❌ Google Drive 'Family Photos' mirror sync failed (Exit Code: $SYNC_STATUS)." "$ALERT_TOPIC" >/dev/null || true
+    log_msg "ERROR" "❌ Google Drive 'Family Photos' bisync failed (Exit Code: $SYNC_STATUS)."
+    curl -s -d "[$HOSTNAME] ❌ Google Drive 'Family Photos' bisync failed (Exit Code: $SYNC_STATUS)." "$ALERT_TOPIC" >/dev/null || true
     exit $SYNC_STATUS
 fi
 
 log_msg "INFO" "----------------------------------------------------------"
-log_msg "INFO" "Executing rclone sync for 'Patrick and Torrey'..."
+log_msg "INFO" "Executing rclone bisync for 'Patrick and Torrey'..."
 
 # Ensure target output folder exists for Patrick and Torrey and user has write permissions
 if [ ! -d "$TARGET_PT_DIR" ]; then
@@ -206,19 +213,19 @@ if [ ! -d "$TARGET_PT_DIR" ] || [ ! -w "$TARGET_PT_DIR" ]; then
 fi
 
 if [ "$VERBOSE" -eq 1 ]; then
-    rclone sync "$REMOTE_PT_SRC" "$TARGET_PT_DIR" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+    rclone bisync "$REMOTE_PT_SRC" "$TARGET_PT_DIR" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
     SYNC_STATUS_PT=${PIPESTATUS[0]}
 else
-    rclone sync "$REMOTE_PT_SRC" "$TARGET_PT_DIR" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
+    rclone bisync "$REMOTE_PT_SRC" "$TARGET_PT_DIR" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
     SYNC_STATUS_PT=$?
 fi
 
 if [ $SYNC_STATUS_PT -eq 0 ]; then
-    log_msg "INFO" "✅ Google Drive 'Patrick and Torrey' mirror sync completed successfully."
-    curl -s -d "[$HOSTNAME] 📸 Google Drive 'Patrick and Torrey' mirror sync completed successfully." "$ALERT_TOPIC" >/dev/null || true
+    log_msg "INFO" "✅ Google Drive 'Patrick and Torrey' bisync completed successfully."
+    curl -s -d "[$HOSTNAME] 📸 Google Drive 'Patrick and Torrey' bisync completed successfully." "$ALERT_TOPIC" >/dev/null || true
     exit 0
 else
-    log_msg "ERROR" "❌ Google Drive 'Patrick and Torrey' mirror sync failed (Exit Code: $SYNC_STATUS_PT)."
-    curl -s -d "[$HOSTNAME] ❌ Google Drive 'Patrick and Torrey' mirror sync failed (Exit Code: $SYNC_STATUS_PT)." "$ALERT_TOPIC" >/dev/null || true
+    log_msg "ERROR" "❌ Google Drive 'Patrick and Torrey' bisync failed (Exit Code: $SYNC_STATUS_PT)."
+    curl -s -d "[$HOSTNAME] ❌ Google Drive 'Patrick and Torrey' bisync failed (Exit Code: $SYNC_STATUS_PT)." "$ALERT_TOPIC" >/dev/null || true
     exit $SYNC_STATUS_PT
 fi
