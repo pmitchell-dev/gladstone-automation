@@ -53,6 +53,8 @@
   * `immich_postgres`: PostgreSQL Vector DB (`pgvector`)
   * `immich_redis`: Valkey Cache & Queue Broker
   * *(Machine Learning: Remote node via `IMMICH_MACHINE_LEARNING_URL=http://192.168.50.138:3003`)*
+* **Pic Curator Stack** (`piccurator-compose.yml` equivalent / built by Terraform):
+  * `piccurator`: Web-based duplicate image detective (Port 8000)
 
 ### Removed / Deprecated Containers
 * **Hivemind Stack** (`hivemind-compose.yml`):

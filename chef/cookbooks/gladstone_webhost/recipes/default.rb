@@ -15,12 +15,21 @@ include_recipe 'gladstone_base::default'
   end
 end
 
+git "/home/gladstone/piccurator" do
+  repository "https://github.com/legendary034/duplicate-image-detective.git"
+  revision 'master'
+  user 'gladstone'
+  group 'gladstone'
+  action :sync
+end
+
 # Prepare Application Data Directories
 app_dirs = [
   "/home/gladstone/jobboard/data/backups",
   "/home/gladstone/jobboard/cache",
   "/home/gladstone/rustdesk/data",
-  "/home/gladstone/gemini-api/data"
+  "/home/gladstone/gemini-api/data",
+  "/mnt/backups/family_photos"
 ]
 
 app_dirs.each do |dir|

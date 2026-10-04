@@ -45,3 +45,7 @@ module "immich" {
 module "portfolio" {
   source = "./modules/portfolio"
 }
+
+module "piccurator" {
+  source = "./modules/piccurator"
+}
