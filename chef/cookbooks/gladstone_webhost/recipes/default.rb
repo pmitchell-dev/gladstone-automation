@@ -29,7 +29,8 @@ app_dirs = [
   "/home/gladstone/jobboard/cache",
   "/home/gladstone/rustdesk/data",
   "/home/gladstone/gemini-api/data",
-  "/mnt/backups/family_photos"
+  "/mnt/backups/family_photos",
+  "/mnt/backups/recyclebin"
 ]
 
 app_dirs.each do |dir|
