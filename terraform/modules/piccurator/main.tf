@@ -40,6 +40,11 @@ resource "docker_container" "piccurator" {
     container_path = "/mnt/backups/recyclebin"
   }
 
+  volumes {
+    host_path      = "/mnt/backups/piccurator"
+    container_path = "/mnt/backups/piccurator"
+  }
+
   env = [
     "TZ=America/Chicago"
   ]
