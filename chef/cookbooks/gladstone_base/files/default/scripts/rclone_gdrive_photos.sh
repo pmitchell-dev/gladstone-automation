@@ -3,15 +3,15 @@
 # GLADSTONE GOOGLE DRIVE MEDIA SYNC (rclone_gdrive_photos.sh)
 # ==========================================================
 # PURPOSE:
-# Mirrors a specific Google Drive folder ("Family Photos") to an
-# external backup drive target on the NTFY Hub server.
+# Mirrors a specific local media folder (e.g. external backup drive)
+# UP TO a Google Drive remote folder (Local -> Google Drive).
 #
 # USAGE:
 #   ./rclone_gdrive_photos.sh [OPTIONS]
 #   Options:
 #     --dry-run       Perform trial run with no changes made
 #     --remote NAME   Override rclone remote destination (Default: gdrive:Family Photos)
-#     --target PATH   Override target source directory
+#     --source PATH   Override local source directory
 #     --verbose       Enable verbose rclone logging
 # ==========================================================
 
@@ -38,14 +38,14 @@ log_msg() {
 DRY_RUN=0
 VERBOSE=0
 CUSTOM_REMOTE=""
-CUSTOM_TARGET=""
+CUSTOM_LOCAL=""
 
 for arg in "$@"; do
     case $arg in
         --dry-run) DRY_RUN=1 ;;
         --verbose|-v) VERBOSE=1 ;;
         --remote=*) CUSTOM_REMOTE="${arg#*=}" ;;
-        --target=*) CUSTOM_TARGET="${arg#*=}" ;;
+        --source=*) CUSTOM_LOCAL="${arg#*=}" ;;
     esac
 done
 
@@ -53,7 +53,7 @@ done
 while [[ $# -gt 0 ]]; do
     case $1 in
         --remote) CUSTOM_REMOTE="$2"; shift 2 ;;
-        --target) CUSTOM_TARGET="$2"; shift 2 ;;
+        --source) CUSTOM_LOCAL="$2"; shift 2 ;;
         *) shift ;;
     esac
 done
@@ -67,11 +67,11 @@ if [ ! -f "$ENV_FILE" ]; then
 # PLEASE UPDATE THESE VALUES FOR YOUR SYNC TO WORK:
 
 GDRIVE_REMOTE="gdrive:YOUR_REMOTE_FOLDER_NAME"
-BACKUP_TARGET_DIR="/mnt/YOUR_BACKUP_DRIVE/family_photos"
+LOCAL_SOURCE_DIR="/mnt/YOUR_BACKUP_DRIVE/family_photos"
 EOF
     log_msg "WARNING" "RClone photos config missing. Created sample template at $ENV_FILE"
-    if [ -z "$CUSTOM_REMOTE" ] && [ -z "$CUSTOM_TARGET" ]; then
-        log_msg "ERROR" "❌ Please edit $ENV_FILE to set your Google Drive remote source and backup target path."
+    if [ -z "$CUSTOM_REMOTE" ] && [ -z "$CUSTOM_LOCAL" ]; then
+        log_msg "ERROR" "❌ Please edit $ENV_FILE to set your Google Drive remote destination and local source path."
         curl -s -d "[$HOSTNAME] ⚠️ RClone photos config missing ($ENV_FILE). Please edit $ENV_FILE to set folder paths." "$ALERT_TOPIC" >/dev/null || true
         exit 1
     fi
@@ -82,34 +82,34 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 # Check if file still contains placeholder values
-if [[ "$GDRIVE_REMOTE" == *"YOUR_REMOTE_FOLDER"* || "$BACKUP_TARGET_DIR" == *"YOUR_BACKUP_DRIVE"* ]]; then
-    if [ -z "$CUSTOM_REMOTE" ] && [ -z "$CUSTOM_TARGET" ]; then
+if [[ "$GDRIVE_REMOTE" == *"YOUR_REMOTE_FOLDER"* || "$LOCAL_SOURCE_DIR" == *"YOUR_BACKUP_DRIVE"* ]]; then
+    if [ -z "$CUSTOM_REMOTE" ] && [ -z "$CUSTOM_LOCAL" ]; then
         log_msg "ERROR" "❌ Configuration file $ENV_FILE contains unconfigured sample placeholders."
-        log_msg "ERROR" "Please run 'nano $ENV_FILE' to set your Google Drive remote source and target backup folder."
+        log_msg "ERROR" "Please run 'nano $ENV_FILE' to set your Google Drive remote destination and local source folder."
         curl -s -d "[$HOSTNAME] ⚠️ RClone photos config ($ENV_FILE) requires setup. Please update folder paths." "$ALERT_TOPIC" >/dev/null || true
         exit 1
     fi
 fi
 
-# Remote source resolution (CLI flag > local rclone_photos.env)
-REMOTE_SRC="${CUSTOM_REMOTE:-$GDRIVE_REMOTE}"
+# Remote destination resolution (CLI flag > local rclone_photos.env)
+REMOTE_DEST="${CUSTOM_REMOTE:-$GDRIVE_REMOTE}"
 
-# Target directory resolution (CLI flag > local rclone_photos.env)
-TARGET_DIR="${CUSTOM_TARGET:-$BACKUP_TARGET_DIR}"
+# Local source directory resolution (CLI flag > local rclone_photos.env)
+LOCAL_SRC="${CUSTOM_LOCAL:-$LOCAL_SOURCE_DIR}"
 
 # Patrick and Torrey sync resolution
-REMOTE_ROOT="${REMOTE_SRC%:*}"
-REMOTE_PT_SRC="${REMOTE_ROOT}:Patrick and Torrey"
-TARGET_PT_DIR="$(dirname "$TARGET_DIR")/patrick_and_torrey"
+REMOTE_ROOT="${REMOTE_DEST%:*}"
+REMOTE_PT_DEST="${REMOTE_ROOT}:Patrick and Torrey"
+LOCAL_PT_SRC="$(dirname "$LOCAL_SRC")/patrick_and_torrey"
 
 log_msg "INFO" "=========================================================="
 log_msg "INFO" "Starting Google Drive 'Family Photos' RClone One-Way Sync"
-log_msg "INFO" "Local Source: $TARGET_DIR"
-log_msg "INFO" "Remote Destination: $REMOTE_SRC"
+log_msg "INFO" "Local Source: $LOCAL_SRC"
+log_msg "INFO" "Remote Destination: $REMOTE_DEST"
 log_msg "INFO" "----------------------------------------------------------"
 log_msg "INFO" "Starting Google Drive 'Patrick and Torrey' RClone One-Way Sync"
-log_msg "INFO" "Local Source: $TARGET_PT_DIR"
-log_msg "INFO" "Remote Destination: $REMOTE_PT_SRC"
+log_msg "INFO" "Local Source: $LOCAL_PT_SRC"
+log_msg "INFO" "Remote Destination: $REMOTE_PT_DEST"
 
 # Ensure rclone binary is installed
 if ! command -v rclone &>/dev/null; then
@@ -150,15 +150,15 @@ if [ ! -w "$LOG_DIR" ]; then
     exit 1
 fi
 
-# Ensure target output folder exists and user has write permissions
-if [ ! -d "$TARGET_DIR" ]; then
-    mkdir -p "$TARGET_DIR" 2>/dev/null || true
+# Ensure local source folder exists
+if [ ! -d "$LOCAL_SRC" ]; then
+    mkdir -p "$LOCAL_SRC" 2>/dev/null || true
 fi
 
-if [ ! -d "$TARGET_DIR" ] || [ ! -w "$TARGET_DIR" ]; then
-    log_msg "ERROR" "❌ Target directory $TARGET_DIR does not exist or is not writable by user $USER."
-    log_msg "ERROR" "Please verify target folder permissions or create it with proper ownership."
-    curl -s -d "[$HOSTNAME] ⚠️ RClone photo sync target path ($TARGET_DIR) is not writable!" "$ALERT_TOPIC" >/dev/null || true
+if [ ! -d "$LOCAL_SRC" ] || [ ! -r "$LOCAL_SRC" ]; then
+    log_msg "ERROR" "❌ Local source directory $LOCAL_SRC does not exist or is not readable by user $USER."
+    log_msg "ERROR" "Please verify source folder permissions or create it."
+    curl -s -d "[$HOSTNAME] ⚠️ RClone photo sync source path ($LOCAL_SRC) is not readable!" "$ALERT_TOPIC" >/dev/null || true
     exit 1
 fi
 
@@ -175,10 +175,10 @@ fi
 
 log_msg "INFO" "Executing rclone sync (Local -> Remote)..."
 if [ "$VERBOSE" -eq 1 ]; then
-    rclone sync "$TARGET_DIR" "$REMOTE_SRC" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+    rclone sync "$LOCAL_SRC" "$REMOTE_DEST" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
     SYNC_STATUS=${PIPESTATUS[0]}
 else
-    rclone sync "$TARGET_DIR" "$REMOTE_SRC" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
+    rclone sync "$LOCAL_SRC" "$REMOTE_DEST" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
     SYNC_STATUS=$?
 fi
 
@@ -194,22 +194,22 @@ fi
 log_msg "INFO" "----------------------------------------------------------"
 log_msg "INFO" "Executing rclone sync for 'Patrick and Torrey' (Local -> Remote)..."
 
-# Ensure target output folder exists for Patrick and Torrey and user has write permissions
-if [ ! -d "$TARGET_PT_DIR" ]; then
-    mkdir -p "$TARGET_PT_DIR" 2>/dev/null || true
+# Ensure local source folder exists for Patrick and Torrey
+if [ ! -d "$LOCAL_PT_SRC" ]; then
+    mkdir -p "$LOCAL_PT_SRC" 2>/dev/null || true
 fi
 
-if [ ! -d "$TARGET_PT_DIR" ] || [ ! -w "$TARGET_PT_DIR" ]; then
-    log_msg "ERROR" "❌ Target directory $TARGET_PT_DIR does not exist or is not writable by user $USER."
-    curl -s -d "[$HOSTNAME] ⚠️ RClone photo sync target path ($TARGET_PT_DIR) is not writable!" "$ALERT_TOPIC" >/dev/null || true
+if [ ! -d "$LOCAL_PT_SRC" ] || [ ! -r "$LOCAL_PT_SRC" ]; then
+    log_msg "ERROR" "❌ Local source directory $LOCAL_PT_SRC does not exist or is not readable by user $USER."
+    curl -s -d "[$HOSTNAME] ⚠️ RClone photo sync source path ($LOCAL_PT_SRC) is not readable!" "$ALERT_TOPIC" >/dev/null || true
     exit 1
 fi
 
 if [ "$VERBOSE" -eq 1 ]; then
-    rclone sync "$TARGET_PT_DIR" "$REMOTE_PT_SRC" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
+    rclone sync "$LOCAL_PT_SRC" "$REMOTE_PT_DEST" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
     SYNC_STATUS_PT=${PIPESTATUS[0]}
 else
-    rclone sync "$TARGET_PT_DIR" "$REMOTE_PT_SRC" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
+    rclone sync "$LOCAL_PT_SRC" "$REMOTE_PT_DEST" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
     SYNC_STATUS_PT=$?
 fi
 
