@@ -23,20 +23,56 @@ git "/home/gladstone/piccurator" do
   action :sync
 end
 
+# Install required packages for SMB/CIFS and NTFS
+package %w(samba cifs-utils smbclient ntfs-3g) do
+  action :install
+end
+
+directory '/mnt/backups' do
+  owner 'pi'
+  group 'pi'
+  mode '0755'
+  action :create
+end
+
+# Persistently mount the external drive via fstab
+mount '/mnt/backups' do
+  device 'F6BCCD88BCCD43B9'
+  device_type :uuid
+  fstype 'ntfs-3g'
+  options 'defaults,nofail,uid=1000,gid=1000,dmask=000,fmask=000,windows_names,x-systemd.device-timeout=30s,x-systemd.after=local-fs.target'
+  dump 0
+  pass 0
+  action [:mount, :enable]
+end
+
 # Prepare Application Data Directories
-app_dirs = [
+home_dirs = [
   "/home/gladstone/jobboard/data/backups",
   "/home/gladstone/jobboard/cache",
   "/home/gladstone/rustdesk/data",
-  "/home/gladstone/gemini-api/data",
+  "/home/gladstone/gemini-api/data"
+]
+
+mnt_dirs = [
   "/mnt/backups/family_photos",
   "/mnt/backups/recyclebin"
 ]
 
-app_dirs.each do |dir|
+home_dirs.each do |dir|
   directory dir do
     owner 'gladstone'
     group 'gladstone'
+    mode '0755'
+    recursive true
+    action :create
+  end
+end
+
+mnt_dirs.each do |dir|
+  directory dir do
+    owner 'pi'
+    group 'pi'
     mode '0755'
     recursive true
     action :create
