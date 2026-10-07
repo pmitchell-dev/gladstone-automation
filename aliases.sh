@@ -29,6 +29,7 @@ alias git-install="cd ~ && rm -rf ~/gladstone-automation && git clone https://gi
 alias backup="bash $SCRIPT_DIR/backup.sh"
 alias restore="bash $SCRIPT_DIR/restore.sh"
 alias sync-photos="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
+alias manual-sync-photos="bash $SCRIPT_DIR/rclone_gdrive_photos.sh -v"
 alias photos-sync="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
 alias google_update="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
 alias features="bash $SCRIPT_DIR/features.sh"
