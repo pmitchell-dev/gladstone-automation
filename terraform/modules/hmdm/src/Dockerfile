@@ -62,4 +62,6 @@ COPY update-web-app-docker.sh /opt/hmdm/
 COPY tomcat_conf/server.xml /usr/local/tomcat/conf/server.xml 
 ADD templates /opt/hmdm/templates/
 
+RUN chmod +x /docker-entrypoint.sh /opt/hmdm/update-web-app-docker.sh
+
 ENTRYPOINT ["/docker-entrypoint.sh"]
