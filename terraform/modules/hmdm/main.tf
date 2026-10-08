@@ -20,10 +20,18 @@ resource "docker_image" "hmdm" {
   }
 }
 
+resource "docker_network" "hmdm_net" {
+  name = "hmdm_network"
+}
+
 resource "docker_container" "postgresql" {
   name    = "hmdm-postgresql"
   image   = "postgres:12-alpine"
   restart = "unless-stopped"
+
+  networks_advanced {
+    name = docker_network.hmdm_net.name
+  }
 
   env = [
     "POSTGRES_USER=${var.sql_user}",
@@ -42,6 +50,10 @@ resource "docker_container" "hmdm" {
   image   = docker_image.hmdm.image_id
   restart = "unless-stopped"
   depends_on = [docker_container.postgresql]
+
+  networks_advanced {
+    name = docker_network.hmdm_net.name
+  }
 
   ports {
     internal = 8080

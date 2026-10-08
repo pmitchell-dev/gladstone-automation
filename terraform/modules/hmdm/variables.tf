@@ -20,7 +20,7 @@ variable "base_domain" {
 
 variable "protocol" {
   type    = string
-  default = "https"
+  default = "http"
   description = "Use http if SSL is terminated by Cloudflare and you want local unencrypted traffic, otherwise https"
 }
 
