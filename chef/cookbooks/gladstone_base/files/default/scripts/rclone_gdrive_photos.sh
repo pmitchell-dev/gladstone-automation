@@ -97,6 +97,14 @@ REMOTE_DEST="${CUSTOM_REMOTE:-$GDRIVE_REMOTE}"
 # Local source directory resolution (CLI flag > local rclone_photos.env)
 LOCAL_SRC="${CUSTOM_LOCAL:-$LOCAL_SOURCE_DIR}"
 
+# Ensure both paths are configured
+if [ -z "$REMOTE_DEST" ] || [ -z "$LOCAL_SRC" ]; then
+    log_msg "ERROR" "❌ Configuration missing: Remote destination or local source is empty."
+    log_msg "ERROR" "Please check $ENV_FILE and ensure GDRIVE_REMOTE and LOCAL_SOURCE_DIR are properly set."
+    curl -s -d "[$HOSTNAME] ⚠️ RClone photos config ($ENV_FILE) is missing required variables." "$ALERT_TOPIC" >/dev/null || true
+    exit 1
+fi
+
 # Patrick and Torrey sync resolution
 REMOTE_ROOT="${REMOTE_DEST%:*}"
 REMOTE_PT_DEST="${REMOTE_ROOT}:Patrick and Torrey"
