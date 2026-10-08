@@ -45,7 +45,7 @@ resource "docker_container" "hmdm" {
 
   ports {
     internal = 8080
-    external = 8080
+    external = 8085
   }
   ports {
     internal = 8443
