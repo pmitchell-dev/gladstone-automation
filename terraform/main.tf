@@ -49,3 +49,7 @@ module "portfolio" {
 module "piccurator" {
   source = "./modules/piccurator"
 }
+
+module "hmdm" {
+  source = "./modules/hmdm"
+}
