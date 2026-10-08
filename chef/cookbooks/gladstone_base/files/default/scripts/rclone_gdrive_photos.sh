@@ -105,19 +105,13 @@ if [ -z "$REMOTE_DEST" ] || [ -z "$LOCAL_SRC" ]; then
     exit 1
 fi
 
-# Patrick and Torrey sync resolution
-REMOTE_ROOT="${REMOTE_DEST%:*}"
-REMOTE_PT_DEST="${REMOTE_ROOT}:Patrick and Torrey"
-LOCAL_PT_SRC="$(dirname "$LOCAL_SRC")/patrick_and_torrey"
+
 
 log_msg "INFO" "=========================================================="
 log_msg "INFO" "Starting Google Drive 'Family Photos' RClone One-Way Sync"
 log_msg "INFO" "Local Source: $LOCAL_SRC"
 log_msg "INFO" "Remote Destination: $REMOTE_DEST"
-log_msg "INFO" "----------------------------------------------------------"
-log_msg "INFO" "Starting Google Drive 'Patrick and Torrey' RClone One-Way Sync"
-log_msg "INFO" "Local Source: $LOCAL_PT_SRC"
-log_msg "INFO" "Remote Destination: $REMOTE_PT_DEST"
+
 
 # Ensure rclone binary is installed
 if ! command -v rclone &>/dev/null; then
@@ -199,34 +193,4 @@ else
     exit $SYNC_STATUS
 fi
 
-log_msg "INFO" "----------------------------------------------------------"
-log_msg "INFO" "Executing rclone sync for 'Patrick and Torrey' (Local -> Remote)..."
 
-# Ensure local source folder exists for Patrick and Torrey
-if [ ! -d "$LOCAL_PT_SRC" ]; then
-    mkdir -p "$LOCAL_PT_SRC" 2>/dev/null || true
-fi
-
-if [ ! -d "$LOCAL_PT_SRC" ] || [ ! -r "$LOCAL_PT_SRC" ]; then
-    log_msg "ERROR" "❌ Local source directory $LOCAL_PT_SRC does not exist or is not readable by user $USER."
-    curl -s -d "[$HOSTNAME] ⚠️ RClone photo sync source path ($LOCAL_PT_SRC) is not readable!" "$ALERT_TOPIC" >/dev/null || true
-    exit 1
-fi
-
-if [ "$VERBOSE" -eq 1 ]; then
-    rclone sync "$LOCAL_PT_SRC" "$REMOTE_PT_DEST" "${RCLONE_FLAGS[@]}" 2>&1 | tee -a "$LOG_FILE"
-    SYNC_STATUS_PT=${PIPESTATUS[0]}
-else
-    rclone sync "$LOCAL_PT_SRC" "$REMOTE_PT_DEST" "${RCLONE_FLAGS[@]}" >> "$LOG_FILE" 2>&1
-    SYNC_STATUS_PT=$?
-fi
-
-if [ $SYNC_STATUS_PT -eq 0 ]; then
-    log_msg "INFO" "✅ Google Drive 'Patrick and Torrey' sync completed successfully."
-    curl -s -d "[$HOSTNAME] 📸 Google Drive 'Patrick and Torrey' sync completed successfully." "$ALERT_TOPIC" >/dev/null || true
-    exit 0
-else
-    log_msg "ERROR" "❌ Google Drive 'Patrick and Torrey' sync failed (Exit Code: $SYNC_STATUS_PT)."
-    curl -s -d "[$HOSTNAME] ❌ Google Drive 'Patrick and Torrey' sync failed (Exit Code: $SYNC_STATUS_PT)." "$ALERT_TOPIC" >/dev/null || true
-    exit $SYNC_STATUS_PT
-fi
