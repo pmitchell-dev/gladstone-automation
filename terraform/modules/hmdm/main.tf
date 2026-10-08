@@ -92,6 +92,7 @@ resource "docker_container" "hmdm" {
     "SQL_PASS=${var.sql_pass}",
     "BASE_DOMAIN=${var.base_domain}",
     "PROTOCOL=${var.protocol}",
+    "EXTERNAL_PROTOCOL=${var.external_protocol}",
     "ADMIN_EMAIL=${var.admin_email}",
     "SHARED_SECRET=${var.shared_secret}",
     "HTTPS_LETSENCRYPT=${var.https_letsencrypt}",

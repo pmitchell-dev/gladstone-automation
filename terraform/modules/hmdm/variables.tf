@@ -45,3 +45,9 @@ variable "force_reconfigure" {
   default = "true"
   description = "Set to 'true' to force hmdm to re-run configuration scripts"
 }
+
+variable "external_protocol" {
+  type    = string
+  default = "https"
+  description = "The protocol used by external clients (e.g. phones) to reach the MDM server. Should usually be https."
+}
