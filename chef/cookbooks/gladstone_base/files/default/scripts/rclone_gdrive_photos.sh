@@ -67,7 +67,7 @@ if [ ! -f "$ENV_FILE" ]; then
 # PLEASE UPDATE THESE VALUES FOR YOUR SYNC TO WORK:
 
 GDRIVE_REMOTE="gdrive:YOUR_REMOTE_FOLDER_NAME"
-BACKUP_TARGET_DIR="/mnt/YOUR_BACKUP_DRIVE/family_photos"
+LOCAL_SOURCE_DIR="/mnt/YOUR_BACKUP_DRIVE/family_photos"
 EOF
     log_msg "WARNING" "RClone photos config missing. Created sample template at $ENV_FILE"
     if [ -z "$CUSTOM_REMOTE" ] && [ -z "$CUSTOM_LOCAL" ]; then
@@ -82,7 +82,7 @@ if [ -f "$ENV_FILE" ]; then
 fi
 
 # Check if file still contains placeholder values
-if [[ "$GDRIVE_REMOTE" == *"YOUR_REMOTE_FOLDER"* || "$BACKUP_TARGET_DIR" == *"YOUR_BACKUP_DRIVE"* ]]; then
+if [[ "$GDRIVE_REMOTE" == *"YOUR_REMOTE_FOLDER"* || "$LOCAL_SOURCE_DIR" == *"YOUR_BACKUP_DRIVE"* ]]; then
     if [ -z "$CUSTOM_REMOTE" ] && [ -z "$CUSTOM_LOCAL" ]; then
         log_msg "ERROR" "❌ Configuration file $ENV_FILE contains unconfigured sample placeholders."
         log_msg "ERROR" "Please run 'nano $ENV_FILE' to set your Google Drive remote destination and local source folder."
@@ -95,12 +95,12 @@ fi
 REMOTE_DEST="${CUSTOM_REMOTE:-$GDRIVE_REMOTE}"
 
 # Local source directory resolution (CLI flag > local rclone_photos.env)
-LOCAL_SRC="${CUSTOM_LOCAL:-$BACKUP_TARGET_DIR}"
+LOCAL_SRC="${CUSTOM_LOCAL:-$LOCAL_SOURCE_DIR}"
 
 # Ensure both paths are configured
 if [ -z "$REMOTE_DEST" ] || [ -z "$LOCAL_SRC" ]; then
     log_msg "ERROR" "❌ Configuration missing: Remote destination or local source is empty."
-    log_msg "ERROR" "Please check $ENV_FILE and ensure GDRIVE_REMOTE and BACKUP_TARGET_DIR are properly set."
+    log_msg "ERROR" "Please check $ENV_FILE and ensure GDRIVE_REMOTE and LOCAL_SOURCE_DIR are properly set."
     curl -s -d "[$HOSTNAME] ⚠️ RClone photos config ($ENV_FILE) is missing required variables." "$ALERT_TOPIC" >/dev/null || true
     exit 1
 fi

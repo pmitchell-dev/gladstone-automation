@@ -134,7 +134,7 @@ file '/home/gladstone/.config/rclone/rclone_photos.env' do
     # Managed by Chef
 
     GDRIVE_REMOTE="gdrive:Family Pictures"
-    BACKUP_TARGET_DIR="/mnt/backups/family_photos"
+    LOCAL_SOURCE_DIR="/mnt/backups/family_photos"
   EOF
   owner 'gladstone'
   group 'gladstone'
