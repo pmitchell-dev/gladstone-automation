@@ -15,7 +15,7 @@ variable "sql_base" {
 
 variable "base_domain" {
   type    = string
-  default = "mdm.dark-ops.cc"
+  default = "mdm.localrepo.net"
 }
 
 variable "protocol" {
@@ -26,7 +26,7 @@ variable "protocol" {
 
 variable "admin_email" {
   type    = string
-  default = "admin@dark-ops.cc"
+  default = "admin@localrepo.net"
 }
 
 variable "shared_secret" {
@@ -42,6 +42,6 @@ variable "https_letsencrypt" {
 
 variable "force_reconfigure" {
   type    = string
-  default = ""
+  default = "true"
   description = "Set to 'true' to force hmdm to re-run configuration scripts"
 }
