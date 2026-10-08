@@ -7,7 +7,7 @@
 # Required variables in .env.cloudflare:
 # CF_API_TOKEN="your_cloudflare_api_token"
 # CF_ZONE_ID="your_zone_id"
-# CF_RECORD_NAME="rustdesk.dark-ops.cc"
+# CF_RECORD_NAME="rustdesk.localrepo.net"
 # ==========================================================
 
 DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" >/dev/null 2>&1 && pwd)"
