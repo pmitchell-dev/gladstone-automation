@@ -119,6 +119,29 @@ systemd_unit 'gladstone_watchdog.timer' do
   action [:create, :enable, :start]
 end
 
+# Setup RClone Config Directory and Environment Variables
+directory '/home/gladstone/.config/rclone' do
+  owner 'gladstone'
+  group 'gladstone'
+  mode '0755'
+  recursive true
+  action :create
+end
+
+file '/home/gladstone/.config/rclone/rclone_photos.env' do
+  content <<~EOF
+    # Gladstone RClone Family Photos Sync Configuration
+    # Managed by Chef
+
+    GDRIVE_REMOTE="gdrive:Family Pictures"
+    BACKUP_TARGET_DIR="/mnt/backups/family_photos"
+  EOF
+  owner 'gladstone'
+  group 'gladstone'
+  mode '0644'
+  action :create
+end
+
 # Cron job for Google Drive Photos Sync (Daily at 02:00 AM)
 cron_d 'gdrive_photos_sync' do
   command "/home/gladstone/scripts/rclone_gdrive_photos.sh"
