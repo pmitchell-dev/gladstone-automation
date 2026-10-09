@@ -26,6 +26,7 @@ alias backup="bash $SCRIPT_DIR/backup.sh"
 alias restore="bash $SCRIPT_DIR/restore.sh"
 alias sync-photos="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
 alias manual-sync-photos="bash $SCRIPT_DIR/rclone_gdrive_photos.sh -v"
+alias archive-photos="nohup bash $SCRIPT_DIR/archive_family_photos.sh > /dev/null 2>&1 & echo '📸 Archive started in the background. You will get a notification when done!'"
 alias features="bash $SCRIPT_DIR/features.sh"
 alias pi-features="bash $SCRIPT_DIR/features.sh"
 alias refresh='source ~/.bashrc && echo "🔄 Environment refreshed."'

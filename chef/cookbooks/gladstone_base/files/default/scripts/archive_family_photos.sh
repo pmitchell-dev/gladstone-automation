@@ -25,7 +25,11 @@ DATE=$(date +"%Y-%m-%d")
 ARCHIVE_NAME="family_photos_backup_${DATE}.zip"
 DEST_FILE="$DEST_DIR/$ARCHIVE_NAME"
 
+ALERT_TOPIC="https://ntfy.sh/patrick_mitch_pi5_x9k2v_alerts"
+HOSTNAME=$(hostname)
+
 echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] Starting backup of $SOURCE_DIR to $DEST_FILE..." | tee -a "$LOG_FILE"
+curl -s -d "[$HOSTNAME] 🗄️ Family Photos Archive started..." "$ALERT_TOPIC"
 
 # Run zip
 zip -r "$DEST_FILE" "$SOURCE_DIR" >> "$LOG_FILE" 2>&1
@@ -35,7 +39,9 @@ if [ $? -eq 0 ]; then
     # Output the final size of the zip
     FILE_SIZE=$(du -sh "$DEST_FILE" | awk '{print $1}')
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [INFO] Archive size: $FILE_SIZE" | tee -a "$LOG_FILE"
+    curl -s -d "[$HOSTNAME] ✅ Family Photos Archive completed ($FILE_SIZE)" "$ALERT_TOPIC"
 else
     echo "[$(date '+%Y-%m-%d %H:%M:%S')] [ERROR] Backup failed. Check logs at $LOG_FILE" | tee -a "$LOG_FILE"
+    curl -s -H "Priority: high" -d "[$HOSTNAME] ❌ ERROR: Family Photos Archive failed" "$ALERT_TOPIC"
     exit 1
 fi

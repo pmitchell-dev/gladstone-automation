@@ -55,6 +55,20 @@ generate_dashboard() {
         echo -e "📦 ${YELLOW}Last Successful Backup:${NC} Never / No Backups Found"
     fi
 
+    # --- FAMILY PHOTOS ARCHIVE STATUS ---
+    ARCHIVE_LOG="/home/gladstone/scripts/logs/archive_photos.log"
+    if [ -f "$ARCHIVE_LOG" ]; then
+        LAST_ARCHIVE=$(grep "SUCCESS" "$ARCHIVE_LOG" 2>/dev/null | tail -n 1)
+        if [ -n "$LAST_ARCHIVE" ]; then
+            A_TIME=$(echo "$LAST_ARCHIVE" | cut -d']' -f1 | tr -d '[')
+            echo -e "🗄️  ${YELLOW}Family Photos Archive:${NC} ✅ Last archive $A_TIME"
+        else
+            echo -e "🗄️  ${YELLOW}Family Photos Archive:${NC} ❌ Failed or in progress"
+        fi
+    else
+        echo -e "🗄️  ${YELLOW}Family Photos Archive:${NC} Ready (Run 'archive-photos')"
+    fi
+
     echo -e "${CYAN}------------------------------------------------------------${NC}"
     echo -e "${BLUE}[ DOCKER CONTAINERS ]${NC}"
     if command -v docker &> /dev/null; then
@@ -70,6 +84,7 @@ generate_dashboard() {
     echo -e "${CYAN}------------------------------------------------------------${NC}"
     echo -e "${BLUE}[ LOCAL COMMANDS ] (Bash):${NC}"
     echo -e "   - ${GREEN}features:${NC} Manage enabled services & container stacks"
+    echo -e "   - ${GREEN}archive-photos:${NC} Create a zip archive of family_photos"
     echo -e "   - ${GREEN}refresh:${NC}  Reload terminal environment (aliases/paths)"
     echo -e "   - ${GREEN}run-chef:${NC} Pull repos and run Chef configuration"
     echo -e "   - ${GREEN}run-terraform:${NC} Pull repos and run Terraform apply"

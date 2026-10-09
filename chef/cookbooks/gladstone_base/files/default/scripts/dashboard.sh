@@ -119,6 +119,20 @@ generate_dashboard() {
     else
         echo -e "📸  FAMILY PHOTOS SYNC: Ready (Scheduled daily at 02:00 AM)"
     fi
+
+    # --- FAMILY PHOTOS ARCHIVE STATUS ---
+    ARCHIVE_LOG="/home/gladstone/scripts/logs/archive_photos.log"
+    if [ -f "$ARCHIVE_LOG" ]; then
+        LAST_ARCHIVE=$(grep "SUCCESS" "$ARCHIVE_LOG" 2>/dev/null | tail -n 1)
+        if [ -n "$LAST_ARCHIVE" ]; then
+            A_TIME=$(echo "$LAST_ARCHIVE" | cut -d']' -f1 | tr -d '[')
+            echo -e "🗄️  FAMILY PHOTOS ARCHIVE: ✅ Last archive $A_TIME"
+        else
+            echo -e "🗄️  FAMILY PHOTOS ARCHIVE: ❌ Failed or in progress"
+        fi
+    else
+        echo -e "🗄️  FAMILY PHOTOS ARCHIVE: Ready (Run 'archive-photos')"
+    fi
     echo "------------------------------------------------------------"
 
     # --- 3. BROTHER PRINTER SECTION ---
@@ -142,13 +156,18 @@ generate_dashboard() {
     echo "[ REMOTE ] (ntfy):"
     echo "   - flight: Track a specific flight"
     echo "   - health: Check printer status"
+    echo "   - sync: Trigger repository sync"
+    echo "   - cycle: Restart command listener"
+    echo "   - reinstall: Force update and rebuild"
     echo "[ LOCAL ] (Bash):"
     echo "   - features: Manage enabled services & containers"
+    echo "   - archive-photos: Create a zip archive of family_photos"
     echo "   - refresh: Reload terminal environment"
-    echo "   - run-chef: Pull repos and run Chef configuration"
-    echo "   - run-terraform: Pull repos and run Terraform apply"
-    echo "   - update-repos: Scan and pull git repos"
+    echo "   - update: Update OS and Software"
     echo "   - db: Launch this dashboard"
+    echo "   - sync: Trigger repository sync"
+    echo "   - cycle: Restart command listener"
+    echo "   - rebuild: Rebuild docker containers"
     echo "------------------------------------------------------------"
 }
 
