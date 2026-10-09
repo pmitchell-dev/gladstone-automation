@@ -75,3 +75,10 @@
 
 ## 🧪 Testing & Verification Workflow
 * **User-Led Testing:** Testing of changes will be completed by the user after changes are committed and pushed to GitHub.
+
+---
+
+## 📂 Core File Registry
+| Script Name | Purpose |
+|-------------|---------|
+| `archive_family_photos.sh` | Creates a compressed zip backup of the family_photos directory. |

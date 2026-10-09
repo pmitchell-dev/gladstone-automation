@@ -119,6 +119,20 @@ generate_dashboard() {
     else
         echo -e "📸  FAMILY PHOTOS SYNC: Ready (Scheduled daily at 02:00 AM)"
     fi
+
+    # --- FAMILY PHOTOS ARCHIVE STATUS ---
+    ARCHIVE_LOG="/home/gladstone/scripts/logs/archive_photos.log"
+    if [ -f "$ARCHIVE_LOG" ]; then
+        LAST_ARCHIVE=$(grep "SUCCESS" "$ARCHIVE_LOG" 2>/dev/null | tail -n 1)
+        if [ -n "$LAST_ARCHIVE" ]; then
+            A_TIME=$(echo "$LAST_ARCHIVE" | cut -d']' -f1 | tr -d '[')
+            echo -e "🗄️  FAMILY PHOTOS ARCHIVE: ✅ Last archive $A_TIME"
+        else
+            echo -e "🗄️  FAMILY PHOTOS ARCHIVE: ❌ Failed or in progress"
+        fi
+    else
+        echo -e "🗄️  FAMILY PHOTOS ARCHIVE: Ready (Run 'archive-photos')"
+    fi
     echo "------------------------------------------------------------"
 
     # --- 3. BROTHER PRINTER SECTION ---
@@ -147,6 +161,7 @@ generate_dashboard() {
     echo "   - reinstall: Force update and rebuild"
     echo "[ LOCAL ] (Bash):"
     echo "   - features: Manage enabled services & containers"
+    echo "   - archive-photos: Create a zip archive of family_photos"
     echo "   - refresh: Reload terminal environment"
     echo "   - update: Update OS and Software"
     echo "   - db: Launch this dashboard"

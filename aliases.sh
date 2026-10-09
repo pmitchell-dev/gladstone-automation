@@ -32,6 +32,7 @@ alias sync-photos="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
 alias manual-sync-photos="bash $SCRIPT_DIR/rclone_gdrive_photos.sh -v"
 alias photos-sync="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
 alias google_update="bash $SCRIPT_DIR/rclone_gdrive_photos.sh"
+alias archive-photos="bash $SCRIPT_DIR/archive_family_photos.sh"
 alias features="bash $SCRIPT_DIR/features.sh"
 alias pi-features="bash $SCRIPT_DIR/features.sh"
 alias refresh='source ~/.bashrc && echo "🔄 Environment refreshed."'
