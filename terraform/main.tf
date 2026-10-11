@@ -50,26 +50,11 @@ module "piccurator" {
   source = "./modules/piccurator"
 }
 
-module "hmdm" {
-  source = "./modules/hmdm"
-}
-
 module "pihole" {
   source         = "./modules/pihole"
   web_port       = 8053
   virtual_host   = "pi.localrepo.net"
   admin_password = data.vault_kv_secret_v2.pihole.data["password"]
-}
-
-module "dot_proxy" {
-  source           = "./modules/dot_proxy"
-  dns_network_name = module.pihole.network_name
-  dot_port         = 853
-  cert_domain      = "dns.localrepo.net"
-
-  depends_on = [
-    module.pihole
-  ]
 }
 
 module "tailscale" {

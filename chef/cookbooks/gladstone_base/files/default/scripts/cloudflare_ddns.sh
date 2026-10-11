@@ -36,7 +36,7 @@ fi
 CF_ZONE_ID="${CF_ZONE_ID:-5923158ae66e495746c3474e4e87dadc}"
 CF_RECORD_NAME="${CF_RECORD_NAME:-rustdesk.localrepo.net}"
 CF_RECORD_NAME_2="${CF_RECORD_NAME_2:-localrepo.net}"
-CF_RECORD_NAME_3="${CF_RECORD_NAME_3:-dns.localrepo.net}"
+CF_RECORD_NAME_3="${CF_RECORD_NAME_3:-}"
 
 if [ -z "$CF_API_TOKEN" ]; then
     echo "Error: Missing CF_API_TOKEN. Configure in $ENV_FILE or ~/.secrets/certbot/cloudflare.ini"

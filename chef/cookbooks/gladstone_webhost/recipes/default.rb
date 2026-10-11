@@ -54,7 +54,6 @@ home_dirs = [
   "/home/gladstone/gemini-api/data",
   "/home/gladstone/pihole/etc-pihole",
   "/home/gladstone/pihole/etc-dnsmasq.d",
-  "/home/gladstone/dot-proxy",
   "/home/gladstone/tailscale/state"
 ]
 
@@ -114,14 +113,6 @@ directory '/home/gladstone/.secrets/certbot' do
   action :create
 end
 
-cookbook_file '/home/gladstone/dot-proxy/nginx.conf' do
-  source 'dot-proxy.nginx.conf'
-  owner 'gladstone'
-  group 'gladstone'
-  mode '0644'
-  action :create
-end
-
 ruby_block 'format_cloudflare_ini' do
   block do
     ini_path = '/home/gladstone/.secrets/certbot/cloudflare.ini'
@@ -137,34 +128,13 @@ ruby_block 'format_cloudflare_ini' do
   only_if { ::File.exist?('/home/gladstone/.secrets/certbot/cloudflare.ini') }
 end
 
-execute 'issue_dot_cert' do
-  command 'certbot certonly --dns-cloudflare --dns-cloudflare-credentials /home/gladstone/.secrets/certbot/cloudflare.ini --dns-cloudflare-propagation-seconds 20 -d dns.localrepo.net --non-interactive --agree-tos --register-unsafely-without-email'
-  only_if { ::File.exist?('/home/gladstone/.secrets/certbot/cloudflare.ini') }
-  not_if { ::File.exist?('/etc/letsencrypt/live/dns.localrepo.net/fullchain.pem') }
-end
-
-directory '/etc/letsencrypt/renewal-hooks/deploy' do
-  owner 'root'
-  group 'root'
-  mode '0755'
-  recursive true
-  action :create
-end
-
 file '/etc/letsencrypt/renewal-hooks/deploy/reload_dot_proxy.sh' do
-  content <<~EOS
-    #!/bin/bash
-    docker restart dot-proxy 2>/dev/null || true
-  EOS
-  owner 'root'
-  group 'root'
-  mode '0755'
-  action :create
+  action :delete
 end
 
-execute 'ufw_allow_dot' do
-  command 'ufw allow 853/tcp comment "DNS over TLS"'
-  only_if 'which ufw && ufw status | grep -q "Status: active"'
+execute 'ufw_remove_dot' do
+  command 'ufw delete allow 853/tcp'
+  only_if 'which ufw && ufw status | grep -q "853/tcp"'
 end
 
 # Enable IP forwarding for Tailscale Subnet Router & Exit Node
