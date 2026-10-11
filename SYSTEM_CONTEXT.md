@@ -56,7 +56,7 @@
 * **Pic Curator Stack** (`piccurator-compose.yml` equivalent / built by Terraform):
   * `piccurator`: Web-based duplicate image detective (Port 8000)
 * **Pi-Hole Stack** (Terraform `pihole` module):
-  * `pihole`: Network-wide Ad Blocking & DNS Sinkhole (Port 53 TCP/UDP, Web UI: Port 8053 / `ads.localrepo.net`)
+  * `pihole`: Network-wide Ad Blocking & DNS Sinkhole (Port 53 TCP/UDP, Web UI: Port 8053 / `pi.localrepo.net`)
 
 ### Removed / Deprecated Containers
 * **Hivemind Stack** (`hivemind-compose.yml`):

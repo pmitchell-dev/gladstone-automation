@@ -20,7 +20,7 @@ variable "timezone" {
 variable "virtual_host" {
   description = "Authorized virtual host header for Cloudflare access"
   type        = string
-  default     = "ads.localrepo.net"
+  default     = "pi.localrepo.net"
 }
 
 variable "upstream_dns" {

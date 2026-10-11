@@ -47,12 +47,13 @@ Now you will tell Cloudflare which subdomains point to which internal IP address
 
 ### 4. Pi-Hole Ad Blocker Dashboard
 - Go back into your Tunnel configuration and click **Add public hostname**.
-- **Subdomain:** `ads`
+- **Subdomain:** `pi`
 - **Domain:** `localrepo.net`
+- **Path:** *(Leave this EMPTY - do not enter `/admin` here so all assets and root redirects work properly)*
 - **Type:** `HTTP`
 - **URL:** `192.168.50.217:8053`
 - Click **Save**.
-- *Note:* Access the web administration dashboard externally at `https://ads.localrepo.net/admin`.
+- *Note:* Access the web administration dashboard externally at `https://pi.localrepo.net/admin` (or simply `https://pi.localrepo.net`).
 
 ## Phase 3: Lock it Down with Zero Trust Access
 
