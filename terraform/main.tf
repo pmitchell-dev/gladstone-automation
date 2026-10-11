@@ -55,7 +55,8 @@ module "hmdm" {
 }
 
 module "pihole" {
-  source       = "./modules/pihole"
-  web_port     = 8053
-  virtual_host = "pi.localrepo.net"
+  source         = "./modules/pihole"
+  web_port       = 8053
+  virtual_host   = "pi.localrepo.net"
+  admin_password = data.vault_generic_secret.pihole.data["password"]
 }

@@ -23,3 +23,7 @@ data "vault_generic_secret" "gemini_api" {
 data "vault_generic_secret" "postgres" {
   path = "secret/postgres"
 }
+
+data "vault_generic_secret" "pihole" {
+  path = "secret/pihole"
+}
