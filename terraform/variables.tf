@@ -24,6 +24,7 @@ data "vault_generic_secret" "postgres" {
   path = "secret/postgres"
 }
 
-data "vault_generic_secret" "pihole" {
-  path = "secret/pihole"
+data "vault_kv_secret_v2" "pihole" {
+  mount = "secret"
+  name  = "pihole"
 }
