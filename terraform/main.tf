@@ -71,3 +71,10 @@ module "dot_proxy" {
     module.pihole
   ]
 }
+
+module "tailscale" {
+  source           = "./modules/tailscale"
+  authkey          = data.vault_kv_secret_v2.tailscale.data["authkey"]
+  hostname         = "gladstone-webhost"
+  advertise_routes = "192.168.50.0/24"
+}

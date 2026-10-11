@@ -52,6 +52,7 @@ DATA_SOURCES = [
     (os.path.expanduser("~/homeasset/data"), "data/homeasset", "HomeAsset Data"),
     (os.path.expanduser("~/jobboard/data"), "data/jobboard", "JobBoard Data"),
     (os.path.expanduser("~/pihole"), "data/pihole", "Pi-hole Config & DNSMasq Data"),
+    (os.path.expanduser("~/tailscale"), "data/tailscale", "Tailscale Node State & Keys"),
     (os.path.expanduser("~/gladstone-automation"), "data/gladstone-automation", "Gladstone IaC Repository"),
     (os.path.expanduser("~/.config/terminalbuddy"), "data/terminalbuddy", "TerminalBuddy Config"),
 ]

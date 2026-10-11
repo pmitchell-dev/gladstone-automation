@@ -52,6 +52,7 @@ TARGET_MAPPINGS = [
     ("data/homeasset", "homeasset/data", "HomeAsset Data"),
     ("data/jobboard", "jobboard/data", "JobBoard Data"),
     ("data/pihole", "pihole", "Pi-hole Config & DNSMasq Data"),
+    ("data/tailscale", "tailscale", "Tailscale Node State & Keys"),
     ("data/gladstone-automation", "gladstone-automation", "Gladstone IaC Repository"),
     ("data/immich/immich_db_dump.sql", "immich_db_dump.sql", "Immich Database Dump (SQL)"),
     ("data/terminalbuddy", ".config/terminalbuddy", "TerminalBuddy Config"),

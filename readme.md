@@ -55,6 +55,7 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | **Immich Redis** (`immich_redis`) | `immich-compose.yml` | Webhost | 6379 (Internal) | Valkey Cache & Queue Broker | **Active (Added)** |
 | **Pi-Hole** (`pihole`) | `terraform/modules/pihole` | Webhost | 53 (TCP/UDP), 8053 | Network-wide Ad Blocker & DNS Sinkhole (`pi.localrepo.net`) | **Active (Added)** |
 | **DoT Proxy** (`dot-proxy`) | `terraform/modules/dot_proxy` | Webhost | 853 (TCP) | DNS-over-TLS Proxy for Native Android Private DNS (`dns.localrepo.net`) | **Active (Added)** |
+| **Tailscale** (`tailscale`) | `terraform/modules/tailscale` | Webhost | Host Network | Mesh VPN, Subnet Router (`192.168.50.0/24`) & Exit Node | **Active (Added)** |
 
 ### Removed / Deprecated Containers
 

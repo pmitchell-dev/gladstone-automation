@@ -54,7 +54,8 @@ home_dirs = [
   "/home/gladstone/gemini-api/data",
   "/home/gladstone/pihole/etc-pihole",
   "/home/gladstone/pihole/etc-dnsmasq.d",
-  "/home/gladstone/dot-proxy"
+  "/home/gladstone/dot-proxy",
+  "/home/gladstone/tailscale/state"
 ]
 
 mnt_dirs = [
@@ -164,6 +165,24 @@ end
 execute 'ufw_allow_dot' do
   command 'ufw allow 853/tcp comment "DNS over TLS"'
   only_if 'which ufw && ufw status | grep -q "Status: active"'
+end
+
+# Enable IP forwarding for Tailscale Subnet Router & Exit Node
+file '/etc/sysctl.d/99-tailscale.conf' do
+  content <<~EOS
+    net.ipv4.ip_forward = 1
+    net.ipv6.conf.all.forwarding = 1
+  EOS
+  owner 'root'
+  group 'root'
+  mode '0644'
+  notifies :run, 'execute[apply_tailscale_sysctl]', :immediately
+  action :create
+end
+
+execute 'apply_tailscale_sysctl' do
+  command 'sysctl -p /etc/sysctl.d/99-tailscale.conf'
+  action :nothing
 end
 
 mnt_dirs.each do |dir|

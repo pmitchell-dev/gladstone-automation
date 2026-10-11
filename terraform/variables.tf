@@ -28,3 +28,8 @@ data "vault_kv_secret_v2" "pihole" {
   mount = "secret"
   name  = "pihole"
 }
+
+data "vault_kv_secret_v2" "tailscale" {
+  mount = "secret"
+  name  = "tailscale"
+}

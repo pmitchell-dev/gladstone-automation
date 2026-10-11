@@ -58,6 +58,8 @@
 * **Pi-Hole Stack** (Terraform `pihole` and `dot_proxy` modules):
   * `pihole`: Network-wide Ad Blocking & DNS Sinkhole (Port 53 TCP/UDP, Web UI: Port 8053 / `pi.localrepo.net`)
   * `dot-proxy`: NGINX DNS-over-TLS (DoT) Proxy (Port 853 TCP / `dns.localrepo.net` for Android Private DNS)
+* **Tailscale Stack** (Terraform `tailscale` module):
+  * `tailscale`: Mesh VPN Client & Subnet Router (`gladstone-webhost` / routes: `192.168.50.0/24`, exit node)
 
 ### Removed / Deprecated Containers
 * **Hivemind Stack** (`hivemind-compose.yml`):
