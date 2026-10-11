@@ -62,6 +62,7 @@ resource "docker_container" "pihole" {
     "TZ=${var.timezone}",
     "WEBPASSWORD=${var.admin_password}",
     "FTLCONF_LOCAL_IPV4=192.168.50.217",
+    "FTLCONF_dns_listeningMode=ALL",
     "VIRTUAL_HOST=${var.virtual_host}",
     "PIHOLE_DNS_=${var.upstream_dns}"
   ]
