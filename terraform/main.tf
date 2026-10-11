@@ -53,3 +53,9 @@ module "piccurator" {
 module "hmdm" {
   source = "./modules/hmdm"
 }
+
+module "pihole" {
+  source       = "./modules/pihole"
+  web_port     = 8053
+  virtual_host = "ads.localrepo.net"
+}

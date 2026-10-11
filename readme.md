@@ -53,6 +53,7 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | **Immich Server** (`immich_server`) | `immich-compose.yml` | Webhost | 2283 | Self-Hosted Photo & Video Management Web UI & API | **Active (Added)** |
 | **Immich Database** (`immich_postgres`) | `immich-compose.yml` | Webhost | 5432 (Internal) | PostgreSQL Vector Database (`pgvector`) | **Active (Added)** |
 | **Immich Redis** (`immich_redis`) | `immich-compose.yml` | Webhost | 6379 (Internal) | Valkey Cache & Queue Broker | **Active (Added)** |
+| **Pi-Hole** (`pihole`) | `terraform/modules/pihole` | Webhost | 53 (TCP/UDP), 8053 | Network-wide Ad Blocker & DNS Sinkhole (`ads.localrepo.net`) | **Active (Added)** |
 
 ### Removed / Deprecated Containers
 

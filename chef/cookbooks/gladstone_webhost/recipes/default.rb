@@ -51,7 +51,9 @@ home_dirs = [
   "/home/gladstone/jobboard/data/backups",
   "/home/gladstone/jobboard/cache",
   "/home/gladstone/rustdesk/data",
-  "/home/gladstone/gemini-api/data"
+  "/home/gladstone/gemini-api/data",
+  "/home/gladstone/pihole/etc-pihole",
+  "/home/gladstone/pihole/etc-dnsmasq.d"
 ]
 
 mnt_dirs = [
@@ -67,6 +69,31 @@ home_dirs.each do |dir|
     recursive true
     action :create
   end
+end
+
+# Ensure systemd-resolved stub listener is disabled to prevent collision on port 53
+directory '/etc/systemd/resolved.conf.d' do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  recursive true
+  action :create
+end
+
+file '/etc/systemd/resolved.conf.d/pihole.conf' do
+  content <<~EOH
+    [Resolve]
+    DNSStubListener=no
+  EOH
+  owner 'root'
+  group 'root'
+  mode '0644'
+  notifies :restart, 'service[systemd-resolved]', :delayed
+  action :create
+end
+
+service 'systemd-resolved' do
+  action :nothing
 end
 
 mnt_dirs.each do |dir|

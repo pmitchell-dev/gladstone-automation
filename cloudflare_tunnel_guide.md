@@ -45,6 +45,15 @@ Now you will tell Cloudflare which subdomains point to which internal IP address
 - **URL:** `192.168.50.217:<PORT_FOR_CAMERAS>`
 - Click **Save**.
 
+### 4. Pi-Hole Ad Blocker Dashboard
+- Go back into your Tunnel configuration and click **Add public hostname**.
+- **Subdomain:** `ads`
+- **Domain:** `localrepo.net`
+- **Type:** `HTTP`
+- **URL:** `192.168.50.217:8053`
+- Click **Save**.
+- *Note:* Access the web administration dashboard externally at `https://ads.localrepo.net/admin`.
+
 ## Phase 3: Lock it Down with Zero Trust Access
 
 Right now, anyone who goes to `jobs.dark-ops.cc` can see your app. We need to lock this down so *only you* can access it via an Email PIN.
