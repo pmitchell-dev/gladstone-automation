@@ -53,7 +53,8 @@ home_dirs = [
   "/home/gladstone/rustdesk/data",
   "/home/gladstone/gemini-api/data",
   "/home/gladstone/pihole/etc-pihole",
-  "/home/gladstone/pihole/etc-dnsmasq.d"
+  "/home/gladstone/pihole/etc-dnsmasq.d",
+  "/home/gladstone/dot-proxy"
 ]
 
 mnt_dirs = [
@@ -94,6 +95,75 @@ end
 
 service 'systemd-resolved' do
   action :nothing
+end
+
+# ==========================================
+# DNS-over-TLS (DoT) & Certbot Setup
+# ==========================================
+
+package %w(certbot python3-certbot-dns-cloudflare) do
+  action :install
+end
+
+directory '/home/gladstone/.secrets/certbot' do
+  owner 'gladstone'
+  group 'gladstone'
+  mode '0700'
+  recursive true
+  action :create
+end
+
+cookbook_file '/home/gladstone/dot-proxy/nginx.conf' do
+  source 'dot-proxy.nginx.conf'
+  owner 'gladstone'
+  group 'gladstone'
+  mode '0644'
+  action :create
+end
+
+ruby_block 'format_cloudflare_ini' do
+  block do
+    ini_path = '/home/gladstone/.secrets/certbot/cloudflare.ini'
+    if File.exist?(ini_path)
+      content = File.read(ini_path).strip
+      unless content.include?('dns_cloudflare_api_token')
+        raw_token = content.lines.first.to_s.strip
+        File.write(ini_path, "dns_cloudflare_api_token = #{raw_token}\n")
+      end
+      File.chmod(0600, ini_path)
+    end
+  end
+  only_if { ::File.exist?('/home/gladstone/.secrets/certbot/cloudflare.ini') }
+end
+
+execute 'issue_dot_cert' do
+  command 'certbot certonly --dns-cloudflare --dns-cloudflare-credentials /home/gladstone/.secrets/certbot/cloudflare.ini --dns-cloudflare-propagation-seconds 20 -d dns.localrepo.net --non-interactive --agree-tos --register-unsafely-without-email'
+  only_if { ::File.exist?('/home/gladstone/.secrets/certbot/cloudflare.ini') }
+  not_if { ::File.exist?('/etc/letsencrypt/live/dns.localrepo.net/fullchain.pem') }
+end
+
+directory '/etc/letsencrypt/renewal-hooks/deploy' do
+  owner 'root'
+  group 'root'
+  mode '0755'
+  recursive true
+  action :create
+end
+
+file '/etc/letsencrypt/renewal-hooks/deploy/reload_dot_proxy.sh' do
+  content <<~EOS
+    #!/bin/bash
+    docker restart dot-proxy 2>/dev/null || true
+  EOS
+  owner 'root'
+  group 'root'
+  mode '0755'
+  action :create
+end
+
+execute 'ufw_allow_dot' do
+  command 'ufw allow 853/tcp comment "DNS over TLS"'
+  only_if 'which ufw && ufw status | grep -q "Status: active"'
 end
 
 mnt_dirs.each do |dir|

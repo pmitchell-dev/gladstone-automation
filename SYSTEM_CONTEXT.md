@@ -55,8 +55,9 @@
   * *(Machine Learning: Remote node via `IMMICH_MACHINE_LEARNING_URL=http://192.168.50.138:3003`)*
 * **Pic Curator Stack** (`piccurator-compose.yml` equivalent / built by Terraform):
   * `piccurator`: Web-based duplicate image detective (Port 8000)
-* **Pi-Hole Stack** (Terraform `pihole` module):
+* **Pi-Hole Stack** (Terraform `pihole` and `dot_proxy` modules):
   * `pihole`: Network-wide Ad Blocking & DNS Sinkhole (Port 53 TCP/UDP, Web UI: Port 8053 / `pi.localrepo.net`)
+  * `dot-proxy`: NGINX DNS-over-TLS (DoT) Proxy (Port 853 TCP / `dns.localrepo.net` for Android Private DNS)
 
 ### Removed / Deprecated Containers
 * **Hivemind Stack** (`hivemind-compose.yml`):

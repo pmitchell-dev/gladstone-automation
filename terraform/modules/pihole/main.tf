@@ -6,6 +6,10 @@ terraform {
   }
 }
 
+resource "docker_network" "dns_net" {
+  name = "dns_network"
+}
+
 resource "docker_image" "pihole" {
   name = "pihole/pihole:latest"
 }
@@ -14,6 +18,10 @@ resource "docker_container" "pihole" {
   name    = "pihole"
   image   = docker_image.pihole.image_id
   restart = "unless-stopped"
+
+  networks_advanced {
+    name = docker_network.dns_net.name
+  }
 
   capabilities {
     add = ["NET_ADMIN"]
