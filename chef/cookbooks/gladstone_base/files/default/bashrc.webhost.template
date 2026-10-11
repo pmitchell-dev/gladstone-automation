@@ -87,9 +87,10 @@ fi
 
 [ -f ~/.config/terminalbuddy/terminalbuddy.sh ] && source ~/.config/terminalbuddy/terminalbuddy.sh
 
-# Terminal and Gemini CLI environment fixes
+# Terminal, Vault, and Gemini CLI environment fixes
 export TERM=xterm-256color
 export COLORTERM=truecolor
+export VAULT_ADDR="http://127.0.0.1:8200"
 
 gemini_clean() {
   command gemini "$@"
