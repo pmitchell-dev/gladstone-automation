@@ -91,7 +91,7 @@ services:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false
       - TS_AUTHKEY=${TS_AUTHKEY}
-      - TS_EXTRA_ARGS=--hostname=gladstone-hub --advertise-routes=192.168.50.0/24 --advertise-exit-node --accept-routes
+      - TS_EXTRA_ARGS=--hostname=gladstone-hub --advertise-routes=192.168.50.0/24 --accept-routes
     restart: unless-stopped
 EOF
 
