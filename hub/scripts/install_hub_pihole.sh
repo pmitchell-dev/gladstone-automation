@@ -48,8 +48,8 @@ if [ ! -f "$SECRETS_FILE" ]; then
     exit 1
 fi
 
-# shellcheck source=/dev/null
-source "$SECRETS_FILE"
+# Parse secrets safely (immune to CRLF / Windows line endings)
+PIHOLE_PASSWORD=$(grep -m1 '^PIHOLE_PASSWORD=' "$SECRETS_FILE" | tr -d '\r' | cut -d'=' -f2- | tr -d '"')
 
 if [ -z "${PIHOLE_PASSWORD:-}" ]; then
     log "❌ PIHOLE_PASSWORD is not set in ~/.gladstone_secrets."
