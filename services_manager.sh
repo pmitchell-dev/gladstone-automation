@@ -84,6 +84,50 @@ if [ "$MODE" == "ntfy" ]; then
             cd "$HOME/simplelogin" 2>/dev/null && docker compose --progress=plain up -d >> "$LOG_DIR/services_manager.log" 2>&1
         fi
     fi
+
+    # Pi-Hole Hub (Backup DNS)
+    if [ -f "$HOME/pihole-hub/docker-compose.yml" ]; then
+        if ! docker ps --format '{{.Names}}' | grep -q "^pihole-hub$"; then
+            echo "🔵 Recovering pihole-hub container..."
+            cd "$HOME/pihole-hub" 2>/dev/null && docker compose --progress=plain up -d >> "$LOG_DIR/services_manager.log" 2>&1
+            COUNT=$(grep "^pihole-hub:" "$RETRY_FILE" | cut -d: -f2 || echo 0)
+            NEW_COUNT=$((COUNT + 1))
+            sed -i "/^pihole-hub:/d" "$RETRY_FILE"; echo "pihole-hub:$NEW_COUNT" >> "$RETRY_FILE"
+            if [ "$NEW_COUNT" -ge 5 ]; then
+                NOW=$(date +%s)
+                MUTE_UNTIL=$(cat /tmp/gladstone_ntfy_mute 2>/dev/null || echo 0)
+                if [[ "$MUTE_UNTIL" =~ ^[0-9]+$ ]] && [ "$NOW" -ge "$MUTE_UNTIL" ]; then
+                    curl -s -H "Priority: 4" \
+                         -d "[$HOSTNAME] 🔵 WARN: Hub Pi-Hole (pihole-hub) is failing to stay up. Backup DNS may be degraded." \
+                         "https://ntfy.sh/$TOPIC" || true
+                fi
+            fi
+        else
+            sed -i "/^pihole-hub:/d" "$RETRY_FILE"; echo "pihole-hub:0" >> "$RETRY_FILE"
+        fi
+    fi
+
+    # Tailscale Hub (Backup VPN Node)
+    if [ -f "$HOME/tailscale-hub/docker-compose.yml" ]; then
+        if ! docker ps --format '{{.Names}}' | grep -q "^tailscale-hub$"; then
+            echo "🔒 Recovering tailscale-hub container..."
+            cd "$HOME/tailscale-hub" 2>/dev/null && docker compose --progress=plain up -d >> "$LOG_DIR/services_manager.log" 2>&1
+            COUNT=$(grep "^tailscale-hub:" "$RETRY_FILE" | cut -d: -f2 || echo 0)
+            NEW_COUNT=$((COUNT + 1))
+            sed -i "/^tailscale-hub:/d" "$RETRY_FILE"; echo "tailscale-hub:$NEW_COUNT" >> "$RETRY_FILE"
+            if [ "$NEW_COUNT" -ge 5 ]; then
+                NOW=$(date +%s)
+                MUTE_UNTIL=$(cat /tmp/gladstone_ntfy_mute 2>/dev/null || echo 0)
+                if [[ "$MUTE_UNTIL" =~ ^[0-9]+$ ]] && [ "$NOW" -ge "$MUTE_UNTIL" ]; then
+                    curl -s -H "Priority: 4" \
+                         -d "[$HOSTNAME] 🔒 WARN: Hub Tailscale node (tailscale-hub) is failing to stay up." \
+                         "https://ntfy.sh/$TOPIC" || true
+                fi
+            fi
+        else
+            sed -i "/^tailscale-hub:/d" "$RETRY_FILE"; echo "tailscale-hub:0" >> "$RETRY_FILE"
+        fi
+    fi
 fi
 
 # REGISTRY MONITOR (Shared)

@@ -59,6 +59,10 @@
   * `pihole`: Network-wide Ad Blocking & DNS Sinkhole (Port 53 TCP/UDP, Web UI: Port 8053 / `pi.localrepo.net`)
 * **Tailscale Stack** (Terraform `tailscale` module):
   * `tailscale`: Mesh VPN Client & Subnet Router (`gladstone-webhost` / routes: `192.168.50.0/24`, exit node)
+* **Pi-Hole Hub Stack** (`hub/scripts/install_hub_pihole.sh` — Bash only, no Terraform):
+  * `pihole-hub`: Backup DNS / Ad Blocker on Hub Pi 5 (Port 53 TCP/UDP, Web UI: Port 8054 / `192.168.50.138:8054`) — synced hourly from Webhost via Gravity Sync
+* **Tailscale Hub Stack** (`hub/scripts/install_hub_tailscale.sh` — Bash only, no Terraform):
+  * `tailscale-hub`: Backup Tailscale node (`gladstone-hub`) on Hub Pi 5 — subnet router (`192.168.50.0/24`) & exit node. Add its Tailscale IP as secondary DNS in Tailscale admin console.
 
 ### Removed / Deprecated Containers
 * **Hivemind Stack** (`hivemind-compose.yml`):

@@ -55,6 +55,8 @@ Upon installation, a hidden file is created at `~/.gladstone_mode`. This file ac
 | **Immich Redis** (`immich_redis`) | `immich-compose.yml` | Webhost | 6379 (Internal) | Valkey Cache & Queue Broker | **Active (Added)** |
 | **Pi-Hole** (`pihole`) | `terraform/modules/pihole` | Webhost | 53 (TCP/UDP), 8053 | Network-wide Ad Blocker & DNS Sinkhole (`pi.localrepo.net`) | **Active (Added)** |
 | **Tailscale** (`tailscale`) | `terraform/modules/tailscale` | Webhost | Host Network | Mesh VPN, Subnet Router (`192.168.50.0/24`) & Exit Node | **Active (Added)** |
+| **Pi-Hole Hub** (`pihole-hub`) | `hub/scripts/install_hub_pihole.sh` | Hub | 53 (TCP/UDP), 8054 | Backup DNS / Ad Blocker — always-on secondary, synced via Gravity Sync | **Active (Added)** |
+| **Tailscale Hub** (`tailscale-hub`) | `hub/scripts/install_hub_tailscale.sh` | Hub | Host Network | Backup Tailscale Node (`gladstone-hub`) — subnet router & exit node | **Active (Added)** |
 
 ### Removed / Deprecated Containers
 
@@ -105,3 +107,7 @@ bash ~/scripts/cleanup_test.sh
 * `~/scripts/logs/`: Runtime telemetry & error logs (Excluded from git).
 * `~/scripts/backup/`: Backup location. Webhost targets `/mnt/backups/laptopwebhost` and NTFY Hub targets `//192.168.50.217/Backups/CentralServers` via SMB (`gladstone:sambauser`). Retains top 7 daily backups with SHA256 integrity verification.
 * `~/printer_data/`: Scraped HTML telemetry from Brother printer.
+* `~/scripts/hub/scripts/`: Hub-specific Bash-only install scripts (no Chef, no Terraform).
+  * `install_hub_tailscale.sh` — Tailscale backup node (`gladstone-hub`)
+  * `install_hub_pihole.sh` — Backup Pi-Hole on port 8054
+  * `install_hub_gravity_sync.sh` — Keeps Hub Pi-Hole synced with Webhost Pi-Hole hourly

@@ -16,9 +16,10 @@ sed -i '/net_speed.sh/d' "$CRON_TMP"
 sed -i '/backup.sh/d' "$CRON_TMP"
 sed -i '/services_manager.sh/d' "$CRON_TMP"
 sed -i '/cloudflare_ddns.sh/d' "$CRON_TMP"
+sed -i '/gravity-sync/d' "$CRON_TMP"
 sed -i '/Hub Master Crontab/d' "$CRON_TMP"
 
-cat << EOF >> "$CRON_TMP"
+cat <<EOF >> "$CRON_TMP"
 # Hub Master Crontab
 0 8 * * * $HUB_DIR/printer_health.sh
 0 0,8,12,16,20 * * * $HUB_DIR/get_printer_status.sh
@@ -27,6 +28,7 @@ cat << EOF >> "$CRON_TMP"
 0 0 * * * $HUB_DIR/backup.sh --mode ntfy
 */5 * * * * $HUB_DIR/services_manager.sh
 */15 * * * * $HUB_DIR/cloudflare_ddns.sh
+0 * * * * gravity-sync pull >> $HUB_DIR/logs/gravity_sync.log 2>&1
 EOF
 
 crontab "$CRON_TMP"
