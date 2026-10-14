@@ -91,7 +91,12 @@ services:
       - TS_STATE_DIR=/var/lib/tailscale
       - TS_USERSPACE=false
       - TS_AUTHKEY=${TS_AUTHKEY}
-      - TS_EXTRA_ARGS=--hostname=gladstone-hub --advertise-routes=192.168.50.0/24 --accept-routes
+      # --reset: clears previously saved flags on restart, prevents boot-loop on flag changes
+      # --advertise-routes: Hub acts as subnet router for 192.168.50.0/24
+      # --accept-routes OMITTED: Hub is physically on 192.168.50.0/24 already.
+      #   Accepting the Webhost's identical subnet route causes a routing conflict
+      #   that breaks LAN SSH on the Hub.
+      - TS_EXTRA_ARGS=--reset --hostname=gladstone-hub --advertise-routes=192.168.50.0/24
     restart: unless-stopped
 EOF
 
