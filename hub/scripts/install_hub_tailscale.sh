@@ -93,10 +93,11 @@ services:
       - TS_AUTHKEY=${TS_AUTHKEY}
       # --reset: clears previously saved flags on restart, prevents boot-loop on flag changes
       # --advertise-routes: Hub acts as subnet router for 192.168.50.0/24
+      # --advertise-exit-node: Hub acts as backup exit node if Webhost goes down
       # --accept-routes OMITTED: Hub is physically on 192.168.50.0/24 already.
       #   Accepting the Webhost's identical subnet route causes a routing conflict
       #   that breaks LAN SSH on the Hub.
-      - TS_EXTRA_ARGS=--reset --hostname=gladstone-hub --advertise-routes=192.168.50.0/24
+      - TS_EXTRA_ARGS=--reset --hostname=gladstone-hub --advertise-routes=192.168.50.0/24 --advertise-exit-node
     restart: unless-stopped
 EOF
 
