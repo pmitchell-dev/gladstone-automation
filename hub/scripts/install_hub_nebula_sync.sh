@@ -143,9 +143,11 @@ ENV_FILE="$NEBULA_DIR/.env"
 log "📝 Writing Nebula Sync env file to $ENV_FILE..."
 
 # printf safely writes values without any quoting/escaping issues
-printf 'PRIMARY=http://%s:%s/admin|%s\n' \
+# NOTE: Pi-hole v6 API is at /api NOT /admin/api — do NOT include /admin in the URL.
+#       Nebula Sync appends /api internally, so just provide the base host:port.
+printf 'PRIMARY=http://%s:%s|%s\n' \
     "$WEBHOST_IP" "$WEBHOST_PORT" "$PIHOLE_WEBHOST_PASSWORD" > "$ENV_FILE"
-printf 'REPLICAS=http://%s:%s/admin|%s\n' \
+printf 'REPLICAS=http://%s:%s|%s\n' \
     "$HUB_IP" "$HUB_PORT" "$PIHOLE_PASSWORD" >> "$ENV_FILE"
 printf 'FULL_SYNC=true\nRUN_GRAVITY=true\nCRON=0 * * * *\n' >> "$ENV_FILE"
 chmod 600 "$ENV_FILE"
