@@ -68,6 +68,18 @@ if [ -z "${PIHOLE_PASSWORD:-}" ]; then
     exit 1
 fi
 
+# Webhost Pi-hole password may differ (managed by Vault/Terraform on the Webhost).
+# Fall back to PIHOLE_PASSWORD if PIHOLE_WEBHOST_PASSWORD is not set.
+PIHOLE_WEBHOST_PASSWORD=$(grep -m1 '^PIHOLE_WEBHOST_PASSWORD=' "$SECRETS_FILE" | tr -d '\r' | cut -d'=' -f2- | tr -d '"')
+if [ -z "${PIHOLE_WEBHOST_PASSWORD:-}" ]; then
+    log "ℹ️  PIHOLE_WEBHOST_PASSWORD not set — using PIHOLE_PASSWORD for both instances."
+    PIHOLE_WEBHOST_PASSWORD="$PIHOLE_PASSWORD"
+fi
+
+# Escape $ as $$ in passwords for docker-compose.yml (otherwise treated as shell vars)
+PIHOLE_PASSWORD_ESC=$(printf '%s' "$PIHOLE_PASSWORD" | sed 's/\$/\$\$/g')
+PIHOLE_WEBHOST_PASSWORD_ESC=$(printf '%s' "$PIHOLE_WEBHOST_PASSWORD" | sed 's/\$/\$\$/g')
+
 # ----------------------------------------------------------
 # 2. VERIFY BOTH PI-HOLES ARE REACHABLE
 # ----------------------------------------------------------
@@ -126,7 +138,9 @@ fi
 # ----------------------------------------------------------
 log "📝 Writing Nebula Sync compose file to $COMPOSE_FILE..."
 
-cat > "$COMPOSE_FILE" <<EOF
+# Use single-quote heredoc (<<'EOF') to prevent shell from expanding $ in passwords.
+# The $$ escaping done above is for docker-compose's own variable substitution.
+cat > "$COMPOSE_FILE" <<'COMPOSE_EOF'
 services:
   nebula-sync:
     image: ghcr.io/lovelaze/nebula-sync:latest
@@ -134,16 +148,20 @@ services:
     restart: unless-stopped
     environment:
       # Primary Pi-Hole (source of truth) — Webhost
-      PRIMARY: "http://${WEBHOST_IP}:${WEBHOST_PORT}/admin|${PIHOLE_PASSWORD}"
+      PRIMARY: "WEBHOST_PLACEHOLDER"
       # Replica Pi-Hole — Hub (secondary/failover)
-      REPLICAS: "http://${HUB_IP}:${HUB_PORT}/admin|${PIHOLE_PASSWORD}"
+      REPLICAS: "HUB_PLACEHOLDER"
       # Full sync via Teleporter (blocklists, DNS, CNAMEs, groups, etc.)
       FULL_SYNC: "true"
       # Update gravity (blocklists) on replica after each sync
       RUN_GRAVITY: "true"
       # Sync every hour
       CRON: "0 * * * *"
-EOF
+COMPOSE_EOF
+
+# Substitute placeholders with actual values (sed handles special chars safely)
+sed -i "s|WEBHOST_PLACEHOLDER|http://${WEBHOST_IP}:${WEBHOST_PORT}/admin|${PIHOLE_WEBHOST_PASSWORD_ESC}|" "$COMPOSE_FILE"
+sed -i "s|HUB_PLACEHOLDER|http://${HUB_IP}:${HUB_PORT}/admin|${PIHOLE_PASSWORD_ESC}|" "$COMPOSE_FILE"
 
 log "✅ Nebula Sync compose file written."
 
