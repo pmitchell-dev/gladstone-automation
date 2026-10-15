@@ -61,15 +61,47 @@ fi
 # 2. CHECK PORT 53 AVAILABILITY
 # ----------------------------------------------------------
 log "🔍 Checking if port 53 is free..."
-if sudo ss -tlunp 2>/dev/null | grep -q ':53 ' || sudo lsof -i :53 -sTCP:LISTEN 2>/dev/null | grep -qv docker; then
-    log "⚠️  Port 53 may be in use by systemd-resolved. Disabling stub listener..."
-    sudo mkdir -p /etc/systemd/resolved.conf.d
-    sudo bash -c 'cat > /etc/systemd/resolved.conf.d/nopiggyback.conf <<EOF
+if sudo ss -tlunp 2>/dev/null | grep -q ':53 ' || sudo ss -ulnp 2>/dev/null | grep -q ':53 '; then
+    log "⚠️  Port 53 is in use. Identifying the process..."
+
+    # Identify what's holding port 53
+    PORT53_PROC=$(sudo ss -tlunp 2>/dev/null | grep ':53 ' | grep -oP 'users:\(\("\K[^"]+' | head -1 || true)
+    if [ -z "$PORT53_PROC" ]; then
+        PORT53_PROC=$(sudo ss -ulnp 2>/dev/null | grep ':53 ' | grep -oP 'users:\(\("\K[^"]+' | head -1 || true)
+    fi
+    log "   Process on port 53: ${PORT53_PROC:-unknown}"
+
+    # Case 1: systemd-resolved stub listener
+    if systemctl is-active --quiet systemd-resolved 2>/dev/null; then
+        log "   → Disabling systemd-resolved stub listener..."
+        sudo mkdir -p /etc/systemd/resolved.conf.d
+        sudo bash -c 'cat > /etc/systemd/resolved.conf.d/nopiggyback.conf <<EOF
 [Resolve]
 DNSStubListener=no
 EOF'
-    sudo systemctl restart systemd-resolved
-    log "✅ systemd-resolved stub listener disabled."
+        sudo systemctl restart systemd-resolved
+        log "✅ systemd-resolved stub listener disabled."
+
+    # Case 2: dnsmasq (common on Pi OS)
+    elif systemctl is-active --quiet dnsmasq 2>/dev/null; then
+        log "   → Stopping and disabling dnsmasq..."
+        sudo systemctl stop dnsmasq
+        sudo systemctl disable dnsmasq
+        log "✅ dnsmasq stopped and disabled."
+
+    # Case 3: Some other process — stop it by name if identified
+    elif [ -n "$PORT53_PROC" ]; then
+        log "   → Attempting to stop process: $PORT53_PROC"
+        sudo systemctl stop "$PORT53_PROC" 2>/dev/null || \
+            sudo pkill -f "$PORT53_PROC" 2>/dev/null || true
+        log "⚠️  Attempted to free port 53 from $PORT53_PROC. Verify manually if issues persist."
+
+    else
+        log "⚠️  Could not identify what is holding port 53. Pi-Hole may fail to bind."
+        log "   Run: sudo ss -tlunp | grep ':53' to investigate."
+    fi
+else
+    log "✅ Port 53 is free."
 fi
 
 # ----------------------------------------------------------
