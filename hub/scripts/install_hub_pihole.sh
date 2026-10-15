@@ -89,7 +89,7 @@ services:
       - "${WEB_PORT}:80/tcp"
     environment:
       TZ: "America/Chicago"
-      WEBPASSWORD: "${PIHOLE_PASSWORD}"
+      FTLCONF_webserver_api_password: "${PIHOLE_PASSWORD}"
       FTLCONF_LOCAL_IPV4: "${HUB_LAN_IP}"
       FTLCONF_dns_listeningMode: "ALL"
       PIHOLE_DNS_: "1.1.1.1;1.0.0.1"
