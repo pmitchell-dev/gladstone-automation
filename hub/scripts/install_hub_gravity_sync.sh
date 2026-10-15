@@ -53,9 +53,27 @@ log "📦 Installing Gravity Sync..."
 if command -v gravity-sync &>/dev/null; then
     log "ℹ️  Gravity Sync already installed. Skipping download."
 else
+    log "   Downloading Gravity Sync installer..."
+    # Use set +e so a non-zero exit from the installer doesn't kill the script
+    set +e
     curl -sSL https://raw.githubusercontent.com/vmstan/gravity-sync/main/install.sh \
         | bash >> "$LOG_DIR/install_hub_gravity_sync.log" 2>&1
-    log "✅ Gravity Sync installed."
+    INSTALL_EXIT=$?
+    set -e
+
+    if [ $INSTALL_EXIT -ne 0 ]; then
+        log "⚠️  Gravity Sync installer returned exit code $INSTALL_EXIT."
+        log "   Check $LOG_DIR/install_hub_gravity_sync.log for details."
+    fi
+
+    # Verify it actually landed
+    if ! command -v gravity-sync &>/dev/null; then
+        log "❌ Gravity Sync command not found after install. Aborting."
+        log "   Try manually: curl -sSL https://raw.githubusercontent.com/vmstan/gravity-sync/main/install.sh | bash"
+        log "   Full install log: $LOG_DIR/install_hub_gravity_sync.log"
+        exit 1
+    fi
+    log "✅ Gravity Sync installed successfully."
 fi
 
 # ----------------------------------------------------------
