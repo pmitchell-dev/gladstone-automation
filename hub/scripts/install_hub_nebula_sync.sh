@@ -134,34 +134,35 @@ else
 fi
 
 # ----------------------------------------------------------
-# 4. WRITE DOCKER COMPOSE FILE
+# 4. WRITE DOCKER COMPOSE & ENV FILES
 # ----------------------------------------------------------
+# Use an env_file approach so passwords with special characters ($, #, |)
+# are never subject to shell or docker-compose variable interpolation.
+ENV_FILE="$NEBULA_DIR/.env"
+
+log "📝 Writing Nebula Sync env file to $ENV_FILE..."
+
+# printf safely writes values without any quoting/escaping issues
+printf 'PRIMARY=http://%s:%s/admin|%s\n' \
+    "$WEBHOST_IP" "$WEBHOST_PORT" "$PIHOLE_WEBHOST_PASSWORD" > "$ENV_FILE"
+printf 'REPLICAS=http://%s:%s/admin|%s\n' \
+    "$HUB_IP" "$HUB_PORT" "$PIHOLE_PASSWORD" >> "$ENV_FILE"
+printf 'FULL_SYNC=true\nRUN_GRAVITY=true\nCRON=0 * * * *\n' >> "$ENV_FILE"
+chmod 600 "$ENV_FILE"
+log "✅ Env file written (permissions: 600)."
+
 log "📝 Writing Nebula Sync compose file to $COMPOSE_FILE..."
 
-# Use single-quote heredoc (<<'EOF') to prevent shell from expanding $ in passwords.
-# The $$ escaping done above is for docker-compose's own variable substitution.
+# Compose is fully static — all secrets come from the env_file above
 cat > "$COMPOSE_FILE" <<'COMPOSE_EOF'
 services:
   nebula-sync:
     image: ghcr.io/lovelaze/nebula-sync:latest
     container_name: nebula-sync
     restart: unless-stopped
-    environment:
-      # Primary Pi-Hole (source of truth) — Webhost
-      PRIMARY: "WEBHOST_PLACEHOLDER"
-      # Replica Pi-Hole — Hub (secondary/failover)
-      REPLICAS: "HUB_PLACEHOLDER"
-      # Full sync via Teleporter (blocklists, DNS, CNAMEs, groups, etc.)
-      FULL_SYNC: "true"
-      # Update gravity (blocklists) on replica after each sync
-      RUN_GRAVITY: "true"
-      # Sync every hour
-      CRON: "0 * * * *"
+    env_file:
+      - .env
 COMPOSE_EOF
-
-# Substitute placeholders with actual values (sed handles special chars safely)
-sed -i "s|WEBHOST_PLACEHOLDER|http://${WEBHOST_IP}:${WEBHOST_PORT}/admin|${PIHOLE_WEBHOST_PASSWORD_ESC}|" "$COMPOSE_FILE"
-sed -i "s|HUB_PLACEHOLDER|http://${HUB_IP}:${HUB_PORT}/admin|${PIHOLE_PASSWORD_ESC}|" "$COMPOSE_FILE"
 
 log "✅ Nebula Sync compose file written."
 
